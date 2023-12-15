@@ -1,4 +1,4 @@
-module github.com/CHESSComputing/tools/enc
+module github.com/CHESSComputing/gotools/enc
 
 go 1.21.5
 
