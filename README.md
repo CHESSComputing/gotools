@@ -1,2 +1,1 @@
-# tools
-CHESS tools repository
+# CHESS tools repository
