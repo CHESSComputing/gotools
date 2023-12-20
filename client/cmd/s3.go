@@ -61,7 +61,7 @@ func s3List(args []string) {
 	fmt.Printf("INFO: list bucket %s\n", bucketName)
 
 	var results StorageRecord
-	rurl := fmt.Sprintf("%s/storage/%s", _oreConfig.Services.DataManagementURL, bucketName)
+	rurl := fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -93,7 +93,7 @@ func s3Create(args []string) {
 	bucketName := args[1]
 	fmt.Printf("INFO: create bucket %s\n", bucketName)
 	var results StorageRecord
-	rurl := fmt.Sprintf("%s/storage/%s", _oreConfig.Services.DataManagementURL, bucketName)
+	rurl := fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
 	if verbose > 0 {
 		fmt.Println("HTTP POST", rurl)
 	}
@@ -155,7 +155,7 @@ func s3Upload(args []string) {
 	for _, f := range files {
 		fname := filepath.Join(fobj, f)
 		fmt.Printf("INFO: upload %s to bucket %s\n", fname, bucketName)
-		rurl := fmt.Sprintf("%s/storage/%s/%s", _oreConfig.Services.DataManagementURL, bucketName, f)
+		rurl := fmt.Sprintf("%s/storage/%s/%s", _srvConfig.Services.DataManagementURL, bucketName, f)
 		if verbose > 0 {
 			fmt.Println("HTTP POST", rurl)
 		}
@@ -232,7 +232,7 @@ func s3Delete(args []string) {
 	bucketName := args[1]
 	fmt.Printf("INFO: delete bucket %s\n", bucketName)
 	var results StorageRecord
-	rurl := fmt.Sprintf("%s/storage/%s", _oreConfig.Services.DataManagementURL, bucketName)
+	rurl := fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
 	if verbose > 0 {
 		fmt.Println("HTTP DELETE", rurl)
 	}

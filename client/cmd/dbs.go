@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
 
@@ -56,7 +57,7 @@ func dbsListRecord(args []string) {
 		os.Exit(1)
 	}
 	if args[1] == "datasets" {
-		rurl := fmt.Sprintf("%s/datasets", _oreConfig.Services.DataBookkeepingURL)
+		rurl := fmt.Sprintf("%s/datasets", _srvConfig.Services.DataBookkeepingURL)
 		for _, rec := range getData(rurl) {
 			printResults(rec)
 		}
@@ -95,7 +96,7 @@ func dbsAddRecord(args []string) {
 	err = json.Unmarshal(data, &rec)
 	checkError(err)
 
-	rurl := fmt.Sprintf("%s/dataset", _oreConfig.Services.DataBookkeepingURL)
+	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
 	req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
 	checkError(err)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -105,7 +106,7 @@ func dbsAddRecord(args []string) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	checkError(err)
-	var response Response
+	var response services.ServiceStatus
 	err = json.Unmarshal(body, &response)
 	checkError(err)
 	if response.Status == "ok" {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +32,7 @@ type MetaDataRecord struct {
 // helper function to fetch sites info from discovery service
 func metadata(site string) MetaDataRecord {
 	var results MetaDataRecord
-	rurl := fmt.Sprintf("%s/meta/%s", _oreConfig.Services.MetaDataURL, site)
+	rurl := fmt.Sprintf("%s/meta/%s", _srvConfig.Services.MetaDataURL, site)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -51,25 +52,6 @@ func metadata(site string) MetaDataRecord {
 
 func getMeta(site string) ([]MetaData, error) {
 	var records []MetaData
-	sites, err := getSites()
-	if err != nil {
-		return records, err
-	}
-	for _, sobj := range sites {
-		if site == sobj.Name || site == "" {
-			if verbose > 0 {
-				fmt.Printf("processing %+v\n", sobj)
-			}
-			rec := metadata(site)
-			if rec.Status == "ok" {
-				for _, r := range rec.Data {
-					records = append(records, r)
-				}
-			} else {
-				fmt.Printf("WARNING: failed metadata record %+v\n", rec)
-			}
-		}
-	}
 	return records, nil
 }
 
@@ -110,7 +92,7 @@ func metaAddRecord(args []string) {
 	}
 	data, err := json.Marshal(meta)
 	checkError(err)
-	rurl := fmt.Sprintf("%s/meta", _oreConfig.Services.MetaDataURL)
+	rurl := fmt.Sprintf("%s/meta", _srvConfig.Services.MetaDataURL)
 	req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
 	checkError(err)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -120,7 +102,7 @@ func metaAddRecord(args []string) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	checkError(err)
-	var response Response
+	var response services.ServiceStatus
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		fmt.Println("ERROR", err, "response body", string(body))
@@ -142,7 +124,7 @@ func metaDeleteRecord(args []string) {
 	mid := args[1]
 	token, err := accessToken()
 	checkError(err)
-	rurl := fmt.Sprintf("%s/meta/%s", _oreConfig.Services.MetaDataURL, mid)
+	rurl := fmt.Sprintf("%s/meta/%s", _srvConfig.Services.MetaDataURL, mid)
 	req, err := http.NewRequest("DELETE", rurl, nil)
 	checkError(err)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -152,7 +134,7 @@ func metaDeleteRecord(args []string) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	checkError(err)
-	var response Response
+	var response services.ServiceStatus
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		fmt.Println("ERROR", err, "response body", string(body))

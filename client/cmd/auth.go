@@ -30,8 +30,8 @@ func getToken(login, pass string) (string, error) {
 	// make a call to Authz service to check for a user
 	rurl := fmt.Sprintf(
 		"%s/oauth/authorize?client_id=%s&response_type=code",
-		_oreConfig.Services.AuthzURL,
-		_oreConfig.Authz.ClientId)
+		_srvConfig.Services.AuthzURL,
+		_srvConfig.Authz.ClientID)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -64,9 +64,9 @@ func getToken(login, pass string) (string, error) {
 	var aToken authz.Token
 	rurl = fmt.Sprintf(
 		"%s/oauth/token?client_id=%s&client_secret=%s&grant_type=client_credentials&scope=read",
-		_oreConfig.Services.AuthzURL,
-		_oreConfig.Authz.ClientId,
-		_oreConfig.Authz.ClientSecret)
+		_srvConfig.Services.AuthzURL,
+		_srvConfig.Authz.ClientID,
+		_srvConfig.Authz.ClientSecret)
 
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
@@ -91,7 +91,7 @@ func getToken(login, pass string) (string, error) {
 	}
 
 	// validate our token
-	var jwtKey = []byte(_oreConfig.Authz.ClientId)
+	var jwtKey = []byte(_srvConfig.Authz.ClientID)
 	claims := &authz.Claims{}
 	tkn, err := jwt.ParseWithClaims(reqToken, claims, func(token *jwt.Token) (any, error) {
 		return jwtKey, nil
@@ -144,17 +144,28 @@ func accessToken() (string, error) {
 	return getToken(user, pass)
 }
 
+// helper function to provide usage of meta option
+func authUsage() {
+	fmt.Println("client auth kerberos")
+	fmt.Println("client auth token")
+}
 func authCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "token",
-		Short: "client token command",
-		Long: `client token command
+		Use:   "auth",
+		Short: "client auth command",
+		Long: `client auth command
                 Complete documentation is available at https://www.lepp.cornell.edu/CHESSComputing/documentation/`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if token, err := accessToken(); err == nil {
-				fmt.Println(token)
+			if len(args) == 0 {
+				authUsage()
+			} else if args[0] == "token" {
+				token, err := accessToken()
+				fmt.Println(token, err)
+			} else if args[0] == "ticket" {
+				ticket := getKerberosTicket(args[1])
+				fmt.Println(string(ticket))
 			} else {
-				fmt.Println("ERROR", err)
+				fmt.Println("ERROR")
 			}
 		},
 	}
