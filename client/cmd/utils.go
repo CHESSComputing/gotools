@@ -33,7 +33,7 @@ func accessToken() (string, error) {
 // helper function to obtain write access token
 func writeToken() (string, error) {
 	if _httpWriteRequest.Token == "" {
-		token := utils.WriteToken(os.Getenv("CHESS_WRITE_TOKEN"))
+		token := utils.ReadToken(os.Getenv("CHESS_WRITE_TOKEN"))
 		if token == "" {
 			exit("Please obtain write access token and put it into CHESS_WRITE_TOKEN env or file", nil)
 		}

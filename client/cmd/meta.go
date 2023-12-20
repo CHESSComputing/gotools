@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 
+	"github.com/CHESSComputing/golib/mongo"
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
@@ -48,8 +50,30 @@ func metadata(site string) MetaDataRecord {
 	return results
 }
 
-func getMeta(site string) ([]MetaData, error) {
-	var records []MetaData
+func getMeta(query string) ([]mongo.Record, error) {
+	var records []mongo.Record
+	rec := make(map[string]string)
+	rec["query"] = query
+	rec["user"] = "cli"
+	rec["client"] = "cli"
+	data, err := json.Marshal(rec)
+	rurl := fmt.Sprintf("%s/search", _srvConfig.Services.MetaDataURL)
+	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		exit("unable to fetch data from meta-data service", err)
+	}
+	defer resp.Body.Close()
+	data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		exit("unable to read data from meta-data service", err)
+	}
+
+	var response services.ServiceStatus
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		exit("Unable to unmarshal the data", err)
+	}
+	records = response.Response.Records
 	return records, nil
 }
 
@@ -149,18 +173,19 @@ func metaDeleteRecord(args []string) {
 }
 
 // helper funtion to list meta-data records
-func metaListRecord(site string) {
-	records, err := getMeta(site)
+func metaListRecord(spec string) {
+	records, err := getMeta(spec)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
 	for _, r := range records {
 		fmt.Println("---")
-		fmt.Printf("ID         : %s\n", r.ID)
-		fmt.Printf("Tags       : %v\n", r.Tags)
-		fmt.Printf("Bucket     : %v\n", r.Bucket)
-		fmt.Printf("Description: %s\n", r.Description)
+		fmt.Println(r)
+		//         fmt.Printf("ID         : %s\n", r.ID)
+		//         fmt.Printf("Tags       : %v\n", r.Tags)
+		//         fmt.Printf("Bucket     : %v\n", r.Bucket)
+		//         fmt.Printf("Description: %s\n", r.Description)
 	}
 }
 
@@ -174,14 +199,17 @@ func metaCommand() *cobra.Command {
 			if len(args) == 0 {
 				metaUsage()
 			} else if args[0] == "ls" {
+				accessToken()
 				if len(args) == 2 {
 					metaListRecord(args[1])
 				} else {
 					metaListRecord("")
 				}
 			} else if args[0] == "add" {
+				writeToken()
 				metaAddRecord(args)
 			} else if args[0] == "rm" {
+				writeToken()
 				metaDeleteRecord(args)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
