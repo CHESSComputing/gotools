@@ -162,8 +162,15 @@ func authCommand() *cobra.Command {
 				token, err := accessToken()
 				fmt.Println(token, err)
 			} else if args[0] == "ticket" {
-				ticket := getKerberosTicket(args[1])
-				fmt.Println(string(ticket))
+				fname := args[1]
+				user, ticket := getKerberosTicket(fname)
+				rec := authz.Kerberos{
+					User:     user,
+					FileName: fname,
+					Ticket:   ticket,
+				}
+				fmt.Printf("Kerberos: %+v", rec)
+				// TODO: send rec as JSON to /oath/kclient
 			} else {
 				fmt.Println("ERROR")
 			}

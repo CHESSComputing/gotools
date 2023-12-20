@@ -52,7 +52,7 @@ func kuserFromCache(cacheFile string) (*credentials.Credentials, error) {
 
 }
 
-func userTicket() []byte {
+func userTicket() (string, []byte) {
 	// get user login/password
 	user, password := userPassword()
 	fname := fmt.Sprintf("krb5_%d_%v", os.Getuid(), time.Now().Unix())
@@ -89,11 +89,11 @@ func userTicket() []byte {
 	if err != nil || len(ticket) == 0 {
 		exit("unable to read kerberos credentials", err)
 	}
-	return ticket
+	return user, ticket
 }
 
 // helper function to get kerberos ticket
-func getKerberosTicket(krbFile string) []byte {
+func getKerberosTicket(krbFile string) (string, []byte) {
 	if krbFile != "" {
 		// read krbFile and check user credentials
 		creds, err := kuserFromCache(krbFile)
@@ -108,7 +108,8 @@ func getKerberosTicket(krbFile string) []byte {
 		if err != nil {
 			exit("unable to read kerberos credentials", err)
 		}
-		return ticket
+		user := creds.UserName()
+		return user, ticket
 	}
 	return userTicket()
 }
