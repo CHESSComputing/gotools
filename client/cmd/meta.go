@@ -76,7 +76,7 @@ func metaAddRecord(args []string) {
 		os.Exit(1)
 	}
 	token, err := accessToken()
-	checkError(err)
+	exit("", err)
 	site := inputPrompt("Site name:")
 	description := inputPrompt("Site description:")
 	bucket := inputPrompt("Site bucket:")
@@ -91,17 +91,17 @@ func metaAddRecord(args []string) {
 		Tags:        tags,
 	}
 	data, err := json.Marshal(meta)
-	checkError(err)
+	exit("", err)
 	rurl := fmt.Sprintf("%s/meta", _srvConfig.Services.MetaDataURL)
 	req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
-	checkError(err)
+	exit("", err)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	checkError(err)
+	exit("", err)
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
-	checkError(err)
+	exit("", err)
 	var response services.ServiceStatus
 	err = json.Unmarshal(body, &response)
 	if err != nil {
@@ -123,17 +123,17 @@ func metaDeleteRecord(args []string) {
 	}
 	mid := args[1]
 	token, err := accessToken()
-	checkError(err)
+	exit("", err)
 	rurl := fmt.Sprintf("%s/meta/%s", _srvConfig.Services.MetaDataURL, mid)
 	req, err := http.NewRequest("DELETE", rurl, nil)
-	checkError(err)
+	exit("", err)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	checkError(err)
+	exit("", err)
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
-	checkError(err)
+	exit("", err)
 	var response services.ServiceStatus
 	err = json.Unmarshal(body, &response)
 	if err != nil {
@@ -168,9 +168,8 @@ func metaCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "meta",
 		Short: "client meta command",
-		Long: `client meta command
-	Complete documentation is available at https://client.com/documentation/`,
-		Args: cobra.MinimumNArgs(0),
+		Long:  "client meta-data command\n" + doc,
+		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				metaUsage()

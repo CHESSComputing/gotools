@@ -15,9 +15,8 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:   "client",
-		Short: "client command line client",
-		Long: `client command line client
-	Complete documentation is available at https://www.lepp.cornell.com/CHESComputing/`,
+		Short: "client command line tool",
+		Long:  "client command line tool\n" + doc,
 	}
 )
 

@@ -5,13 +5,9 @@ import (
 	"os"
 )
 
-func checkError(err error) {
-	if err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
-	}
-}
+var doc = "Complete documentation at http://www.lepp.cornell.edu/CHESSComputing"
 
+// helper function to exit with message and error
 func exit(msg string, err error) {
 	fmt.Println("ERROR", msg, err)
 	os.Exit(1)

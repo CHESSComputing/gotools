@@ -264,9 +264,8 @@ func s3Command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "s3",
 		Short: "client s3 command",
-		Long: `client s3 command
-	Complete documentation is available at https://www.lepp.cornell.edu/CHESSComputing/`,
-		Args: cobra.MinimumNArgs(0),
+		Long:  "client s3 command\n" + doc,
+		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				s3Usage()

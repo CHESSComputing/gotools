@@ -79,13 +79,13 @@ func dbsAddRecord(args []string) {
 	//         os.Exit(1)
 	//     }
 	token, err := accessToken()
-	checkError(err)
+	exit("", err)
 	// check if given args contains a file
 	lastArg := args[len(args)-1]
 	_, err = os.Stat(lastArg)
-	checkError(err)
+	exit("", err)
 	file, err := os.Open(lastArg)
-	checkError(err)
+	exit("", err)
 	defer file.Close()
 	data, err := io.ReadAll(file)
 	if err != nil {
@@ -94,21 +94,21 @@ func dbsAddRecord(args []string) {
 	}
 	var rec ResponseRecord
 	err = json.Unmarshal(data, &rec)
-	checkError(err)
+	exit("", err)
 
 	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
 	req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
-	checkError(err)
+	exit("", err)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	checkError(err)
+	exit("", err)
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
-	checkError(err)
+	exit("", err)
 	var response services.ServiceStatus
 	err = json.Unmarshal(body, &response)
-	checkError(err)
+	exit("", err)
 	if response.Status == "ok" {
 		fmt.Printf("SUCCESS: dbs record was successfully added\n")
 	} else {
@@ -135,9 +135,8 @@ func dbsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dbs",
 		Short: "client dbs command",
-		Long: `client data-bookkeeping system command
-                Complete documentation is available at https://www.lepp.cornell.edu/CHESSComputing/documentation/`,
-		Args: cobra.MinimumNArgs(0),
+		Long:  "client data-bookkeeping command\n" + doc,
+		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				dbsUsage()
