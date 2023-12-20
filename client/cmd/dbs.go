@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"strings"
 
@@ -21,7 +20,8 @@ func getData(rurl string) []DBSRecord {
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
-	resp, err := http.Get(rurl)
+	resp, err := _httpReadRequest.Get(rurl)
+	//     resp, err := http.Get(rurl)
 	if err != nil {
 		fmt.Println("ERROR:", err)
 		return results
@@ -74,15 +74,9 @@ type ResponseRecord struct {
 
 // helper function to add dataset information
 func dbsAddRecord(args []string) {
-	//     if len(args) != 1 {
-	//         dbsUsage()
-	//         os.Exit(1)
-	//     }
-	token, err := accessToken()
-	exit("", err)
 	// check if given args contains a file
 	lastArg := args[len(args)-1]
-	_, err = os.Stat(lastArg)
+	_, err := os.Stat(lastArg)
 	exit("", err)
 	file, err := os.Open(lastArg)
 	exit("", err)
@@ -97,12 +91,14 @@ func dbsAddRecord(args []string) {
 	exit("", err)
 
 	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
-	req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
-	exit("", err)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	exit("", err)
+	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+
+	//     req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
+	//     exit("", err)
+	//     req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	//     client := &http.Client{}
+	//     resp, err := client.Do(req)
+	//     exit("", err)
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	exit("", err)
@@ -141,10 +137,14 @@ func dbsCommand() *cobra.Command {
 			if len(args) == 0 {
 				dbsUsage()
 			} else if args[0] == "ls" {
+				// obtain valid access token
+				accessToken()
 				dbsListRecord(args)
 			} else if args[0] == "add" {
+				writeToken()
 				dbsAddRecord(args)
 			} else if args[0] == "rm" {
+				writeToken()
 				dbsDeleteRecord(args)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)

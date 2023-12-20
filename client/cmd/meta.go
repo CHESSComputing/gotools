@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strings"
 
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
@@ -75,44 +73,46 @@ func metaAddRecord(args []string) {
 		metaUsage()
 		os.Exit(1)
 	}
-	token, err := accessToken()
-	exit("", err)
-	site := inputPrompt("Site name:")
-	description := inputPrompt("Site description:")
-	bucket := inputPrompt("Site bucket:")
-	var tags []string
-	for _, r := range strings.Split(inputPrompt("Site tags (command separated):"), ",") {
-		tags = append(tags, strings.Trim(r, " "))
-	}
-	meta := MetaData{
-		Site:        site,
-		Description: description,
-		Bucket:      bucket,
-		Tags:        tags,
-	}
-	data, err := json.Marshal(meta)
-	exit("", err)
-	rurl := fmt.Sprintf("%s/meta", _srvConfig.Services.MetaDataURL)
-	req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
-	exit("", err)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	exit("", err)
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	exit("", err)
-	var response services.ServiceStatus
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		fmt.Println("ERROR", err, "response body", string(body))
-		os.Exit(1)
-	}
-	if response.Status == "ok" {
-		fmt.Printf("SUCCESS: record %+v was successfully added\n", meta)
-	} else {
-		fmt.Printf("WARNING: record %+v failed to be added MetaData service\n", meta)
-	}
+	/*
+		token, err := accessToken()
+		exit("", err)
+		site := inputPrompt("Site name:")
+		description := inputPrompt("Site description:")
+		bucket := inputPrompt("Site bucket:")
+		var tags []string
+		for _, r := range strings.Split(inputPrompt("Site tags (command separated):"), ",") {
+			tags = append(tags, strings.Trim(r, " "))
+		}
+		meta := MetaData{
+			Site:        site,
+			Description: description,
+			Bucket:      bucket,
+			Tags:        tags,
+		}
+		data, err := json.Marshal(meta)
+		exit("", err)
+		rurl := fmt.Sprintf("%s/meta", _srvConfig.Services.MetaDataURL)
+		req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
+		exit("", err)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		exit("", err)
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		exit("", err)
+		var response services.ServiceStatus
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			fmt.Println("ERROR", err, "response body", string(body))
+			os.Exit(1)
+		}
+		if response.Status == "ok" {
+			fmt.Printf("SUCCESS: record %+v was successfully added\n", meta)
+		} else {
+			fmt.Printf("WARNING: record %+v failed to be added MetaData service\n", meta)
+		}
+	*/
 }
 
 // helper function to delete meta-data record
