@@ -68,12 +68,12 @@ func getMeta(query string) ([]mongo.Record, error) {
 		exit("unable to read data from meta-data service", err)
 	}
 
-	var response services.ServiceStatus
+	var response services.ServiceResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		exit("Unable to unmarshal the data", err)
 	}
-	records = response.Response.Records
+	records = response.Results.Records
 	return records, nil
 }
 
@@ -84,7 +84,7 @@ func metaUsage() {
 	fmt.Println("\n# list all meta data records:")
 	fmt.Println("client meta ls")
 	fmt.Println("\n# list specific meta-data record:")
-	fmt.Println("client meta ls 123xyz")
+	fmt.Println("client meta view <DID>")
 	fmt.Println("\n# remove meta-data record:")
 	fmt.Println("client meta rm 123xyz")
 	fmt.Println("\n# add meta-data record:")
@@ -125,7 +125,7 @@ func metaAddRecord(args []string) {
 		defer resp.Body.Close()
 		body, err := io.ReadAll(resp.Body)
 		exit("", err)
-		var response services.ServiceStatus
+		var response services.ServiceResponse
 		err = json.Unmarshal(body, &response)
 		if err != nil {
 			fmt.Println("ERROR", err, "response body", string(body))
@@ -158,7 +158,7 @@ func metaDeleteRecord(args []string) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	exit("", err)
-	var response services.ServiceStatus
+	var response services.ServiceResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		fmt.Println("ERROR", err, "response body", string(body))
@@ -181,11 +181,33 @@ func metaListRecord(spec string) {
 	}
 	for _, r := range records {
 		fmt.Println("---")
-		fmt.Println(r)
-		//         fmt.Printf("ID         : %s\n", r.ID)
-		//         fmt.Printf("Tags       : %v\n", r.Tags)
-		//         fmt.Printf("Bucket     : %v\n", r.Bucket)
-		//         fmt.Printf("Description: %s\n", r.Description)
+		val := r["did"]
+		did := fmt.Sprintf("%d", int64(val.(float64)))
+		fmt.Printf("DID     : %v\n", did)
+		fmt.Printf("Schema  : %v\n", r["Schema"])
+		fmt.Printf("Cycle   : %v\n", r["Cycle"])
+		fmt.Printf("Beamline: %v\n", r["Beamline"])
+		fmt.Printf("BTR     : %v\n", r["BTR"])
+		fmt.Printf("Sample  : %v\n", r["Sample"])
+		fmt.Println(fmt.Sprintf("%f", val), int64(val.(float64)), did)
+	}
+}
+
+// helper function to print meta data records in Json format
+func metaJsonRecord(did string) {
+	query := "did:" + did
+	records, err := getMeta(query)
+	if err != nil {
+		fmt.Println("ERROR", err)
+		os.Exit(1)
+	}
+	for _, r := range records {
+		fmt.Println("---")
+		data, err := json.MarshalIndent(r, "", "  ")
+		if err != nil {
+			exit("unable to marshal data", err)
+		}
+		fmt.Println(string(data))
 	}
 }
 
@@ -204,6 +226,13 @@ func metaCommand() *cobra.Command {
 					metaListRecord(args[1])
 				} else {
 					metaListRecord("")
+				}
+			} else if args[0] == "view" {
+				accessToken()
+				if len(args) == 2 {
+					metaJsonRecord(args[1])
+				} else {
+					metaJsonRecord("")
 				}
 			} else if args[0] == "add" {
 				writeToken()

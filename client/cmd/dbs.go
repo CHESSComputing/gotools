@@ -102,7 +102,7 @@ func dbsAddRecord(args []string) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	exit("", err)
-	var response services.ServiceStatus
+	var response services.ServiceResponse
 	err = json.Unmarshal(body, &response)
 	exit("", err)
 	if response.Status == "ok" {

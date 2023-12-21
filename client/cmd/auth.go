@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	authz "github.com/CHESSComputing/golib/authz"
 	services "github.com/CHESSComputing/golib/services"
+	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -54,6 +56,22 @@ func requestToken(fname string) (string, error) {
 	return token, errors.New(msg)
 }
 
+func inspectToken() {
+	token := utils.ReadToken(os.Getenv("CHESS_TOKEN"))
+	fmt.Println("token", token)
+	claims := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+	rclaims := claims.RegisteredClaims
+	//     fmt.Println("ID       : ", rclaims.ID)
+	//     fmt.Println("Issuer   : ", rclaims.Issuer)
+	fmt.Println("Subject  : ", rclaims.Subject)
+	fmt.Println("Audience : ", rclaims.Audience)
+	fmt.Println("ExpiresAt: ", rclaims.ExpiresAt)
+	//	fmt.Println("NotBefore: ", rclaims.NotBefore)
+	//	fmt.Println("IssuedAt : ", rclaims.IssuedAt)
+	//
+	// log.Printf("claims:\n%+v", claims)
+}
+
 func authCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth",
@@ -63,13 +81,17 @@ func authCommand() *cobra.Command {
 			if len(args) == 0 {
 				authUsage()
 			} else if args[0] == "token" {
-				fname := args[1]
-				token, err := requestToken(fname)
+				attr := args[1]
+				if attr == "view" || attr == "inspect" {
+					inspectToken()
+					return
+				}
+				token, err := requestToken(attr)
 				if err != nil {
 					exit("unable to get valid token", err)
 				}
 				fmt.Println("token", token)
-				fmt.Println("Please put it into CHESS_TOKEN env variable to re-use in other comands")
+				fmt.Println("Please put it into CHESS_TOKEN env variable to re-use in other commands")
 			} else {
 				fmt.Println("ERROR")
 			}
