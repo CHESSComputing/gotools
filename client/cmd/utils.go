@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	authz "github.com/CHESSComputing/golib/authz"
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/CHESSComputing/golib/utils"
 )
@@ -28,6 +29,18 @@ func accessToken() (string, error) {
 		_httpReadRequest.Token = token
 	}
 	return _httpReadRequest.Token, nil
+}
+
+// helper function to get user and token
+func getUserToken() (string, string) {
+	token, err := accessToken()
+	if err != nil {
+		exit("unable to get access token", err)
+	}
+	claims := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+	rclaims := claims.RegisteredClaims
+	user := rclaims.Subject
+	return user, token
 }
 
 // helper function to obtain write access token

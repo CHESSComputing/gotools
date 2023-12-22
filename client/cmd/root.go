@@ -39,9 +39,11 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
 
 	rootCmd.AddCommand(metaCommand())
+	rootCmd.AddCommand(searchCommand())
 	rootCmd.AddCommand(dbsCommand())
 	rootCmd.AddCommand(authCommand())
 	rootCmd.AddCommand(s3Command())
+	rootCmd.AddCommand(viewCommand())
 }
 
 func initConfig() {

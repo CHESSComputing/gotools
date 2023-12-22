@@ -58,7 +58,7 @@ func requestToken(fname string) (string, error) {
 
 func inspectToken() {
 	token := utils.ReadToken(os.Getenv("CHESS_TOKEN"))
-	fmt.Println("token", token)
+	fmt.Println(token)
 	claims := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 	rclaims := claims.RegisteredClaims
 	//     fmt.Println("ID       : ", rclaims.ID)
@@ -90,8 +90,8 @@ func authCommand() *cobra.Command {
 				if err != nil {
 					exit("unable to get valid token", err)
 				}
-				fmt.Println("token", token)
-				fmt.Println("Please put it into CHESS_TOKEN env variable to re-use in other commands")
+				fmt.Println(token)
+				fmt.Println("\nPlease put it into CHESS_TOKEN env variable to re-use in other commands")
 			} else {
 				fmt.Println("ERROR")
 			}

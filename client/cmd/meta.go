@@ -50,12 +50,13 @@ func metadata(site string) MetaDataRecord {
 	return results
 }
 
-func getMeta(query string) ([]mongo.Record, error) {
+func getMeta(user, query string) ([]mongo.Record, error) {
 	var records []mongo.Record
-	rec := make(map[string]string)
-	rec["query"] = query
-	rec["user"] = "cli"
-	rec["client"] = "cli"
+	rec := services.ServiceRequest{
+		Client:       "client",
+		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1},
+	}
+
 	data, err := json.Marshal(rec)
 	rurl := fmt.Sprintf("%s/search", _srvConfig.Services.MetaDataURL)
 	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
@@ -173,8 +174,8 @@ func metaDeleteRecord(args []string) {
 }
 
 // helper funtion to list meta-data records
-func metaListRecord(spec string) {
-	records, err := getMeta(spec)
+func metaListRecord(user, spec string) {
+	records, err := getMeta(user, spec)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -189,14 +190,17 @@ func metaListRecord(spec string) {
 		fmt.Printf("Beamline: %v\n", r["Beamline"])
 		fmt.Printf("BTR     : %v\n", r["BTR"])
 		fmt.Printf("Sample  : %v\n", r["Sample"])
-		fmt.Println(fmt.Sprintf("%f", val), int64(val.(float64)), did)
+		//         fmt.Printf("%+v", r)
 	}
+	fmt.Println("---")
+	fmt.Println("Total   :", len(records), "records")
+
 }
 
 // helper function to print meta data records in Json format
-func metaJsonRecord(did string) {
+func metaJsonRecord(user, did string) {
 	query := "did:" + did
-	records, err := getMeta(query)
+	records, err := getMeta(user, query)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -221,18 +225,18 @@ func metaCommand() *cobra.Command {
 			if len(args) == 0 {
 				metaUsage()
 			} else if args[0] == "ls" {
-				accessToken()
+				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaListRecord(args[1])
+					metaListRecord(user, args[1])
 				} else {
-					metaListRecord("")
+					metaListRecord(user, "")
 				}
 			} else if args[0] == "view" {
-				accessToken()
+				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaJsonRecord(args[1])
+					metaJsonRecord(user, args[1])
 				} else {
-					metaJsonRecord("")
+					metaJsonRecord(user, "")
 				}
 			} else if args[0] == "add" {
 				writeToken()
