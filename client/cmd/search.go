@@ -57,7 +57,15 @@ func searchListRecord(user, spec string) {
 	for _, r := range records {
 		fmt.Println("---")
 		val := r["did"]
-		did := fmt.Sprintf("%d", int64(val.(float64)))
+		var did string
+		switch vvv := val.(type) {
+		case float64:
+			did = fmt.Sprintf("%d", int64(val.(float64)))
+		case int64, int32, int:
+			did = fmt.Sprintf("%d", int64(val.(int64)))
+		default:
+			did = vvv.(string)
+		}
 		fmt.Printf("DID     : %v\n", did)
 		fmt.Printf("Schema  : %v\n", r["Schema"])
 		fmt.Printf("Cycle   : %v\n", r["Cycle"])

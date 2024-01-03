@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	dbs "github.com/CHESSComputing/DataBookkeeping/dbs"
-	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
 
@@ -56,12 +55,21 @@ func dbsListRecord(args []string) {
 	if len(args) == 1 {
 		fmt.Println("WARNING: please provide dbs attribute")
 		os.Exit(1)
-	}
-	if args[1] == "datasets" {
+	} else if args[1] == "datasets" {
 		rurl := fmt.Sprintf("%s/datasets", _srvConfig.Services.DataBookkeepingURL)
 		for _, rec := range getData(rurl) {
 			printResults(rec)
 		}
+		//     } else if args[1] == "files" {
+		//         rurl := fmt.Sprintf("%s/files", _srvConfig.Services.DataBookkeepingURL)
+		//         for _, rec := range getData(rurl) {
+		//             printResults(rec)
+		//         }
+		//     } else if args[1] == "buckets" {
+		//         rurl := fmt.Sprintf("%s/buckets", _srvConfig.Services.DataBookkeepingURL)
+		//         for _, rec := range getData(rurl) {
+		//             printResults(rec)
+		//         }
 	} else {
 		fmt.Println("Not implemented yet")
 	}
@@ -92,15 +100,17 @@ func dbsAddRecord(args []string) {
 	exit("", err)
 
 	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
-	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	exit("", err)
-	var response services.ServiceResponse
-	err = json.Unmarshal(body, &response)
-	exit("", err)
-	if response.Status == "ok" {
+	//     defer resp.Body.Close()
+	//     body, err := io.ReadAll(resp.Body)
+	//     exit("", err)
+	//     fmt.Printf("#### dbs returni body='%s' response %+v", string(body), resp)
+	//     var response services.ServiceResponse
+	//     err = json.Unmarshal(body, &response)
+	//     exit("", err)
+	//     if response.Status == "ok" {
+	if resp.StatusCode == 200 {
 		fmt.Printf("SUCCESS: dbs record was successfully added\n")
 	} else {
 		fmt.Printf("WARNING: dbs record failed to be added dbs service\n")
@@ -125,8 +135,8 @@ func dbsUsage() {
 func dbsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dbs",
-		Short: "client dbs command",
-		Long:  "client data-bookkeeping command\n" + doc,
+		Short: "client provenance (dbs) commands",
+		Long:  "client provenance data-bookkeeping system (dbs) commands\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {

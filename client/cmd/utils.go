@@ -15,8 +15,10 @@ var _httpReadRequest, _httpWriteRequest *services.HttpRequest
 
 // helper function to exit with message and error
 func exit(msg string, err error) {
-	fmt.Println("ERROR", msg, err)
-	os.Exit(1)
+	if err != nil {
+		fmt.Println("ERROR", msg, err)
+		os.Exit(1)
+	}
 }
 
 // helper function to obtain read access token

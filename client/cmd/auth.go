@@ -75,8 +75,8 @@ func inspectToken() {
 func authCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth",
-		Short: "client auth command",
-		Long:  "client auth command\n" + doc,
+		Short: "client authentication/authorization commands",
+		Long:  "client authentication/authorization commands\n" + doc,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				authUsage()

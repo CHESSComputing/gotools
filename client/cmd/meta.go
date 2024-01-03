@@ -50,6 +50,7 @@ func metadata(site string) MetaDataRecord {
 	return results
 }
 
+// helper function to get meta-data records
 func getMeta(user, query string) ([]mongo.Record, error) {
 	var records []mongo.Record
 	rec := services.ServiceRequest{
@@ -89,55 +90,62 @@ func metaUsage() {
 	fmt.Println("\n# remove meta-data record:")
 	fmt.Println("client meta rm 123xyz")
 	fmt.Println("\n# add meta-data record:")
-	fmt.Println("client meta add")
+	fmt.Println("client meta add <schema> <file.json>")
 }
 
 // helper function to add meta data record
 func metaAddRecord(args []string) {
-	if len(args) != 1 {
+	if len(args) == 1 {
+		fmt.Println("manual insertion is not implemented yet")
 		metaUsage()
 		os.Exit(1)
 	}
-	/*
-		token, err := accessToken()
-		exit("", err)
-		site := inputPrompt("Site name:")
-		description := inputPrompt("Site description:")
-		bucket := inputPrompt("Site bucket:")
-		var tags []string
-		for _, r := range strings.Split(inputPrompt("Site tags (command separated):"), ",") {
-			tags = append(tags, strings.Trim(r, " "))
-		}
-		meta := MetaData{
-			Site:        site,
-			Description: description,
-			Bucket:      bucket,
-			Tags:        tags,
-		}
-		data, err := json.Marshal(meta)
-		exit("", err)
-		rurl := fmt.Sprintf("%s/meta", _srvConfig.Services.MetaDataURL)
-		req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
-		exit("", err)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		exit("", err)
-		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
-		exit("", err)
-		var response services.ServiceResponse
-		err = json.Unmarshal(body, &response)
-		if err != nil {
-			fmt.Println("ERROR", err, "response body", string(body))
-			os.Exit(1)
-		}
-		if response.Status == "ok" {
-			fmt.Printf("SUCCESS: record %+v was successfully added\n", meta)
+	if len(args) != 3 {
+		metaUsage()
+		os.Exit(1)
+	}
+	// user must provide client meta add schema file.json
+	schemaName := args[1]
+	fname := args[2]
+
+	// check if given fname is a file
+	_, err := os.Stat(fname)
+	exit("unable to check file stat", err)
+	file, err := os.Open(fname)
+	exit("unable to open file", err)
+	defer file.Close()
+	data, err := io.ReadAll(file)
+	exit("unable to read file", err)
+	var record mongo.Record
+	err = json.Unmarshal(data, &record)
+	exit("unable to unmarshal data", err)
+
+	// we need to create /meta/file/upload call using URL form
+	var mrec services.MetaRecord
+	mrec.Schema = schemaName
+	mrec.Record = record
+	data, err = json.MarshalIndent(mrec, "", "  ")
+	exit("unable to marshal data", err)
+	rurl := fmt.Sprintf("%s", _srvConfig.Services.MetaDataURL)
+	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	exit("unable to fetch data from meta-data service", err)
+	defer resp.Body.Close()
+	data, err = io.ReadAll(resp.Body)
+	exit("unable to read data from meta-data service", err)
+
+	var response services.ServiceResponse
+	err = json.Unmarshal(data, &response)
+	exit("Unable to unmarshal the data", err)
+	if response.Status == "ok" {
+		fmt.Printf("SUCCESS: record was successfully added\n")
+	} else {
+		// check if we got middleware error
+		if response.HttpCode == 0 {
+			fmt.Printf("WARNING: %s", string(data))
 		} else {
-			fmt.Printf("WARNING: record %+v failed to be added MetaData service\n", meta)
+			fmt.Printf("WARNING: failed to add record to MetaData service\n%+v", response)
 		}
-	*/
+	}
 }
 
 // helper function to delete meta-data record
@@ -218,8 +226,8 @@ func metaJsonRecord(user, did string) {
 func metaCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "meta",
-		Short: "client meta command",
-		Long:  "client meta-data command\n" + doc,
+		Short: "client MetaData commands",
+		Long:  "client MetaData commands\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
