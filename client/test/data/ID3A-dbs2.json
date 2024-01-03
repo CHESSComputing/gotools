@@ -1,0 +1,14 @@
+{
+  "buckets": [
+    "siteXYZ"
+  ],
+  "dataset": "/x/y/z",
+  "files": [
+    "/x/y/z/file1.png",
+    "/x/y/z/file2.png",
+    "/x/y/z/file3.png"
+  ],
+  "meta_id": "xyz",
+  "processing": "glibc with some fancy code",
+  "site": "Cornell"
+}
