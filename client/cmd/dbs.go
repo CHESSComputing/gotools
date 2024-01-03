@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	dbs "github.com/CHESSComputing/DataBookkeeping/dbs"
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
@@ -86,19 +87,13 @@ func dbsAddRecord(args []string) {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
-	var rec ResponseRecord
+	var rec dbs.DatasetRecord
 	err = json.Unmarshal(data, &rec)
 	exit("", err)
 
 	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
 	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 
-	//     req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
-	//     exit("", err)
-	//     req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	//     client := &http.Client{}
-	//     resp, err := client.Do(req)
-	//     exit("", err)
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	exit("", err)
