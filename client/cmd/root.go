@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
@@ -53,4 +54,5 @@ func initConfig() {
 		os.Exit(1)
 	}
 	_srvConfig = &config
+	log.SetFlags(log.LstdFlags | log.Llongfile)
 }

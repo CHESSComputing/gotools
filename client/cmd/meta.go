@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
@@ -73,6 +74,7 @@ func getMeta(user, query string) ([]mongo.Record, error) {
 	var response services.ServiceResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
+		log.Println("response data", string(data))
 		exit("Unable to unmarshal the data", err)
 	}
 	records = response.Results.Records
@@ -135,6 +137,10 @@ func metaAddRecord(args []string) {
 
 	var response services.ServiceResponse
 	err = json.Unmarshal(data, &response)
+	if response.HttpCode == 0 {
+		// check if we receive plain gin error
+		fmt.Printf(string(data))
+	}
 	exit("Unable to unmarshal the data", err)
 	if response.Status == "ok" {
 		fmt.Printf("SUCCESS: record was successfully added\n")
