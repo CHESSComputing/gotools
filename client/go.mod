@@ -3,7 +3,7 @@ module github.com/CHESSComputing/gotools/client
 go 1.21.5
 
 require (
-	github.com/CHESSComputing/DataBookkeeping v0.0.0-20240103191031-55a1ac9ae677
+	github.com/CHESSComputing/DataBookkeeping v0.0.0-20240104185020-cf2415497274
 	github.com/CHESSComputing/golib v0.0.1
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.17.0
@@ -59,7 +59,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/exp v0.0.0-20231219180239-dc181d75b848 // indirect
+	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
