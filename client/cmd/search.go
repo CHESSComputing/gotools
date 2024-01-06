@@ -1,5 +1,9 @@
 package cmd
 
+// CHESComputing client tool: search module
+//
+// Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
+//
 import (
 	"bytes"
 	"encoding/json"
@@ -7,13 +11,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/CHESSComputing/golib/mongo"
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
 
-func metaRecords(user, query string) ([]mongo.Record, error) {
-	var records []mongo.Record
+func metaRecords(user, query string) ([]map[string]any, error) {
+	var records []map[string]any
 	rec := services.ServiceRequest{
 		Client:       "client",
 		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1},

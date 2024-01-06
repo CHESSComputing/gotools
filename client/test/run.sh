@@ -8,12 +8,12 @@ echo
 echo "get write token"
 token=`./client auth token write /tmp/krb5cc_502 | head -1`
 export CHESS_WRITE_TOKEN=$token
-echo "CHESS_WRITE_TOKEN=$CHESS_WRITE_TOKEN"
+# echo "CHESS_WRITE_TOKEN=$CHESS_WRITE_TOKEN"
 echo
 echo "get read token"
 token=`./client auth token /tmp/krb5cc_502 | head -1`
 export CHESS_TOKEN=$token
-echo "CHESS_TOKEN=$CHESS_TOKEN"
+# echo "CHESS_TOKEN=$CHESS_TOKEN"
 echo
 echo "view issued tokens"
 ./client auth token view

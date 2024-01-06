@@ -1,5 +1,9 @@
 package cmd
 
+// CHESComputing client tool: meta-data module
+//
+// Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
+//
 import (
 	"bytes"
 	"encoding/json"
@@ -9,7 +13,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/CHESSComputing/golib/mongo"
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
@@ -52,8 +55,8 @@ func metadata(site string) MetaDataRecord {
 }
 
 // helper function to get meta-data records
-func getMeta(user, query string) ([]mongo.Record, error) {
-	var records []mongo.Record
+func getMeta(user, query string) ([]map[string]any, error) {
+	var records []map[string]any
 	rec := services.ServiceRequest{
 		Client:       "client",
 		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1},
@@ -118,7 +121,7 @@ func metaAddRecord(args []string) {
 	defer file.Close()
 	data, err := io.ReadAll(file)
 	exit("unable to read file", err)
-	var record mongo.Record
+	var record map[string]any
 	err = json.Unmarshal(data, &record)
 	exit("unable to unmarshal data", err)
 
@@ -137,19 +140,15 @@ func metaAddRecord(args []string) {
 
 	var response services.ServiceResponse
 	err = json.Unmarshal(data, &response)
-	if response.HttpCode == 0 {
-		// check if we receive plain gin error
-		fmt.Printf(string(data))
-	}
 	exit("Unable to unmarshal the data", err)
 	if response.Status == "ok" {
 		fmt.Printf("SUCCESS: record was successfully added\n")
 	} else {
 		// check if we got middleware error
 		if response.HttpCode == 0 {
-			fmt.Printf("WARNING: %s", string(data))
+			fmt.Printf("ERROR: %s", string(data))
 		} else {
-			fmt.Printf("WARNING: failed to add record to MetaData service\n%+v", response)
+			fmt.Printf("ERROR: failed to add record to MetaData service\n%+v", response.String())
 		}
 	}
 }

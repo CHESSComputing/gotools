@@ -1,5 +1,9 @@
 package cmd
 
+// CHESComputing client tool: kerberos module
+//
+// Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
+//
 import (
 	"bufio"
 	"fmt"

@@ -1,5 +1,9 @@
 package cmd
 
+// CHESComputing client tool: s3 module
+//
+// Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
+//
 import (
 	"bytes"
 	"encoding/json"

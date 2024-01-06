@@ -1,5 +1,9 @@
 package cmd
 
+// CHESComputing client tool: auth module
+//
+// Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
+//
 import (
 	"bytes"
 	"encoding/json"
@@ -70,14 +74,16 @@ func inspectAllTokens() {
 
 func inspectToken(tkn string) {
 	token := utils.ReadToken(os.Getenv(tkn))
-	fmt.Println(tkn, token)
 	claims := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 	rclaims := claims.RegisteredClaims
+	fmt.Println()
+	fmt.Println("Read token   : ", tkn)
+	fmt.Println("AccessToken  : ", token)
 	fmt.Println("Issuer       : ", rclaims.Issuer)
 	fmt.Println("Subject      : ", rclaims.Subject)
 	fmt.Println("Audience     : ", rclaims.Audience)
 	fmt.Println("ExpiresAt    : ", rclaims.ExpiresAt)
-	fmt.Printf("Custom Claims: %+v", claims.CustomClaims)
+	fmt.Println("Custom Claims: ", claims.CustomClaims.String())
 }
 
 func authCommand() *cobra.Command {

@@ -1,5 +1,9 @@
 package cmd
 
+// CHESComputing client tool: root module
+//
+// Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
+//
 import (
 	"fmt"
 	"log"

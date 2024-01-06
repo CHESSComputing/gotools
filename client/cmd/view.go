@@ -1,5 +1,9 @@
 package cmd
 
+// CHESComputing client tool: view module
+//
+// Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
+//
 import (
 	"encoding/json"
 	"fmt"
