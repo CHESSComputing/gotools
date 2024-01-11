@@ -6,14 +6,11 @@ package cmd
 //
 import (
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"path/filepath"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 // helper function to provide usage of config option
@@ -30,20 +27,9 @@ func printConfig(args []string) {
 	if len(args) == 1 {
 		fname = args[0]
 	}
-	file, err := os.Open(fname)
+	config, err := srvConfig.ParseConfig(fname)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	data, err := io.ReadAll(file)
-	if err != nil {
-		fmt.Println("ERROR: unable to read config file: %s, error %v", fname, err)
-		os.Exit(1)
-	}
-	var config srvConfig.SrvConfig
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		fmt.Println("ERROR: unable to unmarshal data: %s, error %v", string(data), err)
+		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
 	fmt.Println(config.String())
