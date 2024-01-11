@@ -49,6 +49,7 @@ func init() {
 	rootCmd.AddCommand(authCommand())
 	rootCmd.AddCommand(s3Command())
 	rootCmd.AddCommand(viewCommand())
+	rootCmd.AddCommand(configCommand())
 }
 
 func initConfig() {
