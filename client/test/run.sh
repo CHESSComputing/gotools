@@ -21,7 +21,7 @@ echo "view issued tokens"
 echo
 echo "remove dbs.db"
 rm $ddir/dbs.db
-sqlite3 $ddir/dbs.db < $ddir/static/schema/sqlite-schema.sql
+sqlite3 $ddir/dbs.db < $ddir/static/schema/sqlite.sql
 
 echo
 echo "+++ Add new meta-data record $idir/ID3A-meta1.json"
