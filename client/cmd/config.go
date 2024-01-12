@@ -22,7 +22,7 @@ func printConfig(args []string) {
 	var fname string
 	home, err := os.UserHomeDir()
 	if err == nil {
-		fname = filepath.Join(home, ".srv.yaml")
+		fname = filepath.Join(home, ".foxden.yaml")
 	}
 	if len(args) == 1 {
 		fname = args[0]

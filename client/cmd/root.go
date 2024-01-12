@@ -40,7 +40,7 @@ func init() {
 	_httpReadRequest = services.NewHttpRequest("read", 0)
 	_httpWriteRequest = services.NewHttpRequest("write", 0)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.srv.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.foxden.yaml)")
 	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
 
 	rootCmd.AddCommand(metaCommand())
