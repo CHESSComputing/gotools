@@ -8,7 +8,6 @@ require (
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.18.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
-	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
@@ -62,7 +61,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/exp v0.0.0-20240110193028-0dcbfd608b1e // indirect
+	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
