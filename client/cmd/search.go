@@ -44,10 +44,10 @@ func metaRecords(user, query string) ([]map[string]any, error) {
 
 // helper function to provide usage of search option
 func searchUsage() {
-	fmt.Println("client search|view <spec>")
+	fmt.Println("client search <spec>")
 	fmt.Println("Examples:")
 	fmt.Println("\n# search CHESS data:")
-	fmt.Println("client search <spec>")
+	fmt.Println("client search {}")
 }
 
 // helper funtion to list search-data records
@@ -102,8 +102,8 @@ func searchJsonRecord(user, did string) {
 func searchCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "search",
-		Short: "client search command",
-		Long:  "client search-data command\n" + doc,
+		Short: "client search commands",
+		Long:  "client search commands\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			user, _ := getUserToken()
