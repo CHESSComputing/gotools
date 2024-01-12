@@ -43,7 +43,10 @@ func getUserToken() (string, string) {
 	if err != nil {
 		exit("unable to get access token", err)
 	}
-	claims := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+	claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+	if err != nil {
+		exit("unable to read token claims", err)
+	}
 	rclaims := claims.RegisteredClaims
 	user := rclaims.Subject
 	return user, token
