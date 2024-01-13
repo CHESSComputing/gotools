@@ -153,6 +153,7 @@ func authCommand() *cobra.Command {
 			} else if args[0] == "token" {
 				attr := args[1]
 				var token, tokenKind string
+				tokenEnv := "CHESS_TOKEN"
 				var err error
 				if attr == "view" {
 					inspectAllTokens(tkn)
@@ -160,19 +161,19 @@ func authCommand() *cobra.Command {
 				}
 				if attr == "write" {
 					tokenKind = "write"
+					tokenEnv = "CHESS_WRITE_TOKEN"
+				} else if attr == "delete" {
+					tokenKind = "delete"
+					tokenEnv = "CHESS_DELETE_TOKEN"
 				} else {
 					tokenKind = "read"
 				}
-				token, err = requestToken(attr, fname)
+				token, err = requestToken(tokenKind, fname)
 				if err != nil {
 					exit("unable to get valid token", err)
 				}
 				fmt.Println(token)
-				if tokenKind == "write" {
-					fmt.Println("\nSet CHESS_WRITE_TOKEN env variable with it to re-use in other commands")
-				} else {
-					fmt.Println("\nSet CHESS_TOKEN env variable with it to re-use in other commands")
-				}
+				fmt.Printf("\nSet %s env variable with it to re-use in other commands", tokenEnv)
 			} else {
 				fmt.Println("ERROR")
 			}
