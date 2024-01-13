@@ -3,8 +3,8 @@ module github.com/CHESSComputing/gotools/client
 go 1.21.6
 
 require (
-	github.com/CHESSComputing/DataBookkeeping v0.0.0-dev4
-	github.com/CHESSComputing/golib v0.0.6
+	github.com/CHESSComputing/DataBookkeeping v0.0.0-dev5
+	github.com/CHESSComputing/golib v0.0.7
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.18.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
