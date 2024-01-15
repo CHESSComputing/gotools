@@ -35,13 +35,12 @@ func Execute() error {
 var _srvConfig *srvConfig.SrvConfig
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
 	_httpReadRequest = services.NewHttpRequest("read", 0)
 	_httpWriteRequest = services.NewHttpRequest("write", 0)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.foxden.yaml)")
 	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
+	cobra.OnInitialize(initConfig)
 
 	rootCmd.AddCommand(metaCommand())
 	rootCmd.AddCommand(searchCommand())
@@ -49,6 +48,7 @@ func init() {
 	rootCmd.AddCommand(authCommand())
 	rootCmd.AddCommand(s3Command())
 	rootCmd.AddCommand(viewCommand())
+	rootCmd.AddCommand(syncCommand())
 	rootCmd.AddCommand(configCommand())
 }
 
