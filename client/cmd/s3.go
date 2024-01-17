@@ -53,34 +53,86 @@ func s3Usage() {
 // helper function to list content of a bucket on s3 storage
 func s3List(args []string) {
 	// args contains [ls bucket]
-	if len(args) != 2 {
-		fmt.Println("ERROR: wrong number of arguments")
-		os.Exit(1)
-	}
 	if args[0] != "ls" {
 		fmt.Println("ERROR: wrong action", args)
 		os.Exit(1)
 	}
-	bucketName := args[1]
-	fmt.Printf("INFO: list bucket %s\n", bucketName)
+	var bucketName string
+	rurl := fmt.Sprintf("%s/storage", _srvConfig.Services.DataManagementURL)
+	if len(args) > 1 {
+		bucketName = args[1]
+		rurl = fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
+	}
 
-	var results StorageRecord
-	rurl := fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
-	resp, err := http.Get(rurl)
+	resp, err := _httpReadRequest.Get(rurl)
 	if err != nil {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
+	var results StorageRecord
 	if err := dec.Decode(&results); err != nil {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
-	fmt.Printf("results: %+v\n", results)
+	data := results.Data
+	switch v := data.(type) {
+	case map[string]any:
+		printMap(v)
+	case []any:
+		for _, rec := range v {
+			switch vvv := rec.(type) {
+			case map[string]any:
+				printMap(vvv)
+			default:
+				fmt.Println("%+v %T", vvv, vvv)
+			}
+		}
+	default:
+		fmt.Println(v)
+	}
+	// fmt.Printf("results: %+v %T\n", results.Data, results.Data)
+}
+
+func keyPad(key string, maxLen int) string {
+	if len(key) < maxLen {
+		pad := maxLen - len(key)
+		for i := 0; i < pad; i++ {
+			key += " "
+		}
+	}
+	return key
+}
+
+// helper function to print map entries
+func printMap(m map[string]any) {
+	maxLen := 20
+	for k, v := range m {
+		key := keyPad(k, maxLen)
+		switch vvv := v.(type) {
+		case map[string]any:
+			printMap(vvv)
+		case []any:
+			for _, rec := range vvv {
+				switch vvv := rec.(type) {
+				case string:
+					fmt.Printf("%s: %s\n", key, vvv)
+				case map[string]any:
+					printMap(vvv)
+				default:
+					fmt.Printf("%s: %+v\n", key, vvv)
+				}
+			}
+		case string:
+			fmt.Printf("%s: %s\n", key, vvv)
+		default:
+			fmt.Printf("%s: %+v\n", key, vvv)
+		}
+	}
 }
 
 // helper function to create new bucket on s3 storage
@@ -101,7 +153,7 @@ func s3Create(args []string) {
 	if verbose > 0 {
 		fmt.Println("HTTP POST", rurl)
 	}
-	resp, err := http.Post(rurl, "", nil)
+	resp, err := _httpWriteRequest.Post(rurl, "", nil)
 	if err != nil {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
@@ -205,6 +257,8 @@ func s3Upload(args []string) {
 			os.Exit(1)
 		}
 		req.Header.Set("Content-Type", w.FormDataContentType())
+		accessToken := os.Getenv("CHESS_WRITE_TOKEN")
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 		client := http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
@@ -245,6 +299,8 @@ func s3Delete(args []string) {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
+	accessToken := os.Getenv("CHESS_DELETE_TOKEN")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -274,12 +330,16 @@ func s3Command() *cobra.Command {
 			if len(args) == 0 {
 				s3Usage()
 			} else if args[0] == "ls" {
+				accessToken()
 				s3List(args)
 			} else if args[0] == "create" {
+				writeToken()
 				s3Create(args)
 			} else if args[0] == "delete" {
+				deleteToken()
 				s3Delete(args)
 			} else if args[0] == "upload" {
+				writeToken()
 				s3Upload(args)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v\n", args)
