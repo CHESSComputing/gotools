@@ -15,7 +15,7 @@ import (
 
 var doc = "Complete documentation at http://www.lepp.cornell.edu/CHESSComputing"
 
-var _httpReadRequest, _httpWriteRequest *services.HttpRequest
+var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpRequest
 
 // helper function to exit with message and error
 func exit(msg string, err error) {
@@ -62,4 +62,16 @@ func writeToken() (string, error) {
 		_httpWriteRequest.Token = token
 	}
 	return _httpWriteRequest.Token, nil
+}
+
+// helper function to obtain delete access token
+func deleteToken() (string, error) {
+	if _httpDeleteRequest.Token == "" {
+		token := utils.ReadToken(os.Getenv("CHESS_DELETE_TOKEN"))
+		if token == "" {
+			exit("Please obtain delete access token and put it into CHESS_DELETE_TOKEN env or file", nil)
+		}
+		_httpDeleteRequest.Token = token
+	}
+	return _httpDeleteRequest.Token, nil
 }
