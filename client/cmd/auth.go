@@ -151,7 +151,10 @@ func authCommand() *cobra.Command {
 			if len(args) == 0 {
 				fmt.Print(authUsage())
 			} else if args[0] == "token" {
-				attr := args[1]
+				attr := "read"
+				if len(args) > 1 {
+					attr = args[1]
+				}
 				var token, tokenKind string
 				tokenEnv := "CHESS_TOKEN"
 				var err error
