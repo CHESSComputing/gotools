@@ -36,7 +36,7 @@ type UploadRecord struct {
 func s3Usage() {
 	fmt.Println("client s3 <ls|create|delete|upload> [value]")
 	fmt.Println("Examples:")
-	fmt.Println("\n# create mew nuicket:")
+	fmt.Println("\n# create new bucket:")
 	fmt.Println("client s3 create Cornell/bucket")
 	fmt.Println("\n# remove bucket or file:")
 	fmt.Println("client s3 delete Cornell/bucket")
