@@ -37,6 +37,7 @@ var _srvConfig *srvConfig.SrvConfig
 func init() {
 	_httpReadRequest = services.NewHttpRequest("read", 0)
 	_httpWriteRequest = services.NewHttpRequest("write", 0)
+	_httpDeleteRequest = services.NewHttpRequest("delete", 0)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.foxden.yaml)")
 	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
