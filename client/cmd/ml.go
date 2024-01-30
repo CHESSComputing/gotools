@@ -20,20 +20,14 @@ func mlUsage() {
 	fmt.Println("\n# upload new ML model:")
 	fmt.Println("client ml upload file=/path/file.tar.gz model=model type=TensorFlow backend=GoFake")
 	fmt.Println("\n# delete model:")
-	fmt.Println("client ml delete model=model type=TensorFlow")
+	fmt.Println("client ml delete model=model type=TensorFlow <version=latest>")
 	fmt.Println("\n# ML inference:")
 	fmt.Println("client ml predict /path/input.json")
 }
 
-// helper function to list content of a bucket on ml storage
-func mlModels(args []string) {
-	// args contains [ls bucket]
-	if args[0] != "ls" {
-		fmt.Println("ERROR: wrong action", args)
-		os.Exit(1)
-	}
-	rurl := fmt.Sprintf("%s/models", _srvConfig.Services.MLHubURL)
-
+// helper function to get ML data from MLHub
+func mlGet(endpoint string, args []string) {
+	rurl := fmt.Sprintf("%s/%s", _srvConfig.Services.MLHubURL, endpoint)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -44,29 +38,78 @@ func mlModels(args []string) {
 	}
 	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
-	var results map[string]any
+	var results []map[string]any
 	if err := dec.Decode(&results); err != nil {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
-	printMap(results)
+	for _, rec := range results {
+		printMap(rec)
+	}
+}
+
+// helper function to list content of a bucket on ml storage
+func mlModels(args []string) {
+	if args[0] != "models" {
+		fmt.Println("ERROR: wrong action", args)
+		os.Exit(1)
+	}
+	// curl http://localhost:8350/models
+	mlGet("models", args)
 }
 
 // helper function to create new bucket on ml storage
 func mlPredict(args []string) {
-	// args contains [create bucket]
-	if len(args) != 2 {
-		fmt.Println("ERROR: wrong number of arguments")
-		os.Exit(1)
-	}
+	// curl http://localhost:8350/predict -v -X POST -H "Authorization: bearer $token" -H "Accept: application/json" -H "Content-type: application/json" -d '{"input":[1,2,3], "model": "model", "type": "TensorFlow", "backend": "GoFake"}'
 	if args[0] != "predict" {
 		fmt.Println("ERROR: wrong action", args)
 		os.Exit(1)
 	}
+	fname := args[1]
+	file, err := os.Open(fname)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
+	}
+	defer file.Close()
+	data, err := io.ReadAll(file)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
+	}
+
+	rurl := fmt.Sprintf("%s/predict", _srvConfig.Services.MLHubURL)
+	if verbose > 0 {
+		fmt.Println("HTTP POST", rurl)
+	}
+	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
+	}
+	defer resp.Body.Close()
+	data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
+	}
+	fmt.Println("MLHub response:")
+	fmt.Println(string(data))
+
+	// dec := json.NewDecoder(resp.Body)
+	// var results map[string]any
+	//
+	//	if err := dec.Decode(&results); err != nil {
+	//	    fmt.Println("ERROR:", err)
+	//	    os.Exit(1)
+	//	}
+	//
+	// printMap(results)
 }
 
 // helper function to upload file or directory to bucket on ml storage
 func mlUpload(args []string) {
+	// curl http://localhost:8350/upload -v -X POST -H "Authorization: bearer $t" -F 'file=@/Users/vk/Downloads/DataBookkeeping_Darwin_arm64.tar.gz' -F 'model=model' -F 'type=TensorFlow' -F 'backend=GoFake'
 	// get values for them from args
 	var fname string
 	params := make(map[string]string)
@@ -76,19 +119,12 @@ func mlUpload(args []string) {
 		}
 		key := strings.Trim(k, " ")
 		a := strings.Split(key, "=")
-		if key == "file=" {
+		if a[0] == "file" {
 			fname = a[1]
-		} else if key == "model=" {
-			params["model"] = a[1]
-		} else if key == "type=" {
-			params["type"] = a[1]
-		} else if key == "backend=" {
-			params["backend"] = a[1]
+		} else {
+			params[a[0]] = a[1]
 		}
-
 	}
-
-	// curl http://localhost:8350/upload -v -X POST -H "Authorization: bearer $t" -F 'file=@/Users/vk/Downloads/DataBookkeeping_Darwin_arm64.tar.gz' -F 'model=model' -F 'type=TensorFlow' -F 'backend=GoFake'
 	fmt.Printf("INFO: upload %s\n", fname)
 	rurl := fmt.Sprintf("%s/upload", _srvConfig.Services.MLHubURL)
 	if verbose > 0 {
@@ -108,6 +144,7 @@ func mlUpload(args []string) {
 	var buf bytes.Buffer
 	var formErrors []error
 	w := multipart.NewWriter(&buf)
+	// add file form key and copy file content to the form
 	if fw, err := w.CreateFormFile("file", file.Name()); err == nil {
 		if _, err := io.Copy(fw, file); err != nil {
 			formErrors = append(formErrors, err)
@@ -115,9 +152,9 @@ func mlUpload(args []string) {
 	} else {
 		formErrors = append(formErrors, err)
 	}
+	// add form field key=value pairs
 	for key, val := range params {
-		_, err := w.CreateFormFile(key, val)
-		if err != nil {
+		if err := w.WriteField(key, val); err != nil {
 			formErrors = append(formErrors, err)
 		}
 	}
@@ -143,58 +180,56 @@ func mlUpload(args []string) {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
-	defer resp.Body.Close()
-	dec := json.NewDecoder(resp.Body)
-	var results UploadRecord
-	if err := dec.Decode(&results); err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
-	fmt.Printf("results: %+v\n", results)
+	fmt.Println("MLHub response:", resp.Status)
+	// defer resp.Body.Close()
+	// dec := json.NewDecoder(resp.Body)
+	// var results UploadRecord
+	//
+	//	if err := dec.Decode(&results); err != nil {
+	//	    fmt.Println("ERROR:", err)
+	//	    os.Exit(1)
+	//	}
+	//
+	// fmt.Printf("results: %+v\n", results)
 }
 
 // helper function to delete bucket on ml storage
 func mlDelete(args []string) {
-	// args contains [delete bucket]
-	if len(args) != 2 {
-		fmt.Println("ERROR: wrong number of arguments")
-		os.Exit(1)
-	}
+	// curl http://localhost:8350/delete -v -X DELETE -H "Authorization: bearer $token" -H "Accept: application/json" -H "Content-type: application/json" -d '{"model": "model", "type": "TensorFlow", "version": "latest"}'
 	if args[0] != "delete" {
 		fmt.Println("ERROR: wrong action", args)
 		os.Exit(1)
 	}
-	bucketName := args[1]
-	fmt.Printf("INFO: delete bucket %s\n", bucketName)
-	var results StorageRecord
-	rurl := fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
+	params := make(map[string]string)
+	for _, k := range args {
+		if k == "delete" {
+			continue
+		}
+		key := strings.Trim(k, " ")
+		a := strings.Split(key, "=")
+		params[a[0]] = a[1]
+	}
+	if _, ok := params["version"]; !ok {
+		params["version"] = "latest"
+	}
+	data, err := json.Marshal(params)
+
+	fmt.Printf("INFO: delete %s\n", params)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
+	}
+
+	rurl := fmt.Sprintf("%s/delete", _srvConfig.Services.MLHubURL)
 	if verbose > 0 {
 		fmt.Println("HTTP DELETE", rurl)
 	}
-	req, err := http.NewRequest("DELETE", rurl, nil)
+	resp, err := _httpDeleteRequest.Delete(rurl, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
-	accessToken := os.Getenv("CHESS_DELETE_TOKEN")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
-	defer resp.Body.Close()
-	dec := json.NewDecoder(resp.Body)
-	if err := dec.Decode(&results); err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
-	fmt.Printf("results: %+v\n", results)
+	fmt.Println("MLHub response:", resp.Status)
 }
 
 func mlCommand() *cobra.Command {
@@ -210,7 +245,7 @@ func mlCommand() *cobra.Command {
 				accessToken()
 				mlModels(args)
 			} else if args[0] == "predict" {
-				writeToken()
+				accessToken()
 				mlPredict(args)
 			} else if args[0] == "delete" {
 				deleteToken()
