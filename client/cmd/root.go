@@ -47,6 +47,7 @@ func init() {
 	rootCmd.AddCommand(dbsCommand())
 	rootCmd.AddCommand(authCommand())
 	rootCmd.AddCommand(s3Command())
+	rootCmd.AddCommand(mlCommand())
 	rootCmd.AddCommand(viewCommand())
 	rootCmd.AddCommand(syncCommand())
 	rootCmd.AddCommand(configCommand())
