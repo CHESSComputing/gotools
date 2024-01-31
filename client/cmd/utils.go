@@ -59,6 +59,10 @@ func writeToken() (string, error) {
 		if token == "" {
 			exit("Please obtain write access token and put it into CHESS_WRITE_TOKEN env or file", nil)
 		}
+		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+		if err != nil {
+			exit("unable to read token claims", err)
+		}
 		_httpWriteRequest.Token = token
 	}
 	return _httpWriteRequest.Token, nil
@@ -70,6 +74,10 @@ func deleteToken() (string, error) {
 		token := utils.ReadToken(os.Getenv("CHESS_DELETE_TOKEN"))
 		if token == "" {
 			exit("Please obtain delete access token and put it into CHESS_DELETE_TOKEN env or file", nil)
+		}
+		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+		if err != nil {
+			exit("unable to read token claims", err)
 		}
 		_httpDeleteRequest.Token = token
 	}
