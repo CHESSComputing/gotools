@@ -32,17 +32,12 @@ func mlGet(endpoint string, args []string) {
 		fmt.Println("HTTP GET", rurl)
 	}
 	resp, err := _httpReadRequest.Get(rurl)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("unable to make HTTP request", err)
 	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
 	var results []map[string]any
-	if err := dec.Decode(&results); err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	err = dec.Decode(&results)
+	exit("unable to decode results", err)
 	for _, rec := range results {
 		printMap(rec)
 	}
@@ -67,32 +62,20 @@ func mlPredict(args []string) {
 	}
 	fname := args[1]
 	file, err := os.Open(fname)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("fail to open file", err)
 	defer file.Close()
 	data, err := io.ReadAll(file)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("fail to read file", err)
 
 	rurl := fmt.Sprintf("%s/predict", _srvConfig.Services.MLHubURL)
 	if verbose > 0 {
 		fmt.Println("HTTP POST", rurl)
 	}
 	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("fail to make HTTP request", err)
 	defer resp.Body.Close()
 	data, err = io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("fail to read response", err)
 	fmt.Println("MLHub response:")
 	fmt.Println(string(data))
 
@@ -133,10 +116,7 @@ func mlUpload(args []string) {
 	// open file and read its content
 	// TODO: we may need buffer stream to reduce RAM utilization
 	file, err := os.Open(fname)
-	if err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
-	}
+	exit("fail to open file", err)
 	defer file.Close()
 
 	// prepare our payload by reading the local file and passing it to
@@ -160,26 +140,17 @@ func mlUpload(args []string) {
 	}
 	w.Close()
 	for _, err := range formErrors {
-		if err != nil {
-			fmt.Println("ERROR:", err)
-			os.Exit(1)
-		}
+		exit("form error", err)
 	}
 
 	req, err := http.NewRequest("POST", rurl, &buf)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("fail to make HTTP request", err)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 	accessToken := os.Getenv("CHESS_WRITE_TOKEN")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	client := http.Client{}
 	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("fail to make HTTP request", err)
 	fmt.Println("MLHub response:", resp.Status)
 	// defer resp.Body.Close()
 	// dec := json.NewDecoder(resp.Body)
@@ -213,22 +184,16 @@ func mlDelete(args []string) {
 		params["version"] = "latest"
 	}
 	data, err := json.Marshal(params)
+	exit("fail to marshal parameters", err)
 
 	fmt.Printf("INFO: delete %s\n", params)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
 
 	rurl := fmt.Sprintf("%s/delete", _srvConfig.Services.MLHubURL)
 	if verbose > 0 {
 		fmt.Println("HTTP DELETE", rurl)
 	}
 	resp, err := _httpDeleteRequest.Delete(rurl, "application/json", bytes.NewBuffer(data))
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("fail to make HTTP request", err)
 	fmt.Println("MLHub response:", resp.Status)
 }
 

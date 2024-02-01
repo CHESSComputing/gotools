@@ -62,10 +62,7 @@ func getDID(args []string) int64 {
 		os.Exit(1)
 	}
 	did, err := strconv.Atoi(args[1])
-	if err != nil {
-		fmt.Println("ERROR: unable to parse did param, error", err)
-		os.Exit(1)
-	}
+	exit("unable to parse did parameter", err)
 	return int64(did)
 }
 
@@ -85,6 +82,8 @@ func doiUsage() {
 	fmt.Println("client doi <ls|create|update|publish|view> <DID> [options]")
 	fmt.Println("Examples:")
 	fmt.Println("\n# create new document:")
+	fmt.Println("client doi create")
+	fmt.Println("\n# create new document from given record:")
 	fmt.Println("client doi create </path/record.json>")
 	fmt.Println("\n# add file to document id:")
 	fmt.Println("client doi add id </path/regular/file>")
@@ -96,6 +95,24 @@ func doiUsage() {
 	fmt.Println("client doi ls <id>")
 	fmt.Println("\n# get details of document id:")
 	fmt.Println("client doi view <id>")
+	fmt.Println()
+	fmt.Println("Here is example of record.json")
+	record := `
+{
+    "files": [
+        {"name": "file1.txt", "file": "/path/file1.txt"},
+        {"name": "file2.txt", "file": "/path/file2.txt"}
+    ],
+    "metadata": {
+        "publication_type": "article",
+        "upload_type": "publication",
+        "description": "Test FOXDEN publication",
+        "keywords": ["bla", "foo"],
+        "creators": [{"name": "First Last", "affiliation": "Zenodo"}],
+        "title": "Test experiment"
+    }
+}`
+	fmt.Println(record)
 }
 
 func printRecord(rec map[string]any) {
@@ -174,26 +191,17 @@ func doiCreate(args []string) {
 	// create new DOI resource
 	rurl := fmt.Sprintf("%s/create", _srvConfig.Services.PublicationURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer([]byte{}))
-	if err != nil {
-		fmt.Printf("ERROR: unable to make HTTP request to publication service, error %v\n", err)
-		os.Exit(1)
-	}
+	exit("unable to make HTTP request to publication service", err)
 	// caputre response and extract document id (did)
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("ERROR: unable to read response body, error %v", err)
-		os.Exit(1)
-	}
+	exit("unable to read response body", err)
 	if verbose > 0 {
 		fmt.Println("### create response", string(data))
 	}
 	var doc zenodo.CreateResponse
 	err = json.Unmarshal(data, &doc)
-	if err != nil {
-		fmt.Printf("ERROR: unable to unmarshal record, error %v", err)
-		os.Exit(1)
-	}
+	exit("unable to unmarshal record", err)
 	fmt.Printf("Document is created: id=%d URL=%s\n", doc.Id, doc.Links.Html)
 }
 
@@ -209,10 +217,7 @@ func getBucketId(did int64) string {
 	data, err := io.ReadAll(resp.Body)
 	var rec DoiRecord
 	err = json.Unmarshal(data, &rec)
-	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
-	}
+	exit("unable to unmarshal record", err)
 	arr := strings.Split(rec.Links.Bucket, "/")
 	bid := arr[len(arr)-1]
 	return bid
@@ -223,33 +228,22 @@ func doiAdd(did int64, filePath string) {
 	bid := getBucketId(did)
 	arr := strings.Split(filePath, "/")
 	fileName := arr[len(arr)-1]
-	if err := addFile(bid, fileName, filePath); err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
-	}
+	err := addFile(bid, fileName, filePath)
+	exit("fail to add new file", err)
 	fmt.Printf("Added %v to document %d\n", fileName, did)
 }
 
 // helper function to update zenodo document meta-data
 func doiUpdate(did int64, fname string) {
 	rec, err := loadRecord(fname)
-	if err != nil {
-		fmt.Printf("ERROR: unable to load %s, error %v\n", fname, err)
-		os.Exit(1)
-	}
+	exit("unable to load record", err)
 
 	// add meta-data record
 	err = rec.MetaData.Validate()
-	if err != nil {
-		fmt.Printf("ERROR: unable to marshal meta-data record, error %v\n", err)
-		os.Exit(1)
-	}
+	exit("fail to validate meta-data record", err)
 	mrec := MetaRecord{Metadata: rec.MetaData}
 	data, err := json.Marshal(mrec)
-	if err != nil {
-		fmt.Printf("ERROR: unable to marshal meta-data record, error %v\n", err)
-		os.Exit(1)
-	}
+	exit("unable to marshal meta-data record", err)
 	if verbose > 0 {
 		fmt.Printf("### metadata: %s\n", string(data))
 	}
@@ -291,10 +285,7 @@ func doiPublish(did int64) {
 	}
 	defer docsResp.Body.Close()
 	data, err := io.ReadAll(docsResp.Body)
-	if err != nil {
-		fmt.Printf("ERROR: unable to read, response %s, error %v\n", docsResp, err)
-		os.Exit(1)
-	}
+	exit("unable to read server response", err)
 
 	// parse doi record
 	var doiRecord DoiRecord
