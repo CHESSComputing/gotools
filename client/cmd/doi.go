@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/CHESSComputing/golib/zenodo"
@@ -36,6 +37,7 @@ type DoiRecord struct {
 	Id     int64        `json:"id"`
 	Doi    string       `json:"doi"`
 	DoiUrl string       `json:"doi_url"`
+	Files  []File       `json:"files,omitempty"`
 	Links  zenodo.Links `json:"links"`
 }
 
@@ -54,18 +56,64 @@ func (r *PublishRecord) Validate() error {
 	return nil
 }
 
+// helper function to get did from given args
+func getDID(args []string) int64 {
+	if len(args) < 2 {
+		fmt.Println("ERROR: wrong number of arguments", args, len(args))
+		os.Exit(1)
+	}
+	did, err := strconv.Atoi(args[1])
+	if err != nil {
+		fmt.Println("ERROR: unable to parse did param, error", err)
+		os.Exit(1)
+	}
+	return int64(did)
+}
+
+// helper function to parget input args
+func getParams(args []string) (int64, string) {
+	if len(args) != 3 {
+		fmt.Println("ERROR: wrong number of arguments", args, len(args))
+		os.Exit(1)
+	}
+	did := getDID(args)
+	fname := args[2]
+	return did, fname
+}
+
 // helper function to provide doi usage info
 func doiUsage() {
-	fmt.Println("client doi <ls|publish|view> [values]")
+	fmt.Println("client doi <ls|create|update|publish|view> <DID> [options]")
 	fmt.Println("Examples:")
-	fmt.Println("\n# publish new document:")
-	fmt.Println("client doi publish /path/record.json")
-	fmt.Println("\n# update document:")
-	fmt.Println("client doi update /path/record.json")
+	fmt.Println("\n# create new document:")
+	fmt.Println("client doi create </path/record.json>")
+	fmt.Println("\n# add file to document id:")
+	fmt.Println("client doi add id </path/regular/file>")
+	fmt.Println("\n# update document id with publish data record:")
+	fmt.Println("client doi update <id> /path/record.json")
+	fmt.Println("\n# publish document id:")
+	fmt.Println("client doi publish <id>")
 	fmt.Println("\n# list existing documents:")
-	fmt.Println("client doi ls")
+	fmt.Println("client doi ls <id>")
 	fmt.Println("\n# get details of document id:")
 	fmt.Println("client doi view <id>")
+}
+
+func printRecord(rec map[string]any) {
+	maxLen := 20
+	if val, ok := rec["id"]; ok {
+		key := keyPad("id", maxLen)
+		vvv := val.(float64)
+		v := int64(vvv)
+		fmt.Printf("%s: %v\n", key, v)
+	}
+	if val, ok := rec["links"]; ok {
+		vvv := val.(map[string]any)
+		if v, ok := vvv["html"]; ok {
+			key := keyPad("URL", maxLen)
+			fmt.Printf("%s: %v\n", key, v)
+		}
+	}
 }
 
 // helper function to list existing documents
@@ -75,34 +123,195 @@ func doiDocs(args []string) {
 		rurl += fmt.Sprintf("/%s", args[1])
 	}
 	resp, err := _httpReadRequest.Get(rurl)
+	exit("http error", err)
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	exit("response read error", err)
+	if len(args) == 2 {
+		var rec map[string]any
+		err = json.Unmarshal(data, &rec)
+		exit("unmarshal error", err)
+		printRecord(rec)
+		return
+	}
+	var records []map[string]any
+	err = json.Unmarshal(data, &records)
+	exit("unmarshal error", err)
+	for _, rec := range records {
+		fmt.Println("---")
+		printRecord(rec)
+	}
+}
+
+// helper function to load zenodo record from given file name
+func loadRecord(fname string) (PublishRecord, error) {
+	var rec PublishRecord
+	file, err := os.Open(fname)
+	if err != nil {
+		return rec, err
+	}
+	defer file.Close()
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return rec, err
+	}
+	err = json.Unmarshal(data, &rec)
+	if err != nil {
+		return rec, err
+	}
+	err = rec.Validate()
+	if err != nil {
+		return rec, err
+	}
+	return rec, nil
+}
+
+// helper function to create new document in Zenodo
+func doiCreate(args []string) {
+	if len(args) != 1 {
+		fmt.Println("ERROR: wrong number of arguments", args, len(args))
+		os.Exit(1)
+	}
+	// create new DOI resource
+	rurl := fmt.Sprintf("%s/create", _srvConfig.Services.PublicationURL)
+	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer([]byte{}))
+	if err != nil {
+		fmt.Printf("ERROR: unable to make HTTP request to publication service, error %v\n", err)
+		os.Exit(1)
+	}
+	// caputre response and extract document id (did)
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("ERROR: unable to read response body, error %v", err)
+		os.Exit(1)
+	}
+	if verbose > 0 {
+		fmt.Println("### create response", string(data))
+	}
+	var doc zenodo.CreateResponse
+	err = json.Unmarshal(data, &doc)
+	if err != nil {
+		fmt.Printf("ERROR: unable to unmarshal record, error %v", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Document is created: id=%d URL=%s\n", doc.Id, doc.Links.Html)
+}
+
+// helper function to get bucket id for given did
+func getBucketId(did int64) string {
+	rurl := fmt.Sprintf("%s/docs/%d", _srvConfig.Services.PublicationURL, did)
+	resp, err := _httpReadRequest.Get(rurl)
 	if err != nil {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
-	if len(args) == 2 {
-		var rec map[string]any
-		err = json.Unmarshal(data, &rec)
-		printMap(rec)
-		return
+	var rec DoiRecord
+	err = json.Unmarshal(data, &rec)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
 	}
-	var records []map[string]any
-	err = json.Unmarshal(data, &records)
-	for _, rec := range records {
-		fmt.Println("---")
-		printMap(rec)
+	arr := strings.Split(rec.Links.Bucket, "/")
+	bid := arr[len(arr)-1]
+	return bid
+}
+
+// helper function to add regular file to zenodo document id
+func doiAdd(did int64, filePath string) {
+	bid := getBucketId(did)
+	arr := strings.Split(filePath, "/")
+	fileName := arr[len(arr)-1]
+	if err := addFile(bid, fileName, filePath); err != nil {
+		fmt.Println("ERROR", err)
+		os.Exit(1)
 	}
+	fmt.Printf("Added %v to document %d\n", fileName, did)
+}
+
+// helper function to update zenodo document meta-data
+func doiUpdate(did int64, fname string) {
+	rec, err := loadRecord(fname)
+	if err != nil {
+		fmt.Printf("ERROR: unable to load %s, error %v\n", fname, err)
+		os.Exit(1)
+	}
+
+	// add meta-data record
+	err = rec.MetaData.Validate()
+	if err != nil {
+		fmt.Printf("ERROR: unable to marshal meta-data record, error %v\n", err)
+		os.Exit(1)
+	}
+	mrec := MetaRecord{Metadata: rec.MetaData}
+	data, err := json.Marshal(mrec)
+	if err != nil {
+		fmt.Printf("ERROR: unable to marshal meta-data record, error %v\n", err)
+		os.Exit(1)
+	}
+	if verbose > 0 {
+		fmt.Printf("### metadata: %s\n", string(data))
+	}
+	rurl := fmt.Sprintf("%s/update/%d", _srvConfig.Services.PublicationURL, did)
+	metaResp, err := _httpWriteRequest.Put(rurl, "application/json", bytes.NewBuffer(data))
+	defer metaResp.Body.Close()
+	if verbose > 0 {
+		data, err = io.ReadAll(metaResp.Body)
+		fmt.Printf("### update %s response %s, error %v", rurl, string(data), err)
+	}
+	if err != nil || metaResp.StatusCode != 200 {
+		fmt.Printf("ERROR: unable to add meta-data record, rsponse %s, error %v\n", metaResp, err)
+		os.Exit(1)
+	}
+	fmt.Printf("Document %v is updated\n", did)
+}
+
+// helper function to publish zenodo document id
+func doiPublish(did int64) {
+	// publish the record
+	rurl := fmt.Sprintf("%s/publish/%d", _srvConfig.Services.PublicationURL, did)
+	publishResp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer([]byte{}))
+	if err != nil || (publishResp.StatusCode < 200 || publishResp.StatusCode >= 400) {
+		fmt.Printf("ERROR: unable to publish record, response %s, error %v\n", publishResp, err)
+		os.Exit(1)
+	}
+	defer publishResp.Body.Close()
+	if verbose > 0 {
+		data, err := io.ReadAll(publishResp.Body)
+		fmt.Printf("### publish %s response %s, error %v", rurl, string(data), err)
+	}
+
+	// fetch our document
+	rurl = fmt.Sprintf("%s/docs/%d", _srvConfig.Services.PublicationURL, did)
+	docsResp, err := _httpReadRequest.Get(rurl)
+	if err != nil || (docsResp.StatusCode < 200 || docsResp.StatusCode >= 400) {
+		fmt.Printf("ERROR: unable to fetch document, response %s, error %v\n", docsResp, err)
+		os.Exit(1)
+	}
+	defer docsResp.Body.Close()
+	data, err := io.ReadAll(docsResp.Body)
+	if err != nil {
+		fmt.Printf("ERROR: unable to read, response %s, error %v\n", docsResp, err)
+		os.Exit(1)
+	}
+
+	// parse doi record
+	var doiRecord DoiRecord
+	err = json.Unmarshal(data, &doiRecord)
+	if err == nil {
+		fmt.Println("DOI", doiRecord.DoiUrl)
+	}
+	fmt.Println("Zenodo:", doiRecord.Links.Html)
 }
 
 // helper function to publish new document
-func doiPublish(args []string) {
+func doiPublishOrig(args []string) {
 	if len(args) != 2 {
 		fmt.Println("ERROR: please provide JSON file with publish record")
 		os.Exit(1)
 	}
-	verbose = 0 // TMP: for debugging
-
 	// load our record
 	fname := args[1]
 	file, err := os.Open(fname)
@@ -267,7 +476,19 @@ func addFile(bid, name, fname string) error {
 }
 
 // helper function to view given doi document
-func doiView(args []string) {
+func doiView(did int64) {
+	rurl := fmt.Sprintf("%s/docs/%d", _srvConfig.Services.PublicationURL, did)
+	resp, err := _httpReadRequest.Get(rurl)
+	exit("unable to place HTTP request", err)
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	exit("unable to read response", err)
+	var rec map[string]any
+	err = json.Unmarshal(data, &rec)
+	exit("unable to unmarshal the data", err)
+	data, err = json.MarshalIndent(rec, "", " ")
+	exit("unable to marshal the data", err)
+	fmt.Println(string(data))
 }
 
 func doiCommand() *cobra.Command {
@@ -282,13 +503,29 @@ func doiCommand() *cobra.Command {
 			} else if args[0] == "ls" {
 				accessToken()
 				doiDocs(args)
+			} else if args[0] == "create" {
+				accessToken()
+				writeToken()
+				doiCreate(args)
+			} else if args[0] == "add" {
+				accessToken()
+				writeToken()
+				did, fname := getParams(args)
+				doiAdd(did, fname)
+			} else if args[0] == "update" {
+				accessToken()
+				writeToken()
+				did, fname := getParams(args)
+				doiUpdate(did, fname)
 			} else if args[0] == "publish" {
 				accessToken()
 				writeToken()
-				doiPublish(args)
+				did := getDID(args)
+				doiPublish(did)
 			} else if args[0] == "view" {
 				accessToken()
-				doiView(args)
+				did := getDID(args)
+				doiView(did)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v\n", args)
 			}
