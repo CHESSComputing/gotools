@@ -44,7 +44,7 @@ build_linux_arm64:
 	cd enc; GOARCH=arm64 GOOS=darwin go build; cd -
 	cd foxden; 	GOARCH=arm64 GOOS=darwin make; cd -
 	cd validator; GOARCH=arm64 GOOS=darwin go build; cd -
-	tar cfz tools_darwin_arm64.tar.gz enc/enc foxden/foxden validator/validator
+	tar cfz tools_linux_arm64.tar.gz enc/enc foxden/foxden validator/validator
 
 build_windows_amd64:
 	cd enc; GOOS=windows go build; cd -
