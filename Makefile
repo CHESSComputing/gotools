@@ -58,5 +58,7 @@ build_windows_arm64:
 	cd validator; GOARCH=arm64 GOOS=windows go build; cd -
 	tar cfz tools_windows_arm64.tar.gz enc/enc* foxden/foxden* validator/validator*
 
+test:
+	echo "No tests so far"
 # here is an example for execution of individual test
 # go test -v -run TestFilesDB
