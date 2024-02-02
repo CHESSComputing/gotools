@@ -1,0 +1,13 @@
+{
+    "files": [
+        {"name": "vimrc", "file": "/Users/vk/.vimrc"}
+    ],
+    "metadata": {
+        "publication_type": "article",
+        "upload_type":"publication",
+        "description":"Test FOXDEN publication",
+        "keywords": ["bla", "foo"],
+        "creators": [{"name": "First Last", "affiliation": "Zenodo"}],
+        "title":"Test experiment"
+    }
+}
