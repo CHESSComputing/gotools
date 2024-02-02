@@ -47,14 +47,12 @@ build_linux_arm64:
 	tar cfz tools_darwin_arm64.tar.gz enc/enc foxden/foxden validator/validator
 
 build_windows_amd64:
-	go clean; rm -rf pkg srv.exe; GOARCH=amd64 GOOS=windows go build -o srv.exe ${flags}
 	cd enc; GOOS=windows go build; cd -
 	cd foxden;	GOOS=windows make; cd -
 	cd validator; GOOS=windows go build; cd -
 	tar cfz tools_windows_amd64.tar.gz enc/enc* foxden/foxden* validator/validator*
 
 build_windows_arm64:
-	go clean; rm -rf pkg srv.exe; GOARCH=amd64 GOOS=windows go build -o srv.exe ${flags}
 	cd enc; GOARCH=arm64 GOOS=windows go build; cd -
 	cd foxden; 	GOARCH=arm64 GOOS=windows make; cd -
 	cd validator; GOARCH=arm64 GOOS=windows go build; cd -
