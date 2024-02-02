@@ -75,7 +75,7 @@ jobs:
         asset_content_type: application/octet-stream
 
     - name: Upload OSX/macOS binary
-      id: upload-tools-amd64
+      id: upload-toolsosx-amd64
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -86,7 +86,7 @@ jobs:
         asset_content_type: application/octet-stream
 
     - name: Upload OSX/macOS ARM64 binary
-      id: upload-toolsosx_arm64
+      id: upload-toolsosx-arm64
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
