@@ -53,6 +53,7 @@ func init() {
 	rootCmd.AddCommand(viewCommand())
 	rootCmd.AddCommand(syncCommand())
 	rootCmd.AddCommand(configCommand())
+	rootCmd.AddCommand(versionCommand())
 }
 
 func initConfig() {
