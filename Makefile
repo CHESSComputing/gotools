@@ -41,7 +41,6 @@ build_linux_power8:
 	tar cfz tools_linux_power8.tar.gz enc/enc foxden/foxden validator/validator
 
 build_linux_arm64:
-	go clean; rm -rf pkg srv_arm64; GOARCH=arm64 GOOS=linux go build -o srv ${flags}
 	cd enc; GOARCH=arm64 GOOS=darwin go build; cd -
 	cd foxden; 	GOARCH=arm64 GOOS=darwin make; cd -
 	cd validator; GOARCH=arm64 GOOS=darwin go build; cd -
