@@ -1,7 +1,0 @@
-{
-    "StringKey": "test",
-    "StrKeyMultipleValues": "3A,3B",
-    "ListKey": ["3A", "3B"],
-    "FloatKey": 1.1,
-    "BoolKey": true
-}
