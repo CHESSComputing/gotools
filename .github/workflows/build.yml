@@ -31,7 +31,6 @@ jobs:
 
     - name: Build
       run: |
-        make golib
         make build_all
 
     - name: Create Release
