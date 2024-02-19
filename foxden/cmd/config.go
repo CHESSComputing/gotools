@@ -19,19 +19,39 @@ func configUsage() {
 }
 
 func printConfig(args []string) {
-	var fname string
+	var fname, cfile string
 	home, err := os.UserHomeDir()
 	if err == nil {
 		fname = filepath.Join(home, ".foxden.yaml")
 	}
-	if len(args) == 1 {
-		fname = args[0]
+	// determine which configuration file we use
+	if _, err := os.Stat(fname); err == nil {
+		cfile = fname
+	} else {
+		if _, err := os.Stat(os.Getenv("FOXDEN_CONFIG")); err == nil {
+			cfile = os.Getenv("FOXDEN_CONFIG")
+		} else {
+			fname = "/nfs/chess/user/chess_chapaas/.foxden.yaml"
+			if _, err := os.Stat(fname); err == nil {
+				cfile = fname
+			} else {
+				fname = `\\chesssamba.classe.cornell.edu\user\chess_chapaas\.foxden.yaml`
+				if _, err := os.Stat(fname); err == nil {
+					cfile = fname
+				} else {
+					msg := "FOXDEN configuration file is not found"
+					fmt.Println(msg)
+					os.Exit(1)
+				}
+			}
+		}
 	}
-	config, err := srvConfig.ParseConfig(fname)
+	config, err := srvConfig.ParseConfig(cfile)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
+	fmt.Printf("Configuration file: %s\n", cfile)
 	fmt.Println(config.String())
 }
 
