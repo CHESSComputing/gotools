@@ -144,7 +144,7 @@ func authCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth",
 		Short: "foxden authentication/authorization commands",
-		Long:  "foxden authentication/authorization commands\n" + doc + "\n" + authUsage(),
+		Long:  "foxden authentication/authorization commands to access FOXDEN Auth service\n" + doc + "\n" + authUsage(),
 		Run: func(cmd *cobra.Command, args []string) {
 			tkn, _ := cmd.Flags().GetString("token")
 			fname, _ := cmd.Flags().GetString("kfile")

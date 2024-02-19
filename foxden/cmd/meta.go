@@ -232,7 +232,7 @@ func metaCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "meta",
 		Short: "foxden MetaData commands",
-		Long:  "foxden MetaData commands\n" + doc,
+		Long:  "foxden MetaData commands to access FOXDEN MetaData service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {

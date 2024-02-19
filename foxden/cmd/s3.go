@@ -323,8 +323,8 @@ func s3Delete(args []string) {
 func s3Command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "s3",
-		Short: "foxden s3 command",
-		Long:  "foxden s3 command\n" + doc,
+		Short: "foxden s3 commands",
+		Long:  "foxden s3 commands to access FOXDEN DataManagement (S3) service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {

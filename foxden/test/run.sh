@@ -33,10 +33,10 @@ echo "+++ Add new meta-data record $idir/ID3A-meta2.json"
 
 echo
 echo "+++ Add new dbs-data record $idir/ID3A-dbs1.json"
-./foxden dbs add $idir/ID3A-dbs1.json
+./foxden prov add $idir/ID3A-dbs1.json
 echo
 echo "+++ Add new dbs-data record $idir/ID3A-dbs2.json"
-./foxden dbs add $idir/ID3A-dbs2.json
+./foxden prov add $idir/ID3A-dbs2.json
 
 echo
 echo "+++ search for all records"

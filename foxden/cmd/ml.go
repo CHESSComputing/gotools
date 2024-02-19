@@ -200,8 +200,8 @@ func mlDelete(args []string) {
 func mlCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ml",
-		Short: "foxden ml command",
-		Long:  "foxden ml command\n" + doc,
+		Short: "foxden ml commands",
+		Long:  "foxden ml commands to access FOXDEN MLHub service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {

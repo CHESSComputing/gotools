@@ -103,7 +103,7 @@ func searchCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "search",
 		Short: "foxden search commands",
-		Long:  "foxden search commands\n" + doc,
+		Long:  "foxden search commands to access FOXDEN DataDiscovery service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			user, _ := getUserToken()

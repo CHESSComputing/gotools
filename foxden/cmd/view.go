@@ -72,8 +72,8 @@ func viewDBSRecord(user, did string) {
 func viewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view",
-		Short: "foxden view command",
-		Long:  "foxden view-data command\n" + doc,
+		Short: "foxden view commands",
+		Long:  "foxden view data-record commands via FOXDEN services\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			token, err := accessToken()

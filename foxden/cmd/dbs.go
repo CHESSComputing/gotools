@@ -57,7 +57,7 @@ func printResults(rec DBSRecord) {
 // helper function to list dataset information
 func dbsListRecord(args []string) {
 	if len(args) == 1 {
-		fmt.Println("WARNING: please provide dbs attribute")
+		fmt.Println("WARNING: please provide provenance attribute")
 		os.Exit(1)
 	} else if args[1] == "datasets" {
 		rurl := fmt.Sprintf("%s/datasets", _srvConfig.Services.DataBookkeepingURL)
@@ -115,9 +115,9 @@ func dbsAddRecord(args []string) {
 	//     exit("", err)
 	//     if response.Status == "ok" {
 	if resp.StatusCode == 200 {
-		fmt.Printf("SUCCESS: dbs record was successfully added\n")
+		fmt.Printf("SUCCESS: provenance record was successfully added\n")
 	} else {
-		fmt.Printf("WARNING: dbs record failed to be added dbs service\n")
+		fmt.Printf("WARNING: provenance record failed to be added provenance service\n")
 	}
 }
 
@@ -127,20 +127,20 @@ func dbsDeleteRecord(args []string) {
 
 // helper function to provide usage of dbs option
 func dbsUsage() {
-	fmt.Println("foxden dbs <ls|add|rm> [value]")
+	fmt.Println("foxden prov <ls|add|rm> [value]")
 	fmt.Println("Examples:")
-	fmt.Println("\n# list all dbs records:")
-	fmt.Println("foxden dbs ls <dataset|site|file>")
-	fmt.Println("\n# remove dbs-data record:")
-	fmt.Println("foxden dbs rm <dataset|site|file>")
-	fmt.Println("\n# add dbs-data record:")
-	fmt.Println("foxden dbs add <dataset|site|file>")
+	fmt.Println("\n# list all provenance records:")
+	fmt.Println("foxden prov ls <dataset|site|file>")
+	fmt.Println("\n# remove provenance data record:")
+	fmt.Println("foxden prov rm <dataset|site|file>")
+	fmt.Println("\n# add provenance data record:")
+	fmt.Println("foxden prov add <dataset|site|file>")
 }
 func dbsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "dbs",
-		Short: "foxden provenance (dbs) commands",
-		Long:  "foxden provenance data-bookkeeping system (dbs) commands\n" + doc,
+		Use:   "prov",
+		Short: "foxden provenance commands",
+		Long:  "foxden provenance commands to access FOXDEN Provenance service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {

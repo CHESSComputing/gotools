@@ -346,7 +346,7 @@ func doiCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "doi",
 		Short: "foxden doi command",
-		Long:  "foxden doi command\n" + doc,
+		Long:  "foxden doi command to access FOXDEN Publication service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
