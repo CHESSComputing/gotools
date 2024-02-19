@@ -45,7 +45,7 @@ func init() {
 
 	rootCmd.AddCommand(metaCommand())
 	rootCmd.AddCommand(searchCommand())
-	rootCmd.AddCommand(dbsCommand())
+	rootCmd.AddCommand(provCommand())
 	rootCmd.AddCommand(authCommand())
 	rootCmd.AddCommand(s3Command())
 	rootCmd.AddCommand(mlCommand())

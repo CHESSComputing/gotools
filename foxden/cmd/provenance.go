@@ -55,7 +55,7 @@ func printResults(rec DBSRecord) {
 }
 
 // helper function to list dataset information
-func dbsListRecord(args []string) {
+func provListRecord(args []string) {
 	if len(args) == 1 {
 		fmt.Println("WARNING: please provide provenance attribute")
 		os.Exit(1)
@@ -86,7 +86,7 @@ type ResponseRecord struct {
 }
 
 // helper function to add dataset information
-func dbsAddRecord(args []string) {
+func provAddRecord(args []string) {
 	// check if given args contains a file
 	lastArg := args[len(args)-1]
 	_, err := os.Stat(lastArg)
@@ -122,11 +122,11 @@ func dbsAddRecord(args []string) {
 }
 
 // helper function to delete dataset information
-func dbsDeleteRecord(args []string) {
+func provDeleteRecord(args []string) {
 }
 
 // helper function to provide usage of dbs option
-func dbsUsage() {
+func provUsage() {
 	fmt.Println("foxden prov <ls|add|rm> [value]")
 	fmt.Println("Examples:")
 	fmt.Println("\n# list all provenance records:")
@@ -136,7 +136,7 @@ func dbsUsage() {
 	fmt.Println("\n# add provenance data record:")
 	fmt.Println("foxden prov add <dataset|site|file>")
 }
-func dbsCommand() *cobra.Command {
+func provCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "prov",
 		Short: "foxden provenance commands",
@@ -144,24 +144,24 @@ func dbsCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				dbsUsage()
+				provUsage()
 			} else if args[0] == "ls" {
 				// obtain valid access token
 				accessToken()
-				dbsListRecord(args)
+				provListRecord(args)
 			} else if args[0] == "add" {
 				writeToken()
-				dbsAddRecord(args)
+				provAddRecord(args)
 			} else if args[0] == "rm" {
 				writeToken()
-				dbsDeleteRecord(args)
+				provDeleteRecord(args)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
 			}
 		},
 	}
 	cmd.SetUsageFunc(func(*cobra.Command) error {
-		dbsUsage()
+		provUsage()
 		return nil
 	})
 	return cmd
