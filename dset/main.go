@@ -36,7 +36,7 @@ func decodeDataset(dataset, sep, div string) string {
 	return string(data)
 }
 
-func encodeDataset(fname, sep, div string) string {
+func encodeDataset(fname, attrs, sep, div string) string {
 	file, err := os.Open(fname)
 	if err != nil {
 		log.Fatal(err)
@@ -52,10 +52,11 @@ func encodeDataset(fname, sep, div string) string {
 		log.Fatal(err)
 	}
 	var dset string
-	var keys []string
-	for k, _ := range rec {
-		keys = append(keys, k)
-	}
+	keys := strings.Split(attrs, ",")
+	//     var keys []string
+	//     for k, _ := range rec {
+	//         keys = append(keys, k)
+	//     }
 	sort.Strings(keys)
 	for _, k := range keys {
 		v, _ := rec[k]
@@ -73,13 +74,15 @@ func main() {
 	flag.StringVar(&sep, "sep", "/", "attribute separator")
 	var div string
 	flag.StringVar(&div, "div", ":", "key-value divider")
+	var attrs string
+	flag.StringVar(&attrs, "attrs", "", "comma separated keys to use for did composition")
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	var dset string
 	if decode != "" {
 		dset = decodeDataset(decode, sep, div)
 	} else {
-		dset = encodeDataset(encode, sep, div)
+		dset = encodeDataset(encode, attrs, sep, div)
 	}
 	fmt.Println(dset)
 }
