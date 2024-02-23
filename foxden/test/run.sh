@@ -43,8 +43,8 @@ echo "+++ search for all records"
 ./foxden search {}
 
 echo
-echo "+++ view record abc"
-./foxden view abc
+echo "+++ view record /beamline=3a/btr=3731-b/cycle=2023-3"
+./foxden view /beamline=3a/btr=3731-b/cycle=2023-3
 
 echo
 echo "+++ view records xyz"

@@ -14,6 +14,7 @@ import (
 	"os"
 
 	services "github.com/CHESSComputing/golib/services"
+	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -73,33 +74,58 @@ func getMeta(user, query string) ([]map[string]any, error) {
 	if err != nil {
 		exit("unable to read data from meta-data service", err)
 	}
+	err = json.Unmarshal(data, &records)
 
-	var response services.ServiceResponse
-	err = json.Unmarshal(data, &response)
+	//     var response services.ServiceResponse
+	//     err = json.Unmarshal(data, &response)
 	if err != nil {
 		log.Println("response data", string(data))
 		exit("Unable to unmarshal the data", err)
 	}
-	records = response.Results.Records
+	//     if response.HttpCode == 200 {
+	//         records = response.Results.Records
+	//     }
 	return records, nil
+}
+
+func didMetaData() (string, string, string) {
+	attrs := "beamline,btr,cycle,sample"
+	sep := "/"
+	div := "="
+	if _srvConfig != nil {
+		if _srvConfig.CHESSMetaData.DID.Attributes != "" {
+			attrs = _srvConfig.CHESSMetaData.DID.Attributes
+		}
+		if _srvConfig.CHESSMetaData.DID.Separator != "" {
+			sep = _srvConfig.CHESSMetaData.DID.Separator
+		}
+		if _srvConfig.CHESSMetaData.DID.Divider != "" {
+			div = _srvConfig.CHESSMetaData.DID.Divider
+		}
+	}
+	return attrs, sep, div
 }
 
 // helper function to provide usage of meta option
 func metaUsage() {
-	fmt.Println("foxden meta <ls|add|rm> [value]")
-	fmt.Println("Examples:")
+	attrs, sep, div := didMetaData()
+	fmt.Println("foxden meta <ls|rm|view> [value]")
+	fmt.Println("foxden meta add <schema> <file.json> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider>")
+	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all meta data records:")
 	fmt.Println("foxden meta ls")
 	fmt.Println("\n# list specific meta-data record:")
 	fmt.Println("foxden meta view <DID>")
 	fmt.Println("\n# remove meta-data record:")
 	fmt.Println("foxden meta rm 123xyz")
-	fmt.Println("\n# add meta-data record:")
+	fmt.Println("\n# add meta-data record with given schema, file and did attributes which create a did value:")
+	fmt.Printf("foxden meta add <schema> <file.json> --did-attrs=%s --did-sep=%s --did-div=%s\n", attrs, sep, div)
+	fmt.Println("\n# the same as above since it is default values")
 	fmt.Println("foxden meta add <schema> <file.json>")
 }
 
 // helper function to add meta data record
-func metaAddRecord(args []string) {
+func metaAddRecord(args []string, attrs, sep, div string) {
 	if len(args) == 1 {
 		fmt.Println("manual insertion is not implemented yet")
 		metaUsage()
@@ -124,6 +150,13 @@ func metaAddRecord(args []string) {
 	var record map[string]any
 	err = json.Unmarshal(data, &record)
 	exit("unable to unmarshal data", err)
+
+	// add proper did
+	did, ok := record["did"]
+	if !ok || did == "" {
+		did := utils.CreateDID(record, attrs, sep, div)
+		record["did"] = did
+	}
 
 	// we need to create /meta/file/upload call using URL form
 	var mrec services.MetaRecord
@@ -195,9 +228,7 @@ func metaListRecord(user, spec string) {
 	}
 	for _, r := range records {
 		fmt.Println("---")
-		val := r["did"]
-		did := fmt.Sprintf("%d", int64(val.(float64)))
-		fmt.Printf("DID     : %v\n", did)
+		fmt.Printf("DID     : %v\n", r["did"])
 		fmt.Printf("Schema  : %v\n", r["Schema"])
 		fmt.Printf("Cycle   : %v\n", r["Cycle"])
 		fmt.Printf("Beamline: %v\n", r["Beamline"])
@@ -213,6 +244,7 @@ func metaListRecord(user, spec string) {
 // helper function to print meta data records in Json format
 func metaJsonRecord(user, did string) {
 	query := "did:" + did
+	log.Println("### query", query)
 	records, err := getMeta(user, query)
 	if err != nil {
 		fmt.Println("ERROR", err)
@@ -229,12 +261,16 @@ func metaJsonRecord(user, did string) {
 }
 
 func metaCommand() *cobra.Command {
+	attrs, sep, div := didMetaData()
 	cmd := &cobra.Command{
 		Use:   "meta",
 		Short: "foxden MetaData commands",
 		Long:  "foxden MetaData commands to access FOXDEN MetaData service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			attrs, _ := cmd.Flags().GetString("did-attrs")
+			sep, _ := cmd.Flags().GetString("did-sep")
+			div, _ := cmd.Flags().GetString("did-div")
 			if len(args) == 0 {
 				metaUsage()
 			} else if args[0] == "ls" {
@@ -253,7 +289,7 @@ func metaCommand() *cobra.Command {
 				}
 			} else if args[0] == "add" {
 				writeToken()
-				metaAddRecord(args)
+				metaAddRecord(args, attrs, sep, div)
 			} else if args[0] == "rm" {
 				writeToken()
 				metaDeleteRecord(args)
@@ -262,6 +298,9 @@ func metaCommand() *cobra.Command {
 			}
 		},
 	}
+	cmd.PersistentFlags().String("did-attrs", attrs, "did attributes")
+	cmd.PersistentFlags().String("did-sep", sep, "did separator")
+	cmd.PersistentFlags().String("did-div", div, "did key-value divider")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		metaUsage()
 		return nil
