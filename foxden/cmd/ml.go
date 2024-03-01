@@ -98,7 +98,7 @@ func mlPredict(rec MLInput) {
 		writer.WriteField("backend", rec.Backend)
 		arr := strings.Split(rec.File, "/")
 		fieldName := arr[len(arr)-1]
-		fw, err := writer.CreateFormFile(fieldName, rec.File)
+		fw, err := writer.CreateFormFile("image", fieldName)
 		exit("fail to create form file", err)
 		file, err := os.Open(rec.File)
 		exit("fail to open file", err)
