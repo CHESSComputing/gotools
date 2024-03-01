@@ -108,7 +108,6 @@ func mlPredict(rec MLInput) {
 		writer.Close()
 		req, err := http.NewRequest("POST", rurl, bytes.NewReader(body.Bytes()))
 		req.Header.Set("Content-Type", writer.FormDataContentType())
-		req.Header.Set("Authorization bearer", writer.FormDataContentType())
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", _httpReadRequest.Token))
 		client := &http.Client{
 			Timeout: time.Second * 10,
