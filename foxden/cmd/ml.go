@@ -27,7 +27,8 @@ type MLInput struct {
 // helper function to provide ml usage info
 func mlUsage() {
 	fmt.Println("foxden ml <models|upload|predict|delete> [options]")
-	fmt.Println("Examples:")
+	fmt.Println("options: --file=input-file --model=ml-model --type=ml-type --backend=ml-backend")
+	fmt.Println("\nExamples:")
 	fmt.Println("\n# upload new ML model:")
 	fmt.Println("foxden ml upload --file=/path/file.tar.gz --model=model --type=TensorFlow --backend=GoFake")
 	fmt.Println("\n# delete model:")

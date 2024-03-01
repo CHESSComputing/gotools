@@ -45,7 +45,7 @@ func metaRecords(user, query string) ([]map[string]any, error) {
 // helper function to provide usage of search option
 func searchUsage() {
 	fmt.Println("foxden search <spec>")
-	fmt.Println("Examples:")
+	fmt.Println("\nExamples:")
 	fmt.Println("\n# search CHESS data:")
 	fmt.Println("foxden search {}")
 }

@@ -24,8 +24,9 @@ var envTokens []string = []string{"CHESS_TOKEN", "CHESS_WRITE_TOKEN", "CHESS_DEL
 // helper function to provide usage of meta option
 func authUsage() string {
 	var out string
-	out += fmt.Sprintf("foxden auth token <scope: read|write|delete> <--kfile=keytab>\n")
-	out += fmt.Sprintf("foxden auth view <--token=token or file>\n\n")
+	out += fmt.Sprintf("foxden auth token <scope: read|write|delete> [options]\n")
+	out += fmt.Sprintf("foxden auth view [options]\n\n")
+	out += fmt.Sprintf("options: --kfile=keytab, --token=<token or file>\n")
 	out += fmt.Sprintf("defaults: token generated with read scope\n")
 	out += fmt.Sprintf("          kfile is /tmp/krb5cc_<UID>\n")
 	out += fmt.Sprintf("\n")
@@ -149,7 +150,7 @@ func authCommand() *cobra.Command {
 			tkn, _ := cmd.Flags().GetString("token")
 			fname, _ := cmd.Flags().GetString("kfile")
 			if len(args) == 0 {
-				fmt.Print(authUsage())
+				authUsage()
 			} else if args[0] == "token" {
 				attr := "read"
 				if len(args) > 1 {
@@ -185,7 +186,7 @@ func authCommand() *cobra.Command {
 	cmd.PersistentFlags().String("kfile", "", "Kerberos file to use")
 	cmd.PersistentFlags().String("token", "", "token file or token string")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
-		fmt.Println(authUsage())
+		authUsage()
 		return nil
 	})
 	return cmd

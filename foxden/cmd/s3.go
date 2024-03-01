@@ -34,8 +34,9 @@ type UploadRecord struct {
 
 // helper function to provide s3 usage info
 func s3Usage() {
-	fmt.Println("foxden s3 <ls|create|delete|upload> [value]")
-	fmt.Println("Examples:")
+	fmt.Println("foxden s3 <ls|create|delete|upload> [options]")
+	fmt.Println("options: file or directory")
+	fmt.Println("\nExamples:")
 	fmt.Println("\n# create new bucket:")
 	fmt.Println("foxden s3 create Cornell/bucket")
 	fmt.Println("\n# remove bucket or file:")

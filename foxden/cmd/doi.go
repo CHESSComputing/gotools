@@ -80,7 +80,8 @@ func getParams(args []string) (int64, string) {
 // helper function to provide doi usage info
 func doiUsage() {
 	fmt.Println("foxden doi <ls|create|update|publish|view> <DID> [options]")
-	fmt.Println("Examples:")
+	fmt.Println("options: file name")
+	fmt.Println("\nExamples:")
 	fmt.Println("\n# create new document:")
 	fmt.Println("foxden doi create")
 	fmt.Println("\n# create new document from given record:")

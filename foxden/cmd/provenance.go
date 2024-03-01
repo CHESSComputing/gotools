@@ -127,8 +127,9 @@ func provDeleteRecord(args []string) {
 
 // helper function to provide usage of dbs option
 func provUsage() {
-	fmt.Println("foxden prov <ls|add|rm> [value]")
-	fmt.Println("Examples:")
+	fmt.Println("foxden prov <ls|add|rm> [options]")
+	fmt.Println("options: provenance attributes like dataset, file, site")
+	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all provenance records:")
 	fmt.Println("foxden prov ls <dataset|site|file>")
 	fmt.Println("\n# remove provenance data record:")

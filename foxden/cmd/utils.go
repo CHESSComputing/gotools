@@ -13,7 +13,7 @@ import (
 	"github.com/CHESSComputing/golib/utils"
 )
 
-var doc = "Complete documentation at https://github.com/CHESSComputing/FOXDEN"
+var doc = "Complete documentation at https://foxden.classe.cornell.edu:8344/docs"
 
 var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpRequest
 
