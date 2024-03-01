@@ -169,7 +169,7 @@ func authCommand() *cobra.Command {
 					tokenKind = "delete"
 					tokenEnv = "CHESS_DELETE_TOKEN"
 				} else {
-					tokenKind = "read"
+					tokenKind = attr
 				}
 				token, err = requestToken(tokenKind, fname)
 				if err != nil {
