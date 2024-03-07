@@ -58,6 +58,9 @@ func metadata(site string) MetaDataRecord {
 // helper function to get meta-data records
 func getMeta(user, query string) ([]map[string]any, error) {
 	var records []map[string]any
+	if query == "" {
+		query = "{}"
+	}
 	rec := services.ServiceRequest{
 		Client:       "foxden",
 		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1},
