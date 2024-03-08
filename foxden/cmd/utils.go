@@ -34,8 +34,7 @@ func accessToken() (string, error) {
 		} else {
 			err := generateToken()
 			exit("Unable to generate access token", err)
-			hdir, _ := os.Getwd()
-			tfile := fmt.Sprintf("%s/.foxden.access", hdir)
+			tfile := fmt.Sprintf("%s/.foxden.access", os.Getenv("HOME"))
 			token = utils.ReadToken(tfile)
 		}
 		if token == "" {
@@ -54,7 +53,7 @@ func getUserToken() (string, string) {
 	}
 	claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 	if err != nil {
-		exit("unable to read token claims", err)
+		exit("getUserToken: unable to read token claims", err)
 	}
 	rclaims := claims.RegisteredClaims
 	user := rclaims.Subject
@@ -70,7 +69,7 @@ func writeToken() (string, error) {
 		}
 		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
-			exit("unable to read token claims", err)
+			exit("writeToken: unable to read token claims", err)
 		}
 		_httpWriteRequest.Token = token
 	}
@@ -86,7 +85,7 @@ func deleteToken() (string, error) {
 		}
 		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
-			exit("unable to read token claims", err)
+			exit("deleteToken: unable to read token claims", err)
 		}
 		_httpDeleteRequest.Token = token
 	}
