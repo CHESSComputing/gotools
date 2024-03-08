@@ -57,8 +57,7 @@ func authUsage() string {
 func keyFile() string {
 	u, err := user.Current()
 	if err != nil {
-		fmt.Println("ERROR: ", err)
-		os.Exit(1)
+		log.Fatal("ERROR: ", err)
 	}
 	return fmt.Sprintf("/tmp/krb5cc_%s", u.Uid)
 }
