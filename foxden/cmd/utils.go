@@ -6,6 +6,7 @@ package cmd
 //
 import (
 	"fmt"
+	"log"
 	"os"
 
 	authz "github.com/CHESSComputing/golib/authz"
@@ -20,15 +21,23 @@ var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpReques
 // helper function to exit with message and error
 func exit(msg string, err error) {
 	if err != nil {
-		fmt.Println("ERROR", msg, err)
-		os.Exit(1)
+		log.Fatal("ERROR", msg, err)
 	}
 }
 
 // helper function to obtain read access token
 func accessToken() (string, error) {
+	var token string
 	if _httpReadRequest.Token == "" {
-		token := utils.ReadToken(os.Getenv("CHESS_TOKEN"))
+		if os.Getenv("CHESS_TOKEN") != "" {
+			token = utils.ReadToken(os.Getenv("CHESS_TOKEN"))
+		} else {
+			err := generateToken()
+			exit("Unable to generate access token", err)
+			hdir, _ := os.Getwd()
+			tfile := fmt.Sprintf("%s/.foxden.access", hdir)
+			token = utils.ReadToken(tfile)
+		}
 		if token == "" {
 			exit("Please obtain read access token and put it into CHESS_TOKEN env or file", nil)
 		}
