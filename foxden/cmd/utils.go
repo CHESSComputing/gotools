@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	authz "github.com/CHESSComputing/golib/authz"
 	services "github.com/CHESSComputing/golib/services"
@@ -24,6 +26,20 @@ func exit(msg string, err error) {
 		log.Println(utils.Stack())
 		log.Fatal("ERROR: ", err, ", ", msg)
 	}
+}
+
+// helper function to properly provide fila path in tmp|TEMP areas on UNIX|Windows systems, respectively
+func tempFilePath(fname string) string {
+	var filePath string
+	switch goos := runtime.GOOS; goos {
+	case "windows":
+		filePath = filepath.Join(os.Getenv("TEMP"), fname)
+	case "linux", "darwin", "freebsd", "openbsd", "netbsd":
+		filePath = filepath.Join("/tmp", fname)
+	default:
+		log.Fatal("Unsupported operating system ", goos)
+	}
+	return filePath
 }
 
 // helper function to obtain read access token

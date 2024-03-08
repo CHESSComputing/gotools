@@ -59,7 +59,7 @@ func keyFile() string {
 	if err != nil {
 		log.Fatal("ERROR: ", err)
 	}
-	return fmt.Sprintf("/tmp/krb5cc_%s", u.Uid)
+	return tempFilePath(fmt.Sprintf("krb5cc_%s", u.Uid))
 }
 
 func requestToken(scope, fname string) (string, error) {

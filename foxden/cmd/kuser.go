@@ -60,7 +60,8 @@ func userTicket() (string, []byte) {
 	// get user login/password
 	user, password := userPassword()
 	fname := fmt.Sprintf("krb5_%d_%v", os.Getuid(), time.Now().Unix())
-	tmpFile, err := ioutil.TempFile("/tmp", fname)
+	//     tmpFile, err := ioutil.TempFile("/tmp", fname)
+	tmpFile, err := os.OpenFile(tempFilePath(fname), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		exit("Unable to get tmp file", err)
 	}
