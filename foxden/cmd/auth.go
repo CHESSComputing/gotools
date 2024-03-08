@@ -113,9 +113,9 @@ func generateToken() error {
 	// check if user has kerberos file in place, i.e. /tmp/krb5cc_<uid>
 	kfile := keyFile()
 	if _, err := os.Stat(kfile); os.IsNotExist(err) {
-		fmt.Println("No kerberos ticket file %s found, please run:", kfile)
-		fmt.Println("# in bash environment, export KRB5CCNAME=FILE:%s", kfile)
-		fmt.Println("# in (t)csh environment, setenv KRB5CCNAME FILE:%s", kfile)
+		fmt.Printf("No kerberos ticket file %s found, please run:\n", kfile)
+		fmt.Printf("# in (ba)sh environment, export KRB5CCNAME=FILE:%s\n", kfile)
+		fmt.Printf("# in (t)csh environment, setenv KRB5CCNAME FILE:%s\n", kfile)
 		fmt.Println("kinit")
 		fmt.Println("")
 		return err
