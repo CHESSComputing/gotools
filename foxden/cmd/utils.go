@@ -21,7 +21,7 @@ var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpReques
 // helper function to exit with message and error
 func exit(msg string, err error) {
 	if err != nil {
-		log.Fatal("ERROR", msg, err)
+		log.Fatal("ERROR: ", err, ", ", msg)
 	}
 }
 
