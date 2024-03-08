@@ -67,7 +67,7 @@ build_windows_amd64:
 	cd validator; CGO_ENABLED=0 GOOS=windows go build; cd -
 	mkdir tools
 	mv enc/enc.exe foxden/foxden.exe validator/validator.exe tools
-	tar cfz tools_windows_amd64.tar.gz tools
+	zip -r tools_windows_amd64.zip tools
 	rm -rf tools
 
 build_windows_arm64:
@@ -76,7 +76,7 @@ build_windows_arm64:
 	cd validator; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
 	mkdir tools
 	mv enc/enc.exe foxden/foxden.exe validator/validator.exe tools
-	tar cfz tools_windows_arm64.tar.gz tools
+	zip -r tools_windows_arm64.zip tools
 	rm -rf tools
 
 test:

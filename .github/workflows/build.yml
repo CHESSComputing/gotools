@@ -107,8 +107,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_windows_amd64.tar.gz
-        asset_name: tools_windows_amd64.tar.gz
+        asset_path: ./tools_windows_amd64.zip
+        asset_name: tools_windows_amd64.zip
         asset_content_type: application/octet-stream
 
     - name: Upload windows binary
@@ -118,6 +118,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_windows_arm64.tar.gz
-        asset_name: tools_windows_arm64.tar.gz
+        asset_path: ./tools_windows_arm64.zip
+        asset_name: tools_windows_arm64.zip
         asset_content_type: application/octet-stream
