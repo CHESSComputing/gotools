@@ -6,6 +6,7 @@ package cmd
 //
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -40,16 +41,14 @@ func printConfig(args []string) {
 					cfile = fname
 				} else {
 					msg := "FOXDEN configuration file is not found"
-					fmt.Println(msg)
-					os.Exit(1)
+					log.Fatal(msg)
 				}
 			}
 		}
 	}
 	config, err := srvConfig.ParseConfig(cfile)
 	if err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
+		log.Fatal("ERROR: ", err)
 	}
 	fmt.Printf("Configuration file: %s\n", cfile)
 	fmt.Println(config.String())
