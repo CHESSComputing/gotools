@@ -10,8 +10,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/user"
+	"time"
 
 	authz "github.com/CHESSComputing/golib/authz"
 	services "github.com/CHESSComputing/golib/services"
@@ -107,6 +109,45 @@ func requestToken(scope, fname string) (string, error) {
 	return token, errors.New(msg)
 }
 
+// helper function to generate access token
+func generateToken() error {
+	// check if user has kerberos file in place, i.e. /tmp/krb5cc_<uid>
+	kfile := keyFile()
+	if _, err := os.Stat(kfile); os.IsNotExist(err) {
+		return err
+	}
+	// check if user has default read token
+	fname := fmt.Sprintf("%s/.foxden.access", os.Getenv("HOME"))
+	if _, err := os.Stat(fname); err == nil {
+		// file exists, let's read token and check its validity
+		file, err := os.Open(fname)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		data, _ := io.ReadAll(file)
+		token := string(data)
+		claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+		rclaims := claims.RegisteredClaims
+		etime := rclaims.ExpiresAt
+		if etime.After(time.Now()) {
+			return nil
+		}
+	}
+
+	token, err := requestToken("read", kfile)
+	if err != nil {
+		return err
+	}
+	file, err := os.Create(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	file.Write([]byte(token))
+	return nil
+}
+
 func inspectAllTokens(tkn string) {
 	var token string
 	if tkn != "" {
@@ -114,7 +155,14 @@ func inspectAllTokens(tkn string) {
 		inspectToken(token)
 		return
 	}
-	fmt.Println("No input token is provided, will lookup them from env...")
+	tfile := fmt.Sprintf("%s/.foxden.access", os.Getenv("HOME"))
+	if _, err := os.Stat(tfile); err == nil {
+		token = utils.ReadToken(tfile)
+		fmt.Println(tfile)
+		inspectToken(token)
+	} else {
+		fmt.Println("No input token is provided, will lookup them from env...")
+	}
 	for _, env := range envTokens {
 		token = utils.ReadToken(os.Getenv(env))
 		if token != "" {
@@ -171,6 +219,11 @@ func authCommand() *cobra.Command {
 					tokenEnv = "CHESS_DELETE_TOKEN"
 				} else {
 					tokenKind = attr
+				}
+				if tokenKind == "read" {
+					err := generateToken()
+					exit("unable to generate user access token", err)
+					return
 				}
 				token, err = requestToken(tokenKind, fname)
 				if err != nil {
