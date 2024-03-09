@@ -103,11 +103,12 @@ func getKerberosTicket(krbFile string) (string, []byte) {
 		// read krbFile and check user credentials
 		creds, err := kuserFromCache(krbFile)
 		if err != nil {
-			msg := fmt.Sprintf("getKerberosTicket unable to read %s", krbFile)
+			msg := fmt.Sprintf("unable to get valid kerberos credentials from %s", krbFile)
 			exit(msg, err)
 		}
 		if creds.Expired() {
-			exit("user credentials are expired, please obtain new/valid krb file", nil)
+			msg := fmt.Sprintf("user credentials are expired, please obtain new/valid kerberos file %s", krbFile)
+			exit(msg, nil)
 		}
 		ticket, err := ioutil.ReadFile(krbFile)
 		if err != nil {
