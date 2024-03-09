@@ -49,7 +49,7 @@ func accessToken() (string, error) {
 		if os.Getenv("CHESS_TOKEN") != "" {
 			token = utils.ReadToken(os.Getenv("CHESS_TOKEN"))
 		} else {
-			err := generateToken()
+			err := generateToken("")
 			exit("Unable to generate access token", err)
 			tfile := fmt.Sprintf("%s/.foxden.access", os.Getenv("HOME"))
 			token = utils.ReadToken(tfile)
