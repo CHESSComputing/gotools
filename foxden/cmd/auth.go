@@ -13,6 +13,8 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"path/filepath"
+	"strings"
 	"time"
 
 	authz "github.com/CHESSComputing/golib/authz"
@@ -109,17 +111,7 @@ func requestToken(scope, fname string) (string, error) {
 }
 
 // helper function to generate access token
-func generateToken() error {
-	// check if user has kerberos file in place, i.e. /tmp/krb5cc_<uid>
-	kfile := keyFile()
-	if _, err := os.Stat(kfile); os.IsNotExist(err) {
-		fmt.Printf("No kerberos ticket file %s found, please run:\n", kfile)
-		fmt.Printf("# in (ba)sh environment, export KRB5CCNAME=FILE:%s\n", kfile)
-		fmt.Printf("# in (t)csh environment, setenv KRB5CCNAME FILE:%s\n", kfile)
-		fmt.Println("kinit")
-		fmt.Println("")
-		return err
-	}
+func generateToken(keyFileName string) error {
 	// check if user has default read token
 	fname := fmt.Sprintf("%s/.foxden.access", os.Getenv("HOME"))
 	if _, err := os.Stat(fname); err == nil {
@@ -136,6 +128,33 @@ func generateToken() error {
 		etime := rclaims.ExpiresAt
 		if etime.After(time.Now()) {
 			return nil
+		}
+	}
+
+	// if user does not have default foxden.access valid token file we'll proceed with
+	// getting user's kerberos credentials
+	var kfile string
+
+	// expand tilde in keyFileName if it exists
+	if strings.HasPrefix(keyFileName, "~/") {
+		usr, _ := user.Current()
+		dir := usr.HomeDir
+		keyFileName = filepath.Join(dir, keyFileName[2:])
+	}
+
+	// check if we have provided with valid kerberos file name
+	if _, err := os.Stat(keyFileName); err == nil {
+		kfile = keyFileName
+	} else {
+		// check if user has kerberos file in place, i.e. /tmp/krb5cc_<uid>
+		kfile = keyFile()
+		if _, err := os.Stat(kfile); os.IsNotExist(err) {
+			fmt.Printf("No kerberos ticket file %s found, please run:\n", kfile)
+			fmt.Printf("# in (ba)sh environment, export KRB5CCNAME=FILE:%s\n", kfile)
+			fmt.Printf("# in (t)csh environment, setenv KRB5CCNAME FILE:%s\n", kfile)
+			fmt.Println("kinit")
+			fmt.Println("")
+			return err
 		}
 	}
 
@@ -200,7 +219,7 @@ func authCommand() *cobra.Command {
 		Long:  "foxden authentication/authorization commands to access FOXDEN Auth service\n" + doc + "\n" + authUsage(),
 		Run: func(cmd *cobra.Command, args []string) {
 			tkn, _ := cmd.Flags().GetString("token")
-			fname, _ := cmd.Flags().GetString("kfile")
+			kfile, _ := cmd.Flags().GetString("kfile")
 			if len(args) == 0 {
 				authUsage()
 			} else if args[0] == "token" {
@@ -225,11 +244,11 @@ func authCommand() *cobra.Command {
 					tokenKind = attr
 				}
 				if tokenKind == "read" {
-					err := generateToken()
+					err := generateToken(kfile)
 					exit("unable to generate user access token", err)
 					return
 				}
-				token, err = requestToken(tokenKind, fname)
+				token, err = requestToken(tokenKind, kfile)
 				if err != nil {
 					exit("unable to get valid token", err)
 				}
