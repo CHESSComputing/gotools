@@ -38,6 +38,10 @@ func metaRecords(user, query string) ([]map[string]any, error) {
 	if err != nil {
 		exit("Unable to unmarshal the data", err)
 	}
+	if response.HttpCode >= 400 {
+		fmt.Printf("Service %s returned error: %v\n", response.Service, response.Error)
+		os.Exit(1)
+	}
 	records = response.Results.Records
 	return records, nil
 }
@@ -46,8 +50,14 @@ func metaRecords(user, query string) ([]map[string]any, error) {
 func searchUsage() {
 	fmt.Println("foxden search <spec>")
 	fmt.Println("\nExamples:")
-	fmt.Println("\n# search CHESS data:")
+	fmt.Println("\n# search CHESS data using query language, e.g. empty query match all records")
 	fmt.Println("foxden search {}")
+	fmt.Println("\n# search using query language,")
+	fmt.Println("# provide valid JSON use single quotes around it and double quotes for key:value pairs")
+	fmt.Println("foxden search '{\"PI\":\"name\"}'")
+	fmt.Println("\n# search using key:value pairs, e.g. pi:name where 'pi' is record key and 'name' would be PI user name")
+	fmt.Println("# keys can be in lower case, e.g. pi instead of PI used in meta-data record")
+	fmt.Println("foxden search pi:name")
 }
 
 // helper funtion to list search-data records
