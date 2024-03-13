@@ -55,27 +55,33 @@ func printResults(rec DBSRecord) {
 }
 
 // helper function to list dataset information
-func provListRecord(args []string) {
+func provListRecord(args []string, dataset, dfile string) {
+	var rurl string
 	if len(args) == 1 {
 		fmt.Println("WARNING: please provide provenance attribute")
 		os.Exit(1)
 	} else if args[1] == "datasets" {
-		rurl := fmt.Sprintf("%s/datasets", _srvConfig.Services.DataBookkeepingURL)
-		for _, rec := range getData(rurl) {
-			printResults(rec)
+		rurl = fmt.Sprintf("%s/datasets", _srvConfig.Services.DataBookkeepingURL)
+		if dataset != "" {
+			rurl = fmt.Sprintf("%s?dataset=%s", rurl, dataset)
+		} else if dfile != "" {
+			rurl = fmt.Sprintf("%s?file=%s", rurl, dfile)
 		}
-		//     } else if args[1] == "files" {
-		//         rurl := fmt.Sprintf("%s/files", _srvConfig.Services.DataBookkeepingURL)
-		//         for _, rec := range getData(rurl) {
-		//             printResults(rec)
-		//         }
-		//     } else if args[1] == "buckets" {
-		//         rurl := fmt.Sprintf("%s/buckets", _srvConfig.Services.DataBookkeepingURL)
-		//         for _, rec := range getData(rurl) {
-		//             printResults(rec)
-		//         }
+	} else if args[1] == "files" {
+		rurl = fmt.Sprintf("%s/files", _srvConfig.Services.DataBookkeepingURL)
+		if dataset != "" {
+			rurl = fmt.Sprintf("%s?dataset=%s", rurl, dataset)
+		} else if dfile != "" {
+			rurl = fmt.Sprintf("%s?file=%s", rurl, dfile)
+		}
+	} else if args[1] == "buckets" {
+		rurl = fmt.Sprintf("%s/buckets", _srvConfig.Services.DataBookkeepingURL)
 	} else {
 		fmt.Println("Not implemented yet")
+		return
+	}
+	for _, rec := range getData(rurl) {
+		printResults(rec)
 	}
 }
 
@@ -138,15 +144,15 @@ func provDeleteRecord(args []string) {
 
 // helper function to provide usage of dbs option
 func provUsage() {
-	fmt.Println("foxden prov <ls|add|rm> [options]")
-	fmt.Println("options: provenance attributes like dataset, file, site")
+	fmt.Println("foxden prov <ls|add> [options]")
+	fmt.Println("options: provenance attributes like dataset(s), file(s)")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all provenance records:")
-	fmt.Println("foxden prov ls <dataset|site|file>")
-	fmt.Println("\n# remove provenance data record:")
-	fmt.Println("foxden prov rm <dataset|site|file>")
+	fmt.Println("foxden prov ls <datasets|files>")
+	//     fmt.Println("\n# remove provenance data record:")
+	//     fmt.Println("foxden prov rm <dataset|site|file>")
 	fmt.Println("\n# add provenance data record:")
-	fmt.Println("foxden prov add <dataset|site|file>")
+	fmt.Println("foxden prov add <provenance.json>")
 }
 func provCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -155,23 +161,27 @@ func provCommand() *cobra.Command {
 		Long:  "foxden provenance commands to access FOXDEN Provenance service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			file, _ := cmd.Flags().GetString("file")
+			dset, _ := cmd.Flags().GetString("dataset")
 			if len(args) == 0 {
 				provUsage()
 			} else if args[0] == "ls" {
 				// obtain valid access token
 				accessToken()
-				provListRecord(args)
+				provListRecord(args, dset, file)
 			} else if args[0] == "add" {
 				writeToken()
 				provAddRecord(args)
-			} else if args[0] == "rm" {
-				writeToken()
-				provDeleteRecord(args)
+				//             } else if args[0] == "rm" {
+				//                 deleteToken()
+				//                 provDeleteRecord(args)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
 			}
 		},
 	}
+	cmd.PersistentFlags().String("dataset", "", "dataset to use")
+	cmd.PersistentFlags().String("file", "", "file to use")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		provUsage()
 		return nil
