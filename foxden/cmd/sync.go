@@ -12,14 +12,14 @@ import (
 
 // helper function to provide usage of sync option
 func syncUsage() {
-	fmt.Println("foxden sync <service: meta or dbs> URL1 URL2")
+	fmt.Println("foxden sync <service: meta or provenance> URL1 URL2")
 }
 
 func syncMetaRecords(url1, url2 string) {
 	fmt.Println("not implemented yet")
 }
 
-func syncDBSRecords(url1, url2 string) {
+func syncProvenanceRecords(url1, url2 string) {
 	fmt.Println("not implemented yet")
 }
 
@@ -35,8 +35,8 @@ func syncCommand() *cobra.Command {
 				syncUsage()
 			} else if args[1] == "meta" {
 				syncMetaRecords(args[2], args[3])
-			} else if args[1] == "dbs" {
-				syncDBSRecords(args[2], args[3])
+			} else if args[1] == "prov" {
+				syncProvenanceRecords(args[2], args[3])
 			} else {
 				syncUsage()
 			}
