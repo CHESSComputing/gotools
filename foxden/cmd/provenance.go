@@ -117,7 +117,18 @@ func provAddRecord(args []string) {
 	if resp.StatusCode == 200 {
 		fmt.Printf("SUCCESS: provenance record was successfully added\n")
 	} else {
-		fmt.Printf("WARNING: provenance record failed to be added provenance service\n")
+		fmt.Printf("WARNING: fail to add provenance record\n")
+		defer resp.Body.Close()
+		data, err := io.ReadAll(resp.Body)
+		var records []map[string]any
+		err = json.Unmarshal(data, &records)
+		if err == nil {
+			for _, rec := range records {
+				fmt.Println(rec)
+			}
+		} else {
+			fmt.Printf("HTTP response: %+v, error %v\n", string(data), err)
+		}
 	}
 }
 
