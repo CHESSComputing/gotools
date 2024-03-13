@@ -24,7 +24,7 @@ var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpReques
 func exit(msg string, err error) {
 	if err != nil {
 		log.Println(utils.Stack())
-		log.Fatal("ERROR: ", err, ", ", msg)
+		log.Fatal("ERROR: ", err, "\n", msg)
 	}
 }
 
@@ -70,7 +70,7 @@ func getUserToken() (string, string) {
 	}
 	claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 	if err != nil {
-		exit("getUserToken: unable to read token claims", err)
+		exit("unable to read token claims, please check CHESS_TOKEN env, and run 'foxden token view'", err)
 	}
 	rclaims := claims.RegisteredClaims
 	user := rclaims.Subject
@@ -86,7 +86,7 @@ func writeToken() (string, error) {
 		}
 		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
-			exit("writeToken: unable to read token claims", err)
+			exit("unable to read write token claims, please check CHESS_WRITE_TOKEN env, and run 'foxden token view'", err)
 		}
 		_httpWriteRequest.Token = token
 	}
@@ -102,7 +102,7 @@ func deleteToken() (string, error) {
 		}
 		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
-			exit("deleteToken: unable to read token claims", err)
+			exit("unable to read delete token claims, please check CHESS_DELETE_TOKEN env, and run 'foxden token view'", err)
 		}
 		_httpDeleteRequest.Token = token
 	}
