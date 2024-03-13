@@ -6,17 +6,17 @@ schema=ID3A
 
 echo
 echo "get write token"
-token=`./foxden auth token write /tmp/krb5cc_502 | head -1`
+token=`./foxden token create write | head -1`
 export CHESS_WRITE_TOKEN=$token
 # echo "CHESS_WRITE_TOKEN=$CHESS_WRITE_TOKEN"
 echo
 echo "get read token"
-token=`./foxden auth token /tmp/krb5cc_502 | head -1`
+token=`./foxden token create read | head -1`
 export CHESS_TOKEN=$token
 # echo "CHESS_TOKEN=$CHESS_TOKEN"
 echo
 echo "view issued tokens"
-./foxden auth token view
+./foxden token view
 
 echo
 echo "remove dbs.db"

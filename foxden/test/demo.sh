@@ -5,18 +5,20 @@ idir=$cdir/gotools/foxden/test/data
 schema=ID3A
 
 echo
-echo "get write token"
-token=`./foxden auth token write | head -1`
+echo "create write token"
+echo "/foxden token create write"
+token=`./foxden token create write | head -1`
 export CHESS_WRITE_TOKEN=$token
 # echo "CHESS_WRITE_TOKEN=$CHESS_WRITE_TOKEN"
 echo
-echo "get read token"
-token=`./foxden auth token | head -1`
+echo "create read token"
+echo "/foxden token create read"
+token=`./foxden token create read | head -1`
 export CHESS_TOKEN=$token
 # echo "CHESS_TOKEN=$CHESS_TOKEN"
 echo
 echo "view issued tokens"
-./foxden auth token view
+./foxden token view
 
 sleep 5
 

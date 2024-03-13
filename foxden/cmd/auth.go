@@ -28,30 +28,30 @@ var envTokens []string = []string{"CHESS_TOKEN", "CHESS_WRITE_TOKEN", "CHESS_DEL
 // helper function to provide usage of meta option
 func authUsage() string {
 	var out string
-	out += fmt.Sprintf("foxden auth token <scope: read|write|delete> [options]\n")
-	out += fmt.Sprintf("foxden auth view [options]\n\n")
+	out += fmt.Sprintf("\nfoxden token create <scope: read|write|delete> [options]\n")
+	out += fmt.Sprintf("foxden token view [options]\n\n")
 	out += fmt.Sprintf("options: --kfile=keytab, --token=<token or file>\n")
 	out += fmt.Sprintf("defaults: token generated with read scope\n")
 	out += fmt.Sprintf("          kfile is /tmp/krb5cc_<UID>\n")
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("Examples: \n")
 	out += fmt.Sprintf("# generate read token\n")
-	out += fmt.Sprintf("foxden auth token read\n")
+	out += fmt.Sprintf("foxden token create read\n")
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("# generate read token from specific /path/keytab file\n")
-	out += fmt.Sprintf("foxden auth token read -kfile=/path/keytab\n")
+	out += fmt.Sprintf("foxden token create read -kfile=/path/keytab\n")
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("# generate write token\n")
-	out += fmt.Sprintf("foxden auth token write\n")
+	out += fmt.Sprintf("foxden token create write\n")
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("# view provided token=abc...xyz\n")
-	out += fmt.Sprintf("foxden auth token view --token=abc...xyz\n")
+	out += fmt.Sprintf("foxden token view --token=abc...xyz\n")
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("# view existing token stored in /tmp/token file\n")
-	out += fmt.Sprintf("foxden auth token view --token=/tmp/token\n")
+	out += fmt.Sprintf("foxden token view --token=/tmp/token\n")
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("# view existing token stored in %s\n", envTokens)
-	out += fmt.Sprintf("foxden auth token view\n")
+	out += fmt.Sprintf("foxden token view\n")
 	return out
 }
 
@@ -214,15 +214,17 @@ func inspectToken(token string) {
 
 func authCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "auth",
-		Short: "foxden authentication/authorization commands",
-		Long:  "foxden authentication/authorization commands to access FOXDEN Auth service\n" + doc + "\n" + authUsage(),
+		Use:   "token",
+		Short: "foxden token commands",
+		Long:  "foxden token commands: valid token is required to access FOXDEN services\n" + doc + "\n" + authUsage(),
 		Run: func(cmd *cobra.Command, args []string) {
 			tkn, _ := cmd.Flags().GetString("token")
 			kfile, _ := cmd.Flags().GetString("kfile")
 			if len(args) == 0 {
 				authUsage()
-			} else if args[0] == "token" {
+			} else if args[0] == "view" {
+				inspectAllTokens(tkn)
+			} else if args[0] == "create" {
 				attr := "read"
 				if len(args) > 1 {
 					attr = args[1]
@@ -230,10 +232,6 @@ func authCommand() *cobra.Command {
 				var token, tokenKind string
 				tokenEnv := "CHESS_TOKEN"
 				var err error
-				if attr == "view" {
-					inspectAllTokens(tkn)
-					return
-				}
 				if attr == "write" {
 					tokenKind = "write"
 					tokenEnv = "CHESS_WRITE_TOKEN"
