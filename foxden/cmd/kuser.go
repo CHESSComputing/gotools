@@ -103,7 +103,8 @@ func getKerberosTicket(krbFile string) (string, []byte) {
 		// read krbFile and check user credentials
 		creds, err := kuserFromCache(krbFile)
 		if err != nil {
-			msg := fmt.Sprintf("unable to get valid kerberos credentials from %s", krbFile)
+			msg := fmt.Sprintf("\nUnable to get valid kerberos credentials from %s", krbFile)
+			msg = fmt.Sprintf("%s\nPlease check your KRB5CCNAME environment and use --kfile option with your kerberos file", msg)
 			exit(msg, err)
 		}
 		if creds.Expired() {
