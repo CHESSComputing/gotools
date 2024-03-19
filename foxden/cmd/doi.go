@@ -56,24 +56,24 @@ func (r *PublishRecord) Validate() error {
 }
 
 // helper function to get did from given args
-func getDID(args []string) int64 {
-	if len(args) < 2 {
-		fmt.Println("ERROR: wrong number of arguments", args, len(args))
-		os.Exit(1)
-	}
-	did, err := strconv.Atoi(args[1])
+func getDID(sdid string) int64 {
+	//     if len(args) < 2 {
+	//         fmt.Println("ERROR: wrong number of arguments in getDID", args, len(args))
+	//         os.Exit(1)
+	//     }
+	did, err := strconv.Atoi(sdid)
 	exit("unable to parse did parameter", err)
 	return int64(did)
 }
 
 // helper function to parget input args
 func getParams(args []string) (int64, string) {
-	if len(args) != 3 {
-		fmt.Println("ERROR: wrong number of arguments", args, len(args))
+	if len(args) != 2 {
+		fmt.Println("ERROR: wrong number of arguments in getParams", args, len(args))
 		os.Exit(1)
 	}
-	did := getDID(args)
-	fname := args[2]
+	did := getDID(args[0]) // first arugment should be id string
+	fname := args[1]       // last argument should be file name
 	return did, fname
 }
 
@@ -186,7 +186,7 @@ func loadRecord(fname string) (PublishRecord, error) {
 // helper function to create new document in Zenodo
 func doiCreate(args []string) {
 	if len(args) != 1 {
-		fmt.Println("ERROR: wrong number of arguments", args, len(args))
+		fmt.Println("ERROR: wrong number of arguments in doiCreate", args, len(args))
 		os.Exit(1)
 	}
 	// create new DOI resource
@@ -358,25 +358,25 @@ func doiCommand() *cobra.Command {
 			} else if args[0] == "create" {
 				accessToken()
 				writeToken()
-				doiCreate(args)
+				doiCreate(args[1:])
 			} else if args[0] == "add" {
 				accessToken()
 				writeToken()
-				did, fname := getParams(args)
+				did, fname := getParams(args[1:])
 				doiAdd(did, fname)
 			} else if args[0] == "update" {
 				accessToken()
 				writeToken()
-				did, fname := getParams(args)
+				did, fname := getParams(args[1:])
 				doiUpdate(did, fname)
 			} else if args[0] == "publish" {
 				accessToken()
 				writeToken()
-				did := getDID(args)
+				did := getDID(args[1])
 				doiPublish(did)
 			} else if args[0] == "view" {
 				accessToken()
-				did := getDID(args)
+				did := getDID(args[1])
 				doiView(did)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v\n", args)
