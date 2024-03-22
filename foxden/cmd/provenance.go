@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	dbs "github.com/CHESSComputing/DataBookkeeping/dbs"
 	"github.com/spf13/cobra"
@@ -55,22 +56,22 @@ func printResults(rec DBSRecord) {
 }
 
 // helper function to list dataset information
-func provListRecord(args []string, dataset, dfile string) {
+func provListRecord(args []string, did, dfile string) {
 	var rurl string
 	if len(args) == 1 {
 		fmt.Println("WARNING: please provide provenance attribute")
 		os.Exit(1)
 	} else if args[1] == "datasets" {
 		rurl = fmt.Sprintf("%s/datasets", _srvConfig.Services.DataBookkeepingURL)
-		if dataset != "" {
-			rurl = fmt.Sprintf("%s?dataset=%s", rurl, dataset)
+		if did != "" {
+			rurl = fmt.Sprintf("%s?did=%s", rurl, did)
 		} else if dfile != "" {
 			rurl = fmt.Sprintf("%s?file=%s", rurl, dfile)
 		}
 	} else if args[1] == "files" {
 		rurl = fmt.Sprintf("%s/files", _srvConfig.Services.DataBookkeepingURL)
-		if dataset != "" {
-			rurl = fmt.Sprintf("%s?dataset=%s", rurl, dataset)
+		if did != "" {
+			rurl = fmt.Sprintf("%s?did=%s", rurl, did)
 		} else if dfile != "" {
 			rurl = fmt.Sprintf("%s?file=%s", rurl, dfile)
 		}
@@ -81,6 +82,17 @@ func provListRecord(args []string, dataset, dfile string) {
 		return
 	}
 	for _, rec := range getData(rurl) {
+		// convert seconds since epoch to human readable string
+		if v, ok := rec["create_at"]; ok {
+			ts := int64(v.(float64))
+			tstmp := time.Unix(ts, 0)
+			rec["create_at"] = tstmp.String()
+		}
+		if v, ok := rec["modify_at"]; ok {
+			ts := int64(v.(float64))
+			tstmp := time.Unix(ts, 0)
+			rec["modify_at"] = tstmp.String()
+		}
 		printResults(rec)
 	}
 }
@@ -120,10 +132,10 @@ func provAddRecord(args []string) {
 	//     err = json.Unmarshal(body, &response)
 	//     exit("", err)
 	//     if response.Status == "ok" {
-	if resp.StatusCode == 200 {
+	if err == nil && resp.StatusCode == 200 {
 		fmt.Printf("SUCCESS: provenance record was successfully added\n")
 	} else {
-		fmt.Printf("WARNING: fail to add provenance record\n")
+		fmt.Printf("WARNING: fail to add provenance record, error: %v\n", err)
 		defer resp.Body.Close()
 		data, err := io.ReadAll(resp.Body)
 		var records []map[string]any
@@ -146,14 +158,14 @@ func provDeleteRecord(args []string) {
 func provUsage() {
 	fmt.Println("foxden prov <ls|add> [options]")
 	fmt.Println("options: provenance attributes like dataset(s), file(s) or")
-	fmt.Sprintf("         --file=<file name>, --dataset=<dataset name>\n")
+	fmt.Sprintf("         --file=<file name>, --did=<dataset id>\n")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all provenance records:")
 	fmt.Println("foxden prov ls <datasets|files>")
 	fmt.Println("\n# list all dataset records for specific dataset:")
-	fmt.Println("foxden prov ls datasets --dataset=/x/y/z")
+	fmt.Println("foxden prov ls datasets --did=/x/y/z")
 	fmt.Println("\n# list all file records for specific dataset:")
-	fmt.Println("foxden prov ls files --dataset=/x/y/z")
+	fmt.Println("foxden prov ls files --did=/x/y/z")
 	//     fmt.Println("\n# remove provenance data record:")
 	//     fmt.Println("foxden prov rm <dataset|site|file>")
 	fmt.Println("\n# add provenance data record:")
@@ -167,13 +179,13 @@ func provCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			file, _ := cmd.Flags().GetString("file")
-			dset, _ := cmd.Flags().GetString("dataset")
+			did, _ := cmd.Flags().GetString("did")
 			if len(args) == 0 {
 				provUsage()
 			} else if args[0] == "ls" {
 				// obtain valid access token
 				accessToken()
-				provListRecord(args, dset, file)
+				provListRecord(args, did, file)
 			} else if args[0] == "add" {
 				writeToken()
 				provAddRecord(args)
@@ -185,7 +197,7 @@ func provCommand() *cobra.Command {
 			}
 		},
 	}
-	cmd.PersistentFlags().String("dataset", "", "dataset to use")
+	cmd.PersistentFlags().String("did", "", "did to use")
 	cmd.PersistentFlags().String("file", "", "file to use")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		provUsage()
