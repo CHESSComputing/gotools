@@ -7,7 +7,7 @@
     "/x/y/z/file2.png",
     "/x/y/z/file3.png"
   ],
-  "did": "xyz",
+  "did": "unittest",
   "processing": "glibc with some fancy code",
   "site": "Cornell"
 }

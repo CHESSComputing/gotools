@@ -1,0 +1,8 @@
+{
+  "did": "/aaaaa/bbbbb/ccccc",
+  "files": [
+    "/a/b/c/file1.jpeg",
+    "/a/b/c/file2.jpeg",
+    "/a/b/c/file3.jpeg"
+  ]
+}

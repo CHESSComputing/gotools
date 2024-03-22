@@ -47,11 +47,29 @@ echo "+++ view record /beamline=3a/btr=3731-b/cycle=2023-3"
 ./foxden view /beamline=3a/btr=3731-b/cycle=2023-3
 
 echo
-echo "+++ view records xyz"
-./foxden view xyz
+echo "+++ view records unittest"
+./foxden view unittest
+
+echo
+echo "+++ test dataset id updates"
+echo "+++ adding empty dbs record with some did"
+did=`cat test/data/ID3A-dbs1-empty.json | grep did | awk '{print $2}' | sed -e "s,\",,g"`
+./foxden prov add test/data/ID3A-dbs1-empty.json
+echo "+++ list files of our did"
+./foxden prov ls files --did=$did
+echo "+++ update dbs record with new files"
+./foxden prov add test/data/ID3A-dbs1-empty-files.json
+echo "+++ list files of our did"
+./foxden prov ls files --did=$did
+echo "+++ update dbs record with processing info"
+./foxden prov add test/data/ID3A-dbs1-empty-proc.json
+echo "+++ list files of our did"
+./foxden prov ls files --did=$did
+
 
 echo
 echo "+++ test read token for writing (must fail)"
 export CHESS_WRITE_TOKEN=$CHESS_TOKEN
 schema=test
 ./foxden meta add $schema $idir/test-data.json
+
