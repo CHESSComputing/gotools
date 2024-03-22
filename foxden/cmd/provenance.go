@@ -11,11 +11,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	dbs "github.com/CHESSComputing/DataBookkeeping/dbs"
+	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +53,10 @@ func printResults(rec DBSRecord) {
 			maxKey = len(key)
 		}
 	}
-	for key, val := range rec {
+	keys := utils.MapKeys(rec)
+	sort.Strings(keys)
+	for _, key := range keys {
+		val, _ := rec[key]
 		pad := strings.Repeat(" ", maxKey-len(key))
 		fmt.Printf("%s%s\t%v\n", key, pad, val)
 	}
@@ -142,17 +147,33 @@ func provAddRecord(args []string) {
 	if err == nil && resp.StatusCode == 200 {
 		fmt.Printf("SUCCESS: provenance record was successfully added\n")
 	} else {
-		fmt.Printf("WARNING: fail to add provenance record, error: %v\n", err)
-		defer resp.Body.Close()
-		data, err := io.ReadAll(resp.Body)
-		var records []map[string]any
-		err = json.Unmarshal(data, &records)
-		if err == nil {
-			for _, rec := range records {
-				fmt.Println(rec)
-			}
+		if err != nil {
+			fmt.Printf("ERROR: fail to add provenance record, error: %v\n", err)
 		} else {
-			fmt.Printf("HTTP response: %+v, error %v\n", string(data), err)
+			fmt.Printf("WARNING: fail to add provenance record\n\n")
+			defer resp.Body.Close()
+			data, err := io.ReadAll(resp.Body)
+			var records []map[string]any
+			err = json.Unmarshal(data, &records)
+			if err == nil {
+				keys := []string{"code", "function", "reason"}
+				for _, rec := range records {
+					if rrr, ok := rec["error"]; ok {
+						record := rrr.(map[string]any)
+						out := make(DBSRecord)
+						for key, val := range record {
+							if utils.InList(key, keys) {
+								out[key] = val
+							}
+						}
+						printResults(out)
+					} else {
+						fmt.Println(rec)
+					}
+				}
+			} else {
+				fmt.Printf("HTTP response: %+v, error %v\n", string(data), err)
+			}
 		}
 	}
 }
