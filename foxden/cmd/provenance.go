@@ -9,7 +9,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -84,17 +86,22 @@ func provListRecord(args []string, did, dfile string) {
 	for _, rec := range getData(rurl) {
 		// convert seconds since epoch to human readable string
 		if v, ok := rec["create_at"]; ok {
-			ts := int64(v.(float64))
-			tstmp := time.Unix(ts, 0)
-			rec["create_at"] = tstmp.String()
+			rec["create_at"] = parseTimestamp(fmt.Sprintf("%v", v))
 		}
 		if v, ok := rec["modify_at"]; ok {
-			ts := int64(v.(float64))
-			tstmp := time.Unix(ts, 0)
-			rec["modify_at"] = tstmp.String()
+			rec["modify_at"] = parseTimestamp(fmt.Sprintf("%v", v))
 		}
 		printResults(rec)
 	}
+}
+
+func parseTimestamp(v string) string {
+	ts, err := strconv.ParseFloat(v, 64)
+	if err != nil {
+		log.Fatal("unable to parse input timestamp", v, " error: ", err)
+	}
+	tstmp := time.Unix(int64(ts), 0)
+	return tstmp.String()
 }
 
 // ResponseRecord represents MetaData record returned by discovery service
