@@ -2,13 +2,12 @@
   "buckets": [
     "siteABC"
   ],
-  "dataset": "/a/b/c",
   "files": [
     "/a/b/c/file1.png",
     "/a/b/c/file2.png",
     "/a/b/c/file3.png"
   ],
-  "meta_id": "/beamline=3a/btr=3731-b/cycle=2023-3",
+  "did": "/beamline=3a/btr=3731-b/cycle=2023-3",
   "processing": "glibc",
   "site": "Cornell"
 }
