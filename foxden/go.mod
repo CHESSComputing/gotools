@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.0.1
-	github.com/CHESSComputing/golib v0.1.8
+	github.com/CHESSComputing/golib v0.1.9
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.21.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
