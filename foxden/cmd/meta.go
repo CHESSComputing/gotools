@@ -96,14 +96,14 @@ func didMetaData() (string, string, string) {
 	sep := "/"
 	div := "="
 	if _srvConfig != nil {
-		if _srvConfig.CHESSMetaData.DID.Attributes != "" {
-			attrs = _srvConfig.CHESSMetaData.DID.Attributes
+		if _srvConfig.DID.Attributes != "" {
+			attrs = _srvConfig.DID.Attributes
 		}
-		if _srvConfig.CHESSMetaData.DID.Separator != "" {
-			sep = _srvConfig.CHESSMetaData.DID.Separator
+		if _srvConfig.DID.Separator != "" {
+			sep = _srvConfig.DID.Separator
 		}
-		if _srvConfig.CHESSMetaData.DID.Divider != "" {
-			div = _srvConfig.CHESSMetaData.DID.Divider
+		if _srvConfig.DID.Divider != "" {
+			div = _srvConfig.DID.Divider
 		}
 	}
 	return attrs, sep, div
