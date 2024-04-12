@@ -252,7 +252,7 @@ func authCommand() *cobra.Command {
 					exit("unable to get valid token", err)
 				}
 				fmt.Println(token)
-				fmt.Printf("\nSet %s env variable with it to re-use in other commands\n", tokenEnv)
+				fmt.Printf("\nSet %s env variable with this token to re-use it in other commands\n", tokenEnv)
 			} else {
 				fmt.Println("ERROR")
 			}
