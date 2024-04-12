@@ -26,7 +26,8 @@ func exit(msg string, err error) {
 		if os.Getenv("FOXDEN_VERBOSE") != "" {
 			log.Println(utils.Stack())
 		}
-		log.Fatal("ERROR: ", err, "\n\nReason: %s", msg)
+		reason := fmt.Sprintf("\n\nReason: %s", msg)
+		log.Fatal("ERROR: ", err, reason)
 	}
 }
 
