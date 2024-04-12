@@ -63,5 +63,7 @@ func initConfig() {
 		os.Exit(1)
 	}
 	_srvConfig = &config
-	log.SetFlags(log.LstdFlags | log.Llongfile)
+	if os.Getenv("FOXDEN_VERBOSE") != "" {
+		log.SetFlags(log.LstdFlags | log.Llongfile)
+	}
 }
