@@ -23,8 +23,10 @@ var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpReques
 // helper function to exit with message and error
 func exit(msg string, err error) {
 	if err != nil {
-		log.Println(utils.Stack())
-		log.Fatal("ERROR: ", err, "\n", msg)
+		if os.Getenv("FOXDEN_VERBOSE") != "" {
+			log.Println(utils.Stack())
+		}
+		log.Fatal("ERROR: ", err, "\n\nReason: %s", msg)
 	}
 }
 
