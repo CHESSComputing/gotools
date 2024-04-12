@@ -107,6 +107,7 @@ func requestToken(scope, fname string) (string, error) {
 		}
 	}
 	msg := fmt.Sprintf("Unable to obtain valid token, Auth service response %+v", response)
+	printMap(response)
 	return token, errors.New(msg)
 }
 
