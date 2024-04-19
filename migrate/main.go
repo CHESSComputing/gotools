@@ -90,8 +90,9 @@ func migrate(readUri, readDBName, readCollection, writeUri, writeDBName, writeCo
 
 func getValue(key string, rec map[string]any) string {
 	var s string
-	log.Printf("### switch %s type %T\n", key, rec[key])
 	switch val := rec[key].(type) {
+	case nil:
+		s = ""
 	case []string:
 		var out []string
 		for _, v := range val {
@@ -114,7 +115,7 @@ func getDid(rec map[string]any) string {
 		getValue("Beamline", rec),
 		getValue("BTR", rec),
 		getValue("Cycle", rec),
-		getValue("Sample", rec),
+		getValue("SampleName", rec),
 	)
 	return did
 }
