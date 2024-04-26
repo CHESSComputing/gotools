@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 
+	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -99,21 +100,11 @@ func s3List(args []string) {
 	// fmt.Printf("results: %+v %T\n", results.Data, results.Data)
 }
 
-func keyPad(key string, maxLen int) string {
-	if len(key) < maxLen {
-		pad := maxLen - len(key)
-		for i := 0; i < pad; i++ {
-			key += " "
-		}
-	}
-	return key
-}
-
 // helper function to print map entries
 func printMap(m map[string]any) {
 	maxLen := 20
 	for k, v := range m {
-		key := keyPad(k, maxLen)
+		key := utils.PaddedKey(k, maxLen)
 		switch vvv := v.(type) {
 		case map[string]any:
 			printMap(vvv)

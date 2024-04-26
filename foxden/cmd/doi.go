@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/CHESSComputing/golib/zenodo"
 	"github.com/spf13/cobra"
 )
@@ -119,7 +120,7 @@ func doiUsage() {
 func printRecord(rec map[string]any) {
 	maxLen := 20
 	if val, ok := rec["id"]; ok {
-		key := keyPad("id", maxLen)
+		key := utils.PaddedKey("id", maxLen)
 		vvv := val.(float64)
 		v := int64(vvv)
 		fmt.Printf("%s: %v\n", key, v)
@@ -127,7 +128,7 @@ func printRecord(rec map[string]any) {
 	if val, ok := rec["links"]; ok {
 		vvv := val.(map[string]any)
 		if v, ok := vvv["html"]; ok {
-			key := keyPad("URL", maxLen)
+			key := utils.PaddedKey("URL", maxLen)
 			fmt.Printf("%s: %v\n", key, v)
 		}
 	}
