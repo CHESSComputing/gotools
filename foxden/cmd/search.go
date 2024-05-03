@@ -10,8 +10,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
+	"strings"
 
 	services "github.com/CHESSComputing/golib/services"
+	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -50,6 +53,8 @@ func metaRecords(user, query string) ([]map[string]any, error) {
 func searchUsage() {
 	fmt.Println("foxden search <spec>")
 	fmt.Println("\nExamples:")
+	fmt.Println("\n# list all known search keys:")
+	fmt.Println("foxden search keys")
 	fmt.Println("\n# search CHESS data using query language, e.g. empty query match all records")
 	fmt.Println("foxden search {}")
 	fmt.Println("\n# search using query language,")
@@ -60,8 +65,47 @@ func searchUsage() {
 	fmt.Println("foxden search pi:name")
 }
 
-// helper funtion to list search-data records
+// helper function to get all known search (QL) keys across all FOXDEN services
+func getSearchKeys() []string {
+	urls := []string{
+		_srvConfig.Services.DataBookkeepingURL,
+		_srvConfig.Services.DataManagementURL,
+		_srvConfig.Services.MetaDataURL,
+		_srvConfig.Services.SpecScansURL,
+	}
+	var skeys []string
+	for _, url := range urls {
+		rurl := fmt.Sprintf("%s/qlkeys", url)
+		resp, err := _httpReadRequest.Get(rurl)
+		if err != nil {
+			exit(fmt.Sprintf("unable to reach %s", rurl), err)
+		}
+		defer resp.Body.Close()
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			exit("unable to read HTTP response", err)
+		}
+		var records []string
+		err = json.Unmarshal(data, &records)
+		if err != nil {
+			exit("unable to unmarshal HTTP response", err)
+		}
+		for _, k := range records {
+			skeys = append(skeys, k)
+		}
+	}
+	skeys = utils.List2Set(skeys)
+	sort.Strings(skeys)
+	return skeys
+}
+
+// helper function to list search-data records
 func searchListRecord(user, spec string) {
+	if spec == "keys" {
+		skeys := getSearchKeys()
+		fmt.Println("FOXDEN search keys:", strings.Join(skeys, ", "))
+		return
+	}
 	records, err := metaRecords(user, spec)
 	if err != nil {
 		fmt.Println("ERROR", err)
