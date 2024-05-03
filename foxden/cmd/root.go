@@ -43,17 +43,18 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.AddCommand(metaCommand())
-	rootCmd.AddCommand(searchCommand())
-	rootCmd.AddCommand(provCommand())
-	rootCmd.AddCommand(authCommand())
 	rootCmd.AddCommand(s3Command())
 	rootCmd.AddCommand(mlCommand())
 	rootCmd.AddCommand(doiCommand())
+	rootCmd.AddCommand(metaCommand())
+	rootCmd.AddCommand(provCommand())
+	rootCmd.AddCommand(authCommand())
 	rootCmd.AddCommand(viewCommand())
 	rootCmd.AddCommand(syncCommand())
+	rootCmd.AddCommand(searchCommand())
 	rootCmd.AddCommand(configCommand())
 	rootCmd.AddCommand(versionCommand())
+	rootCmd.AddCommand(describeCommand())
 }
 
 func initConfig() {
