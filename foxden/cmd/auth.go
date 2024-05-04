@@ -254,7 +254,7 @@ func authCommand() *cobra.Command {
 				fmt.Println(token)
 				fmt.Printf("\nSet %s env variable with this token to re-use it in other commands\n", tokenEnv)
 			} else {
-				fmt.Println("ERROR")
+				fmt.Println("ERROR: wrong argument(s), please see --help")
 			}
 		},
 	}
