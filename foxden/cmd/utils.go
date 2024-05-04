@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	authz "github.com/CHESSComputing/golib/authz"
 	services "github.com/CHESSComputing/golib/services"
@@ -23,7 +24,8 @@ var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpReques
 // helper function to exit with message and error
 func exit(msg string, err error) {
 	if err != nil {
-		if os.Getenv("FOXDEN_VERBOSE") != "" {
+		verbose := strings.ToLower(fmt.Sprintf("%v", os.Getenv("FOXDEN_VERBOSE")))
+		if verbose == "1" || verbose == "true" {
 			log.Println(utils.Stack())
 		}
 		reason := fmt.Sprintf("\n\nReason: %s", msg)

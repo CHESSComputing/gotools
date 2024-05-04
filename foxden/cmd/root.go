@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
@@ -64,7 +65,8 @@ func initConfig() {
 		os.Exit(1)
 	}
 	_srvConfig = &config
-	if os.Getenv("FOXDEN_VERBOSE") != "" {
+	verbose := strings.ToLower(fmt.Sprintf("%v", os.Getenv("FOXDEN_VERBOSE")))
+	if verbose == "1" || verbose == "true" {
 		log.SetFlags(log.LstdFlags | log.Llongfile)
 	}
 }
