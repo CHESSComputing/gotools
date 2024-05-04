@@ -185,7 +185,7 @@ func inspectAllTokens(tkn string) {
 		fmt.Println(tfile)
 		inspectToken(token)
 	} else {
-		fmt.Println("No input token is provided, will lookup them from env...")
+		fmt.Println("No input token is provided, will lookup them from env: CHESS_TOKEN | CHESS_WRITE_TOKEN | CHESS_DELETE_TOKEN...")
 	}
 	for _, env := range envTokens {
 		token = utils.ReadToken(os.Getenv(env))
