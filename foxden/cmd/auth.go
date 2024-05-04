@@ -39,7 +39,7 @@ func authUsage() string {
 	out += fmt.Sprintf("foxden token create read\n")
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("# generate read token from specific /path/keytab file\n")
-	out += fmt.Sprintf("foxden token create read -kfile=/path/keytab\n")
+	out += fmt.Sprintf("foxden token create read --kfile=/path/keytab\n")
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("# generate write token\n")
 	out += fmt.Sprintf("foxden token create write\n")
