@@ -11,7 +11,6 @@ import (
 	"io"
 	"os"
 	"sort"
-	"strings"
 
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
@@ -103,7 +102,10 @@ func getSearchKeys() []string {
 func searchListRecord(user, spec string) {
 	if spec == "keys" {
 		skeys := getSearchKeys()
-		fmt.Println("FOXDEN search keys:", strings.Join(skeys, ", "))
+		fmt.Println("FOXDEN search keys:")
+		for _, k := range skeys {
+			fmt.Println(k)
+		}
 		return
 	}
 	records, err := metaRecords(user, spec)
