@@ -8,14 +8,14 @@ echo
 echo "create write token"
 echo "/foxden token create write"
 token=`./foxden token create write | head -1`
-export CHESS_WRITE_TOKEN=$token
-# echo "CHESS_WRITE_TOKEN=$CHESS_WRITE_TOKEN"
+export FOXDEN_WRITE_TOKEN=$token
+# echo "FOXDEN_WRITE_TOKEN=$FOXDEN_WRITE_TOKEN"
 echo
 echo "create read token"
 echo "/foxden token create read"
 token=`./foxden token create read | head -1`
-export CHESS_TOKEN=$token
-# echo "CHESS_TOKEN=$CHESS_TOKEN"
+export FOXDEN_TOKEN=$token
+# echo "FOXDEN_TOKEN=$FOXDEN_TOKEN"
 echo
 echo "view issued tokens"
 ./foxden token view

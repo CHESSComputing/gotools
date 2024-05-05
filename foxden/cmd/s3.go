@@ -249,7 +249,7 @@ func s3Upload(args []string) {
 			os.Exit(1)
 		}
 		req.Header.Set("Content-Type", w.FormDataContentType())
-		accessToken := os.Getenv("CHESS_WRITE_TOKEN")
+		accessToken := os.Getenv("FOXDEN_WRITE_TOKEN")
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 		client := http.Client{}
 		resp, err := client.Do(req)
@@ -291,7 +291,7 @@ func s3Delete(args []string) {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
-	accessToken := os.Getenv("CHESS_DELETE_TOKEN")
+	accessToken := os.Getenv("FOXDEN_DELETE_TOKEN")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	client := http.Client{}
 	resp, err := client.Do(req)

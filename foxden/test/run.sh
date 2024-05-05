@@ -7,13 +7,13 @@ schema=ID3A
 echo
 echo "get write token"
 token=`./foxden token create write | head -1`
-export CHESS_WRITE_TOKEN=$token
-# echo "CHESS_WRITE_TOKEN=$CHESS_WRITE_TOKEN"
+export FOXDEN_WRITE_TOKEN=$token
+# echo "FOXDEN_WRITE_TOKEN=$FOXDEN_WRITE_TOKEN"
 echo
 echo "get read token"
 token=`./foxden token create read | head -1`
-export CHESS_TOKEN=$token
-# echo "CHESS_TOKEN=$CHESS_TOKEN"
+export FOXDEN_TOKEN=$token
+# echo "FOXDEN_TOKEN=$FOXDEN_TOKEN"
 echo
 echo "view issued tokens"
 ./foxden token view
@@ -69,7 +69,7 @@ echo "+++ list files of our did"
 
 echo
 echo "+++ test read token for writing (must fail)"
-export CHESS_WRITE_TOKEN=$CHESS_TOKEN
+export FOXDEN_WRITE_TOKEN=$FOXDEN_TOKEN
 schema=test
 ./foxden meta add $schema $idir/test-data.json
 

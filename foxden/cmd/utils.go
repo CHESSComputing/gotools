@@ -51,8 +51,8 @@ func tempFilePath(fname string) string {
 func accessToken() (string, error) {
 	var token string
 	if _httpReadRequest.Token == "" {
-		if os.Getenv("CHESS_TOKEN") != "" {
-			token = utils.ReadToken(os.Getenv("CHESS_TOKEN"))
+		if os.Getenv("FOXDEN_TOKEN") != "" {
+			token = utils.ReadToken(os.Getenv("FOXDEN_TOKEN"))
 		} else {
 			err := generateToken("")
 			exit("Unable to generate access token", err)
@@ -60,7 +60,7 @@ func accessToken() (string, error) {
 			token = utils.ReadToken(tfile)
 		}
 		if token == "" {
-			exit("Please obtain read access token and put it into CHESS_TOKEN env or file", nil)
+			exit("Please obtain read access token and put it into FOXDEN_TOKEN env or file", nil)
 		}
 		_httpReadRequest.Token = token
 	}
@@ -75,7 +75,7 @@ func getUserToken() (string, string) {
 	}
 	claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 	if err != nil {
-		exit("unable to read token claims, please check CHESS_TOKEN env, and run 'foxden token view'", err)
+		exit("unable to read token claims, please check FOXDEN_TOKEN env, and run 'foxden token view'", err)
 	}
 	rclaims := claims.RegisteredClaims
 	user := rclaims.Subject
@@ -85,13 +85,13 @@ func getUserToken() (string, string) {
 // helper function to obtain write access token
 func writeToken() (string, error) {
 	if _httpWriteRequest.Token == "" {
-		token := utils.ReadToken(os.Getenv("CHESS_WRITE_TOKEN"))
+		token := utils.ReadToken(os.Getenv("FOXDEN_WRITE_TOKEN"))
 		if token == "" {
-			exit("Please obtain write access token and put it into CHESS_WRITE_TOKEN env or file", nil)
+			exit("Please obtain write access token and put it into FOXDEN_WRITE_TOKEN env or file", nil)
 		}
 		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
-			exit("unable to read write token claims, please check CHESS_WRITE_TOKEN env, and run 'foxden token view'", err)
+			exit("unable to read write token claims, please check FOXDEN_WRITE_TOKEN env, and run 'foxden token view'", err)
 		}
 		_httpWriteRequest.Token = token
 	}
@@ -101,13 +101,13 @@ func writeToken() (string, error) {
 // helper function to obtain delete access token
 func deleteToken() (string, error) {
 	if _httpDeleteRequest.Token == "" {
-		token := utils.ReadToken(os.Getenv("CHESS_DELETE_TOKEN"))
+		token := utils.ReadToken(os.Getenv("FOXDEN_DELETE_TOKEN"))
 		if token == "" {
-			exit("Please obtain delete access token and put it into CHESS_DELETE_TOKEN env or file", nil)
+			exit("Please obtain delete access token and put it into FOXDEN_DELETE_TOKEN env or file", nil)
 		}
 		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
-			exit("unable to read delete token claims, please check CHESS_DELETE_TOKEN env, and run 'foxden token view'", err)
+			exit("unable to read delete token claims, please check FOXDEN_DELETE_TOKEN env, and run 'foxden token view'", err)
 		}
 		_httpDeleteRequest.Token = token
 	}

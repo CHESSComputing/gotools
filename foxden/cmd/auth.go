@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var envTokens []string = []string{"CHESS_TOKEN", "CHESS_WRITE_TOKEN", "CHESS_DELETE_TOKEN"}
+var envTokens []string = []string{"FOXDEN_TOKEN", "FOXDEN_WRITE_TOKEN", "FOXDEN_DELETE_TOKEN"}
 
 // helper function to provide usage of meta option
 func authUsage() string {
@@ -185,7 +185,7 @@ func inspectAllTokens(tkn string) {
 		fmt.Println(tfile)
 		inspectToken(token)
 	} else {
-		fmt.Println("No input token is provided, will lookup them from env: CHESS_TOKEN | CHESS_WRITE_TOKEN | CHESS_DELETE_TOKEN...")
+		fmt.Println("No input token is provided, will lookup them from env: FOXDEN_TOKEN | FOXDEN_WRITE_TOKEN | FOXDEN_DELETE_TOKEN...")
 	}
 	for _, env := range envTokens {
 		token = utils.ReadToken(os.Getenv(env))
@@ -231,14 +231,14 @@ func authCommand() *cobra.Command {
 					attr = args[1]
 				}
 				var token, tokenKind string
-				tokenEnv := "CHESS_TOKEN"
+				tokenEnv := "FOXDEN_TOKEN"
 				var err error
 				if attr == "write" {
 					tokenKind = "write"
-					tokenEnv = "CHESS_WRITE_TOKEN"
+					tokenEnv = "FOXDEN_WRITE_TOKEN"
 				} else if attr == "delete" {
 					tokenKind = "delete"
-					tokenEnv = "CHESS_DELETE_TOKEN"
+					tokenEnv = "FOXDEN_DELETE_TOKEN"
 				} else {
 					tokenKind = attr
 				}
