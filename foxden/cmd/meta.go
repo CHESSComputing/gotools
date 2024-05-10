@@ -114,7 +114,7 @@ func metaUsage() {
 	attrs, sep, div := didMetaData()
 	fmt.Println("foxden meta <ls|rm|view> [options]")
 	fmt.Println("foxden meta add <schema> <file.json> {options}")
-	fmt.Println("options: --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider>")
+	fmt.Println("options: --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all meta data records:")
 	fmt.Println("foxden meta ls")
@@ -126,10 +126,12 @@ func metaUsage() {
 	fmt.Printf("foxden meta add <schema> <file.json> --did-attrs=%s --did-sep=%s --did-div=%s\n", attrs, sep, div)
 	fmt.Println("\n# the same as above since it is default values")
 	fmt.Println("foxden meta add <schema> <file.json>")
+	fmt.Println("\n# the same as above but provide json output")
+	fmt.Println("foxden meta add <schema> <file.json> --json")
 }
 
 // helper function to add meta data record
-func metaAddRecord(args []string, attrs, sep, div string) {
+func metaAddRecord(args []string, attrs, sep, div string, jsonOutput bool) {
 	if len(args) == 1 {
 		fmt.Println("manual insertion is not implemented yet")
 		metaUsage()
@@ -175,15 +177,16 @@ func metaAddRecord(args []string, attrs, sep, div string) {
 	data, err = io.ReadAll(resp.Body)
 	exit("unable to read data from meta-data service", err)
 
+	if jsonOutput {
+		fmt.Printf(string(data))
+		return
+	}
 	var response services.ServiceResponse
 	err = json.Unmarshal(data, &response)
 	exit("Unable to unmarshal the data", err)
 	if response.Status == "ok" {
 		fmt.Printf("SUCCESS: record was successfully added with did\n")
 		fmt.Println(did)
-		if os.Getenv("FOXDEN_VERBOSE") != "" {
-			fmt.Printf("%s\n", string(data))
-		}
 	} else {
 		// check if we got middleware error
 		if response.HttpCode == 0 {
@@ -195,7 +198,7 @@ func metaAddRecord(args []string, attrs, sep, div string) {
 }
 
 // helper function to delete meta-data record
-func metaDeleteRecord(args []string) {
+func metaDeleteRecord(args []string, jsonOutput bool) {
 	if len(args) != 2 {
 		metaUsage()
 		os.Exit(1)
@@ -219,6 +222,10 @@ func metaDeleteRecord(args []string) {
 		fmt.Println("ERROR", err, "response body", string(body))
 		os.Exit(1)
 	}
+	if jsonOutput {
+		fmt.Println(string(body))
+		return
+	}
 	if response.Status == "ok" {
 		fmt.Printf("SUCCESS: record %s was successfully removed\n", mid)
 	} else {
@@ -228,12 +235,22 @@ func metaDeleteRecord(args []string) {
 }
 
 // helper funtion to list meta-data records
-func metaListRecord(user, spec string) {
+func metaListRecord(user, spec string, jsonOutput bool) {
 	records, err := getMeta(user, spec)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
+	if jsonOutput {
+		if data, err := json.MarshalIndent(records, "", " "); err == nil {
+			fmt.Println(string(data))
+		} else {
+			fmt.Println("ERROR", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	for _, r := range records {
 		fmt.Println("---")
 		fmt.Printf("DID     : %v\n", r["did"])
@@ -250,13 +267,22 @@ func metaListRecord(user, spec string) {
 }
 
 // helper function to print meta data records in Json format
-func metaJsonRecord(user, did string) {
+func metaJsonRecord(user, did string, jsonOutput bool) {
 	query := "did:" + did
 	log.Println("### query", query)
 	records, err := getMeta(user, query)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
+	}
+	if jsonOutput {
+		if data, err := json.MarshalIndent(records, "", " "); err == nil {
+			fmt.Println(string(data))
+		} else {
+			fmt.Println("ERROR", err)
+			os.Exit(1)
+		}
+		return
 	}
 	for _, r := range records {
 		fmt.Println("---")
@@ -279,28 +305,29 @@ func metaCommand() *cobra.Command {
 			attrs, _ := cmd.Flags().GetString("did-attrs")
 			sep, _ := cmd.Flags().GetString("did-sep")
 			div, _ := cmd.Flags().GetString("did-div")
+			jsonOutput, _ := cmd.Flags().GetBool("json")
 			if len(args) == 0 {
 				metaUsage()
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaListRecord(user, args[1])
+					metaListRecord(user, args[1], jsonOutput)
 				} else {
-					metaListRecord(user, "")
+					metaListRecord(user, "", jsonOutput)
 				}
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaJsonRecord(user, args[1])
+					metaJsonRecord(user, args[1], jsonOutput)
 				} else {
-					metaJsonRecord(user, "")
+					metaJsonRecord(user, "", jsonOutput)
 				}
 			} else if args[0] == "add" {
 				writeToken()
-				metaAddRecord(args, attrs, sep, div)
+				metaAddRecord(args, attrs, sep, div, jsonOutput)
 			} else if args[0] == "rm" {
 				writeToken()
-				metaDeleteRecord(args)
+				metaDeleteRecord(args, jsonOutput)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
 			}
@@ -309,6 +336,7 @@ func metaCommand() *cobra.Command {
 	cmd.PersistentFlags().String("did-attrs", attrs, "did attributes")
 	cmd.PersistentFlags().String("did-sep", sep, "did separator")
 	cmd.PersistentFlags().String("did-div", div, "did key-value divider")
+	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		metaUsage()
 		return nil
