@@ -158,7 +158,7 @@ func metaAddRecord(args []string, attrs, sep, div string) {
 	// add proper did
 	did, ok := record["did"]
 	if !ok || did == "" {
-		did := utils.CreateDID(record, attrs, sep, div)
+		did = utils.CreateDID(record, attrs, sep, div)
 		record["did"] = did
 	}
 
@@ -179,7 +179,11 @@ func metaAddRecord(args []string, attrs, sep, div string) {
 	err = json.Unmarshal(data, &response)
 	exit("Unable to unmarshal the data", err)
 	if response.Status == "ok" {
-		fmt.Printf("SUCCESS: record was successfully added\n")
+		fmt.Printf("SUCCESS: record was successfully added with did\n")
+		fmt.Println(did)
+		if os.Getenv("FOXDEN_VERBOSE") != "" {
+			fmt.Printf("%s\n", string(data))
+		}
 	} else {
 		// check if we got middleware error
 		if response.HttpCode == 0 {
