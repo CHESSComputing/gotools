@@ -91,7 +91,7 @@ func writeToken() (string, error) {
 		}
 		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
-			exit("unable to use write token claims, please check FOXDEN_WRITE_TOKEN env and set it up with token from 'foxden token create write' command", err)
+			exit("unable to use write token claims\nPlease check FOXDEN_WRITE_TOKEN env and set it up with token from 'foxden token create write' command", err)
 		}
 		_httpWriteRequest.Token = token
 	}
@@ -107,7 +107,7 @@ func deleteToken() (string, error) {
 		}
 		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
-			exit("unable to use delete token claims, please check FOXDEN_DELETE_TOKEN env and set it up with token from 'foxden token create delete' command", err)
+			exit("unable to use delete token claims\nPlease check FOXDEN_DELETE_TOKEN env and set it up with token from 'foxden token create delete' command", err)
 		}
 		_httpDeleteRequest.Token = token
 	}
