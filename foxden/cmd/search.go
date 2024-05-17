@@ -125,12 +125,12 @@ func searchListRecord(user, spec string) {
 		default:
 			did = vvv.(string)
 		}
-		fmt.Printf("DID     : %v\n", did)
-		fmt.Printf("Schema  : %v\n", r["Schema"])
-		fmt.Printf("Cycle   : %v\n", r["Cycle"])
-		fmt.Printf("Beamline: %v\n", r["Beamline"])
-		fmt.Printf("BTR     : %v\n", r["BTR"])
-		fmt.Printf("Sample  : %v\n", r["Sample"])
+		fmt.Printf("did        : %v\n", did)
+		fmt.Printf("schema     : %v\n", r["schema"])
+		fmt.Printf("cycle      : %v\n", r["cycle"])
+		fmt.Printf("beamline   : %v\n", r["beamline"])
+		fmt.Printf("btr        : %v\n", r["btr"])
+		fmt.Printf("sample_name: %v\n", r["sample_name"])
 		//         fmt.Println(fmt.Sprintf("%f", val), int64(val.(float64)), did)
 	}
 	fmt.Println("---")

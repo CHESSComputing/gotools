@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
@@ -92,7 +93,7 @@ func getMeta(user, query string) ([]map[string]any, error) {
 }
 
 func didMetaData() (string, string, string) {
-	attrs := "beamline,btr,cycle,sample"
+	attrs := strings.Join(utils.DIDKeys(""), ",")
 	sep := "/"
 	div := "="
 	if _srvConfig != nil {
@@ -253,12 +254,12 @@ func metaListRecord(user, spec string, jsonOutput bool) {
 
 	for _, r := range records {
 		fmt.Println("---")
-		fmt.Printf("DID     : %v\n", r["did"])
-		fmt.Printf("Schema  : %v\n", r["Schema"])
-		fmt.Printf("Cycle   : %v\n", r["Cycle"])
-		fmt.Printf("Beamline: %v\n", r["Beamline"])
-		fmt.Printf("BTR     : %v\n", r["BTR"])
-		fmt.Printf("Sample  : %v\n", r["Sample"])
+		fmt.Printf("did        : %v\n", r["did"])
+		fmt.Printf("schema     : %v\n", r["schema"])
+		fmt.Printf("cycle      : %v\n", r["cycle"])
+		fmt.Printf("beamline   : %v\n", r["beamline"])
+		fmt.Printf("btr        : %v\n", r["btr"])
+		fmt.Printf("sample_name: %v\n", r["sample_name"])
 		//         fmt.Printf("%+v", r)
 	}
 	fmt.Println("---")
