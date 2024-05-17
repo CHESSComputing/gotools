@@ -56,12 +56,16 @@ func searchUsage() {
 	fmt.Println("foxden search keys")
 	fmt.Println("\n# search CHESS data using query language, e.g. empty query match all records")
 	fmt.Println("foxden search {}")
+	fmt.Println("\n# same as above but provide output in JSON data-format:")
+	fmt.Println("foxden search {} --json")
 	fmt.Println("\n# search using query language,")
 	fmt.Println("# provide valid JSON use single quotes around it and double quotes for key:value pairs")
 	fmt.Println("foxden search '{\"PI\":\"name\"}'")
 	fmt.Println("\n# search using key:value pairs, e.g. pi:name where 'pi' is record key and 'name' would be PI user name")
 	fmt.Println("# keys can be in lower case, e.g. pi instead of PI used in meta-data record")
 	fmt.Println("foxden search pi:name")
+	fmt.Println("\n# same as above but provide output in JSON data-format:")
+	fmt.Println("foxden search pi:name --json")
 }
 
 // helper function to get all known search (QL) keys across all FOXDEN services
@@ -99,7 +103,7 @@ func getSearchKeys() []string {
 }
 
 // helper function to list search-data records
-func searchListRecord(user, spec string) {
+func searchListRecord(user, spec string, jsonOutput bool) {
 	if spec == "keys" {
 		skeys := getSearchKeys()
 		fmt.Println("FOXDEN search keys:")
@@ -112,6 +116,15 @@ func searchListRecord(user, spec string) {
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
+	}
+	if jsonOutput {
+		if data, err := json.MarshalIndent(records, "", " "); err == nil {
+			fmt.Println(string(data))
+		} else {
+			fmt.Println("ERROR", err)
+			os.Exit(1)
+		}
+		return
 	}
 	for _, r := range records {
 		fmt.Println("---")
@@ -162,14 +175,16 @@ func searchCommand() *cobra.Command {
 		Long:  "foxden search commands to access FOXDEN DataDiscovery service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			jsonOutput, _ := cmd.Flags().GetBool("json")
 			user, _ := getUserToken()
 			if len(args) == 0 {
 				searchUsage()
 			} else {
-				searchListRecord(user, args[0])
+				searchListRecord(user, args[0], jsonOutput)
 			}
 		},
 	}
+	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		searchUsage()
 		return nil
