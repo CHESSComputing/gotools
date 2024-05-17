@@ -1,12 +1,12 @@
 module github.com/CHESSComputing/gotools/foxden
 
-go 1.22.2
+go 1.22.3
 
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.0.3
-	github.com/CHESSComputing/golib v0.2.6
+	github.com/CHESSComputing/golib v0.2.7
 	github.com/spf13/cobra v1.8.0
-	golang.org/x/crypto v0.22.0
+	golang.org/x/crypto v0.23.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
 )
 
@@ -63,9 +63,9 @@ require (
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/term v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
