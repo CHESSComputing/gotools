@@ -36,9 +36,9 @@ EOF
 mongo --port 8230 < /tmp/cleanup.js 2>&1 1>& /dev/null
 
 echo
-echo "+++ Add new meta-data record $idir/ID3A-meta1.json"
-echo "./foxden meta add $schema $idir/ID3A-meta1.json"
-./foxden meta add $schema $idir/ID3A-meta1.json
+echo "+++ Add new meta-data record $idir/ID3A-meta1-foxden.json"
+echo "./foxden meta add $schema $idir/ID3A-meta1-foxden.json"
+./foxden meta add $schema $idir/ID3A-meta1-foxden.json
 
 sleep 2
 
