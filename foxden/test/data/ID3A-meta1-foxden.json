@@ -1,0 +1,97 @@
+{
+  "alignment": false,
+  "energy_scan": false,
+  "undulator_scan": false,
+  "beam_slit_horizontal_size": 2.30,
+  "beam_slit_vertical_size": 1.00,
+  "beam_slit_horizontal_position": 12.971,
+  "beam_slit_vertical_position": -0.624,
+  "guard_slit_horizontal_size": 2.50,
+  "guard_slit_vertical_size": 1.20,
+  "guard_slit_horizontal_position": 5.399,
+  "guard_slit_vertical_position": -7.450,
+  "cesr_conditions": [
+    "9x5BunchMode"
+  ],
+  "insertion_device": [
+    "CCU"
+  ],
+  "monochromator": [
+    "DoubleCrystalBraggSi111"
+  ],
+  "beam_energy": 41.991,
+  "atten_material": [
+    "Steel"
+  ],
+  "atten_thickness": 3.00,
+  "energy_foil": [
+    "Pr"
+  ],
+  "data_location_beamtime_notes": "/Users/vk/Desktop/Work/DBS",
+  "data_location_meta": "/Users/vk/Desktop/Work/DBS",
+  "data_location_raw": "/Users/vk/Desktop/Work/DBS",
+  "data_location_reduced": "/Users/vk/Desktop/Work/DBS",
+  "data_location_scratch": "/Users/vk/Desktop/Work/DBS",
+  "detectors": [
+    "DualDexelas"
+  ],
+  "experiment_type": [
+    "scattering/diffraction"
+  ],
+  "technique": [
+    "high_energy_diffraction_microscopy_far_field"
+  ],
+  "supplementary_technique": [
+    ""
+  ],
+  "furnace": [
+    ""
+  ],
+  "mechanical_load_frame": [
+    "RAMSII"
+  ],
+  "mechanical_grips": [
+    ""
+  ],
+  "mechanical_test": false,
+  "mechanical_test_type": [
+    ""
+  ],
+  "in_situ": false,
+  "sample_name": "test-1",
+  "sample_common_name": "None",
+  "sample_chemical_formula": "None",
+  "calibration": false,
+  "sample_space_group": 194,
+  "sample_unit_cell": [
+    2.9511,
+    2.9511,
+    4.6843,
+    90.0000,
+    90.0000,
+    120.0000
+  ],
+  "sample_geometry": "Plate",
+  "sample_mat_ped_heat_treatment": "None",
+  "sample_mat_ped_processing_route": "None",
+  "material_safety_hazardous_samples": false,
+  "sample_state": [
+    "Powder"
+  ],
+  "btr": "3731-b",
+  "cycle": "2023-3",
+  "facility": "CHESS",
+  "pi": "shanks",
+  "beamline": [
+    "3A",
+    "4B"
+  ],
+  "staff_scientist": [
+    "DasA",
+    "ShanksKS"
+  ],
+  "beamline_funding_partner": [
+    "CHESSInternal"
+  ],
+  "experimenters": "ShanksKS, HromalikMS"
+}
