@@ -24,12 +24,12 @@ rm $ddir/dbs.db
 sqlite3 $ddir/dbs.db < $ddir/static/schema/sqlite.sql
 
 echo
-echo "+++ Add new meta-data record $idir/ID3A-meta1.json"
-./foxden meta add $schema $idir/ID3A-meta1.json
+echo "+++ Add new meta-data record $idir/ID3A-meta1-foxden.json"
+./foxden meta add $schema $idir/ID3A-meta1-foxden.json
 
 echo
-echo "+++ Add new meta-data record $idir/ID3A-meta2.json"
-./foxden meta add $schema $idir/ID3A-meta2.json
+echo "+++ Add new meta-data record $idir/ID3A-meta2-foxden.json"
+./foxden meta add $schema $idir/ID3A-meta2-foxden.json
 
 echo
 echo "+++ Add new dbs-data record $idir/ID3A-dbs1.json"
