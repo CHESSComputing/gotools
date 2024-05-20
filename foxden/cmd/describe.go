@@ -6,7 +6,9 @@ package cmd
 //
 import (
 	"fmt"
+	"strings"
 
+	ql "github.com/CHESSComputing/golib/ql"
 	schema "github.com/CHESSComputing/golib/schema"
 	"github.com/spf13/cobra"
 )
@@ -21,19 +23,14 @@ func describeUsage() {
 }
 
 func describeKey(args []string) {
-	schemas := []string{"ID1A3", "ID3A", "ID4B"}
-	for _, sname := range schemas {
-		umap := _metaManager.Units(sname)
-		dmap := _metaManager.Descriptions(sname)
-		fmt.Printf("Schema: %s\n", sname)
+	qlKeys, err := ql.QLKeys("")
+	if err != nil {
+		exit("unable to get FOXDEN QL keys", err)
+	}
+	for _, elem := range qlKeys {
 		for _, key := range args {
-			if val, ok := dmap[key]; ok {
-				fmt.Printf("%s: %s\n", key, val)
-			}
-			if val, ok := umap[key]; ok {
-				if val != "" {
-					fmt.Printf("%s: units in %s\n", key, val)
-				}
+			if strings.HasPrefix(elem, key) {
+				fmt.Println(elem)
 			}
 		}
 	}
