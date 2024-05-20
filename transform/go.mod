@@ -2,7 +2,7 @@ module github.com/CHESSComputing/gotools/transform
 
 go 1.22.3
 
-require github.com/CHESSComputing/golib v0.2.7
+require github.com/CHESSComputing/golib v0.2.8
 
 require (
 	go.mongodb.org/mongo-driver v1.13.1 // indirect
