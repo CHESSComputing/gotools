@@ -157,7 +157,7 @@ func printRecords(records []MapRecord) {
 		for _, rec := range records {
 			if val, ok := rec[key]; ok {
 				pad := strings.Repeat(" ", maxKey-len(key))
-				fmt.Printf("%s%s\t: %v\n", key, pad, val)
+				fmt.Printf("%s%s: %v\n", key, pad, val)
 			}
 		}
 	}
