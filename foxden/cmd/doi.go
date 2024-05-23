@@ -119,7 +119,7 @@ func doiUsage() {
 	fmt.Println(record)
 }
 
-func printRecord(rec map[string]any) {
+func printDoiRecord(rec map[string]any) {
 	maxLen := 20
 	if val, ok := rec["id"]; ok {
 		key := utils.PaddedKey("id", maxLen)
@@ -151,7 +151,7 @@ func doiDocs(args []string) {
 		var rec map[string]any
 		err = json.Unmarshal(data, &rec)
 		exit("unmarshal error", err)
-		printRecord(rec)
+		printDoiRecord(rec)
 		return
 	}
 	var records []map[string]any
@@ -159,7 +159,7 @@ func doiDocs(args []string) {
 	exit("unmarshal error", err)
 	for _, rec := range records {
 		fmt.Println("---")
-		printRecord(rec)
+		printDoiRecord(rec)
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 
 	authz "github.com/CHESSComputing/golib/authz"
@@ -20,6 +21,8 @@ import (
 var doc = "Complete documentation at https://foxden.classe.cornell.edu:8344/docs"
 
 var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpRequest
+
+type MapRecord map[string]any
 
 // helper function to exit with message and error
 func exit(msg string, err error) {
@@ -112,4 +115,50 @@ func deleteToken() (string, error) {
 		_httpDeleteRequest.Token = token
 	}
 	return _httpDeleteRequest.Token, nil
+}
+
+// helper function to print map record
+func printRecord(rec MapRecord, sep string) {
+	if sep != "" {
+		fmt.Println(sep)
+	}
+	maxKey := 0
+	for key, _ := range rec {
+		if len(key) > maxKey {
+			maxKey = len(key)
+		}
+	}
+	keys := utils.MapKeys(rec)
+	sort.Strings(keys)
+	for _, key := range keys {
+		val, _ := rec[key]
+		pad := strings.Repeat(" ", maxKey-len(key))
+		fmt.Printf("%s%s\t%v\n", key, pad, val)
+	}
+}
+
+func printRecords(records []MapRecord) {
+	// look-up all keys to get proper padding
+	var keys []string
+	for _, rec := range records {
+		for _, key := range utils.MapKeys(rec) {
+			keys = append(keys, key)
+		}
+	}
+	keys = utils.List2Set(keys)
+	sort.Strings(keys)
+	maxKey := 0
+	for _, key := range keys {
+		if len(key) > maxKey {
+			maxKey = len(key)
+		}
+	}
+	for _, key := range keys {
+		for _, rec := range records {
+			if val, ok := rec[key]; ok {
+				pad := strings.Repeat(" ", maxKey-len(key))
+				fmt.Printf("%s%s\t: %v\n", key, pad, val)
+			}
+		}
+	}
 }

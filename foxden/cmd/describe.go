@@ -27,13 +27,19 @@ func describeKey(args []string) {
 	if err != nil {
 		exit("unable to get FOXDEN QL keys", err)
 	}
+	var records []MapRecord
 	for _, elem := range qlKeys {
 		for _, key := range args {
-			if strings.HasPrefix(elem, key) {
-				fmt.Println(elem)
+			if strings.Contains(elem, key) {
+				arr := strings.Split(elem, ":")
+				rec := make(MapRecord)
+				rec[arr[0]] = strings.Join(arr[1:len(arr)], ":")
+				records = append(records, rec)
 			}
 		}
 	}
+	printRecords(records)
+
 }
 
 func describeMetaKey(key string) {

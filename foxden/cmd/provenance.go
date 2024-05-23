@@ -11,9 +11,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	dbs "github.com/CHESSComputing/DataBookkeeping/dbs"
@@ -21,11 +19,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type DBSRecord map[string]any
-
 // helper function to fetch data from DBS service
-func getData(rurl string) []DBSRecord {
-	var results []DBSRecord
+func getData(rurl string) []MapRecord {
+	var results []MapRecord
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -44,8 +40,9 @@ func getData(rurl string) []DBSRecord {
 	return results
 }
 
+/*
 // helper function to print dbs record items
-func printResults(rec DBSRecord) {
+func printRecord(rec MapRecord) {
 	fmt.Println("---")
 	maxKey := 0
 	for key, _ := range rec {
@@ -61,6 +58,7 @@ func printResults(rec DBSRecord) {
 		fmt.Printf("%s%s\t%v\n", key, pad, val)
 	}
 }
+*/
 
 // helper function to list dataset information
 func provListRecord(args []string, did, dfile string) {
@@ -96,7 +94,7 @@ func provListRecord(args []string, did, dfile string) {
 		if v, ok := rec["modify_at"]; ok {
 			rec["modify_at"] = parseTimestamp(fmt.Sprintf("%v", v))
 		}
-		printResults(rec)
+		printRecord(rec, "---")
 	}
 }
 
@@ -160,13 +158,13 @@ func provAddRecord(args []string) {
 				for _, rec := range records {
 					if rrr, ok := rec["error"]; ok {
 						record := rrr.(map[string]any)
-						out := make(DBSRecord)
+						out := make(MapRecord)
 						for key, val := range record {
 							if utils.InList(key, keys) {
 								out[key] = val
 							}
 						}
-						printResults(out)
+						printRecord(out, "---")
 					} else {
 						fmt.Println(rec)
 					}
