@@ -137,7 +137,7 @@ func printRecord(rec MapRecord, sep string) {
 	}
 }
 
-func printRecords(records []MapRecord) {
+func printRecords(records []MapRecord, show string) {
 	// look-up all keys to get proper padding
 	var keys []string
 	for _, rec := range records {
@@ -153,12 +153,18 @@ func printRecords(records []MapRecord) {
 			maxKey = len(key)
 		}
 	}
+	out := []string{}
 	for _, key := range keys {
 		for _, rec := range records {
 			if val, ok := rec[key]; ok {
 				pad := strings.Repeat(" ", maxKey-len(key))
-				fmt.Printf("%s%s: %v\n", key, pad, val)
+				out = append(out, fmt.Sprintf("%s%s: %v", key, pad, val))
 			}
 		}
+	}
+	out = utils.List2Set(out)
+	sort.Strings(out)
+	for _, item := range out {
+		fmt.Println(item)
 	}
 }
