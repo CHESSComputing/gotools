@@ -80,9 +80,14 @@ func migrate(readUri, readDBName, readCollection, writeUri, writeDBName, writeCo
 		}
 		rec["did"] = did
 		opts := options.Update().SetUpsert(true)
-		filter := bson.M{"Beamline": rec["Beamline"], "BTR": rec["BTR"], "Cycle": rec["Cycle"], "SampleName": rec["SampleName"]}
+		filter := bson.M{
+			"beamline":    rec["Beamline"],
+			"btr":         rec["BTR"],
+			"cycle":       rec["Cycle"],
+			"sample_name": rec["SampleName"],
+		}
 
-		// perform convertion from CamelCase to camel_case
+		// perform conversion from CamelCase to camel_case
 		nrec := utils.ConvertCamelCaseKeys(rec)
 
 		update := bson.M{"$set": nrec}
