@@ -83,9 +83,9 @@ func migrate(readUri, readDBName, readCollection, writeUri, writeDBName, writeCo
 		filter := bson.M{"Beamline": rec["Beamline"], "BTR": rec["BTR"], "Cycle": rec["Cycle"], "SampleName": rec["SampleName"]}
 
 		// perform convertion from CamelCase to camel_case
-		rec = utils.ConvertCamelCaseKeys(rec)
+		nrec := utils.ConvertCamelCaseKeys(rec)
 
-		update := bson.M{"$set": rec}
+		update := bson.M{"$set": nrec}
 		if _, err := c.UpdateOne(writectx, filter, update, opts); err != nil {
 			log.Fatal(err)
 		}
