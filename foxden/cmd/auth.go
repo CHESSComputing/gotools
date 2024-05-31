@@ -64,12 +64,12 @@ func keyFile() string {
 	return tempFilePath(fmt.Sprintf("krb5cc_%s", u.Uid))
 }
 
-func requestToken(scope, fname string) (string, error) {
-	if fname == "" {
-		fname = keyFile()
+func requestToken(scope, kfile string) (string, error) {
+	if kfile == "" {
+		kfile = keyFile()
 	}
 	var token string
-	user, ticket := getKerberosTicket(fname)
+	user, ticket := getKerberosTicket(kfile)
 	rec := authz.Kerberos{
 		User:   user,
 		Scope:  scope,
