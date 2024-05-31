@@ -5,6 +5,7 @@ package cmd
 // Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
 //
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -24,12 +25,21 @@ var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpReques
 
 type MapRecord map[string]any
 
+var _jsonOutputError bool
+
 // helper function to exit with message and error
 func exit(msg string, err error) {
 	if err != nil {
 		verbose := strings.ToLower(fmt.Sprintf("%v", os.Getenv("FOXDEN_VERBOSE")))
 		if verbose == "1" || verbose == "true" {
 			log.Println(utils.Stack())
+		}
+		if _jsonOutputError {
+			resp := services.ServiceResponse{Service: "foxden CLI", Status: msg, Error: err.Error()}
+			if data, err := json.Marshal(resp); err == nil {
+				fmt.Println(string(data))
+			}
+			os.Exit(1)
 		}
 		reason := fmt.Sprintf("\n\nReason: %s", msg)
 		log.Fatal("ERROR: ", err, reason)
