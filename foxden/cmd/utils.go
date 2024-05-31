@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"time"
 
 	authz "github.com/CHESSComputing/golib/authz"
 	services "github.com/CHESSComputing/golib/services"
@@ -35,7 +36,11 @@ func exit(msg string, err error) {
 			log.Println(utils.Stack())
 		}
 		if _jsonOutputError {
-			resp := services.ServiceResponse{Service: "foxden CLI", Status: msg, Error: err.Error()}
+			resp := services.ServiceResponse{
+				Service:   "foxden CLI",
+				Status:    msg,
+				Timestamp: time.Now().String(),
+				Error:     err.Error()}
 			if data, err := json.Marshal(resp); err == nil {
 				fmt.Println(string(data))
 			}
