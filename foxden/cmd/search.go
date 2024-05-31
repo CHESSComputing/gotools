@@ -176,6 +176,10 @@ func searchCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			if jsonOutput {
+				// set _jsonOutputError to properly handle error output in JSON format
+				_jsonOutputError = true
+			}
 			user, _ := getUserToken()
 			if len(args) == 0 {
 				searchUsage()
