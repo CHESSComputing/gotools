@@ -139,9 +139,9 @@ func provenance(readUri, readDBName, readCollection, provUri string) {
 					os.Exit(1)
 				}
 				if resp.StatusCode == 200 {
-					fmt.Println("SUCCESS")
+					fmt.Printf("SUCCESS, did=%v provenance info is updated\n", did)
 				} else {
-					fmt.Printf("ERROR: HTTP response %+v\n", resp)
+					fmt.Printf("ERROR: did=%v provenance info is not updated, HTTP response %+v\n", did, resp)
 				}
 			}
 		}
