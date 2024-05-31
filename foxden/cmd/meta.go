@@ -148,15 +148,15 @@ func metaAddRecord(args []string, attrs, sep, div string, jsonOutput bool) {
 
 	// check if given fname is a file
 	_, err := os.Stat(fname)
-	exit("unable to check file stat", err)
+	exit(fmt.Sprintf("unable to check file stat, file %s", fname), err)
 	file, err := os.Open(fname)
-	exit("unable to open file", err)
+	exit(fmt.Sprintf("unable to open file %s", fname), err)
 	defer file.Close()
 	data, err := io.ReadAll(file)
-	exit("unable to read file", err)
+	exit(fmt.Sprintf("unable to read file %s", fname), err)
 	var record map[string]any
 	err = json.Unmarshal(data, &record)
-	exit("unable to unmarshal data", err)
+	exit(fmt.Sprintf("unable to unmarshal data, file %s", fname), err)
 
 	// add proper did
 	did, ok := record["did"]
@@ -307,6 +307,10 @@ func metaCommand() *cobra.Command {
 			sep, _ := cmd.Flags().GetString("did-sep")
 			div, _ := cmd.Flags().GetString("did-div")
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			if jsonOutput {
+				// set _jsonOutputError to properly handle error output in JSON format
+				_jsonOutputError = true
+			}
 			if len(args) == 0 {
 				metaUsage()
 			} else if args[0] == "ls" {
