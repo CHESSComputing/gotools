@@ -1,5 +1,5 @@
 {
-  "did": "/aaaaa=123/bbbbb=123/ccccc=123",
+  "did": "/beamline=3a/btr=3731-b/cycle=2023-3",
   "files": [
     "/a/b/c/file1.jpeg",
     "/a/b/c/file2.jpeg",

@@ -37,6 +37,9 @@ echo "+++ Add new dbs-data record $idir/ID3A-dbs1.json"
 echo
 echo "+++ Add new dbs-data record $idir/ID3A-dbs2.json"
 ./foxden prov add $idir/ID3A-dbs2.json
+# echo
+# echo "+++ Add parent record"
+# ./foxden prov add-parent $idir/parent.json
 
 echo
 echo "+++ search for all records"
@@ -47,8 +50,8 @@ echo "+++ view record /beamline=3a/btr=3731-b/cycle=2023-3"
 ./foxden view /beamline=3a/btr=3731-b/cycle=2023-3
 
 echo
-echo "+++ view records unittest"
-./foxden view unittest
+echo "+++ view records /beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-1"
+./foxden view /beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-1
 
 echo
 echo "+++ test dataset id updates"
