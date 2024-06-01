@@ -7,7 +7,7 @@
     "/x/y/z/file2.png",
     "/x/y/z/file3.png"
   ],
-  "did": "unittest",
+  "did": "/beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-1",
   "processing": "glibc with some fancy code",
   "site": "Cornell"
 }

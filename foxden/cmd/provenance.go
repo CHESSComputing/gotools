@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -113,8 +114,8 @@ type ResponseRecord struct {
 	Error  string `json:"error"`
 }
 
-// helper function to add dataset information
-func provAddRecord(args []string) {
+// helper function to read input record
+func readInput(args []string) ([]byte, error) {
 	// check if given args contains a file
 	lastArg := args[len(args)-1]
 	_, err := os.Stat(lastArg)
@@ -127,21 +128,11 @@ func provAddRecord(args []string) {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
-	var rec dbs.DatasetRecord
-	err = json.Unmarshal(data, &rec)
-	exit("", err)
+	return data, err
+}
 
-	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
-	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
-
-	//     defer resp.Body.Close()
-	//     body, err := io.ReadAll(resp.Body)
-	//     exit("", err)
-	//     fmt.Printf("#### dbs returni body='%s' response %+v", string(body), resp)
-	//     var response services.ServiceResponse
-	//     err = json.Unmarshal(body, &response)
-	//     exit("", err)
-	//     if response.Status == "ok" {
+// helper function to print HTTP response
+func printResponse(resp *http.Response, err error) {
 	if err == nil && resp.StatusCode == 200 {
 		fmt.Printf("SUCCESS: provenance record was successfully added\n")
 	} else {
@@ -176,6 +167,45 @@ func provAddRecord(args []string) {
 	}
 }
 
+// helper function to add parent information
+func provAddParent(args []string) {
+	data, err := readInput(args)
+	var rec dbs.ParentRecord
+	err = json.Unmarshal(data, &rec)
+	exit("", err)
+
+	rurl := fmt.Sprintf("%s/parent", _srvConfig.Services.DataBookkeepingURL)
+	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+
+	printResponse(resp, err)
+}
+
+// helper function to add file information
+func provAddFile(args []string) {
+	data, err := readInput(args)
+	var rec dbs.FileRecord
+	err = json.Unmarshal(data, &rec)
+	exit("", err)
+
+	rurl := fmt.Sprintf("%s/file", _srvConfig.Services.DataBookkeepingURL)
+	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+
+	printResponse(resp, err)
+}
+
+// helper function to add dataset information
+func provAddDataset(args []string) {
+	data, err := readInput(args)
+	var rec dbs.DatasetRecord
+	err = json.Unmarshal(data, &rec)
+	exit("", err)
+
+	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
+	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+
+	printResponse(resp, err)
+}
+
 // helper function to delete dataset information
 func provDeleteRecord(args []string) {
 }
@@ -194,8 +224,12 @@ func provUsage() {
 	fmt.Println("foxden prov ls files --did=<DID>")
 	//     fmt.Println("\n# remove provenance data record:")
 	//     fmt.Println("foxden prov rm <dataset|site|file>")
-	fmt.Println("\n# add provenance data record:")
-	fmt.Println("foxden prov add <provenance.json>")
+	fmt.Println("\n# add provenance dataset data record:")
+	fmt.Println("foxden prov add <dataset.json>")
+	fmt.Println("\n# add provenance parent data record:")
+	fmt.Println("foxden prov add-parent <parent.json>")
+	fmt.Println("\n# add provenance file data record:")
+	fmt.Println("foxden prov add-file <file.json>")
 }
 func provCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -214,10 +248,13 @@ func provCommand() *cobra.Command {
 				provListRecord(args, did, file)
 			} else if args[0] == "add" {
 				writeToken()
-				provAddRecord(args)
-				//             } else if args[0] == "rm" {
-				//                 deleteToken()
-				//                 provDeleteRecord(args)
+				provAddDataset(args)
+			} else if args[0] == "add-file" {
+				writeToken()
+				provAddFile(args)
+			} else if args[0] == "add-parent" {
+				writeToken()
+				provAddParent(args)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
 			}
