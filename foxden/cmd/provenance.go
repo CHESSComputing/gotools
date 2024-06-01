@@ -81,6 +81,10 @@ func provListRecord(args []string, did, dfile string) {
 		} else if dfile != "" {
 			rurl = fmt.Sprintf("%s?file=%s", rurl, dfile)
 		}
+	} else if args[1] == "parents" {
+		rurl = fmt.Sprintf("%s/parents?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
+	} else if args[1] == "child" {
+		rurl = fmt.Sprintf("%s/child?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
 	} else if args[1] == "buckets" {
 		rurl = fmt.Sprintf("%s/buckets", _srvConfig.Services.DataBookkeepingURL)
 	} else {
