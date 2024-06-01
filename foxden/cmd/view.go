@@ -67,6 +67,20 @@ func viewDBSRecord(user, did string) {
 	}
 	fmt.Println("### Provenance files records:")
 	fmt.Println(string(data))
+
+	// look-up parents info
+	rurl = fmt.Sprintf("%s/parents?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
+	resp, err = _httpReadRequest.Get(rurl)
+	if err != nil {
+		exit("unable to fetch data from search-data service", err)
+	}
+	defer resp.Body.Close()
+	data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		exit("unable to read data from search-data service", err)
+	}
+	fmt.Println("### Provenance parents records:")
+	fmt.Println(string(data))
 }
 
 func viewCommand() *cobra.Command {
