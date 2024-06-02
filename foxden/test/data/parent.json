@@ -1,0 +1,4 @@
+{
+    "did": "/beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-2",
+    "parent": "/beamline=3a/btr=3731-b/cycle=2023-3"
+}
