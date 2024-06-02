@@ -7,6 +7,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -62,7 +63,7 @@ func printRecord(rec MapRecord) {
 */
 
 // helper function to list dataset information
-func provListRecord(args []string, did, dfile string) {
+func provListRecord(args []string, did, dfile string, jsonOutput bool) {
 	var rurl string
 	if len(args) == 1 {
 		fmt.Println("WARNING: please provide provenance attribute")
@@ -88,8 +89,7 @@ func provListRecord(args []string, did, dfile string) {
 	} else if args[1] == "buckets" {
 		rurl = fmt.Sprintf("%s/buckets", _srvConfig.Services.DataBookkeepingURL)
 	} else {
-		fmt.Println("Not implemented yet")
-		return
+		exit("Not implemented yet", errors.New("unsupported"))
 	}
 	for _, rec := range getData(rurl) {
 		// convert seconds since epoch to human readable string
@@ -99,7 +99,16 @@ func provListRecord(args []string, did, dfile string) {
 		if v, ok := rec["modify_at"]; ok {
 			rec["modify_at"] = parseTimestamp(fmt.Sprintf("%v", v))
 		}
-		printRecord(rec, "---")
+		if jsonOutput {
+			data, err := json.Marshal(rec)
+			if err == nil {
+				fmt.Println(string(data))
+			} else {
+				exit("unable to marshal data record", err)
+			}
+		} else {
+			printRecord(rec, "---")
+		}
 	}
 }
 
@@ -218,14 +227,18 @@ func provDeleteRecord(args []string) {
 func provUsage() {
 	fmt.Println("foxden prov <ls|add> [options]")
 	fmt.Println("options: provenance attributes like dataset(s), file(s) or")
-	fmt.Sprintf("         --file=<file name>, --did=<dataset id>\n")
+	fmt.Sprintf("         --file=<file name>, --did=<dataset id>, --json\n")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all provenance records:")
 	fmt.Println("foxden prov ls <datasets|files>")
-	fmt.Println("\n# list all dataset records for specific DID")
+	fmt.Println("\n# list all dataset records for given DID")
 	fmt.Println("foxden prov ls datasets --did=<DID>")
-	fmt.Println("\n# list all file records for specific DID")
+	fmt.Println("\n# list all file records for given DID")
 	fmt.Println("foxden prov ls files --did=<DID>")
+	fmt.Println("\n# list all parents for given DID")
+	fmt.Println("foxden prov ls parents --did=<DID>")
+	fmt.Println("\n# list all children for given DID")
+	fmt.Println("foxden prov ls child --did=<DID>")
 	//     fmt.Println("\n# remove provenance data record:")
 	//     fmt.Println("foxden prov rm <dataset|site|file>")
 	fmt.Println("\n# add provenance dataset data record:")
@@ -234,6 +247,8 @@ func provUsage() {
 	fmt.Println("foxden prov add-parent <parent.json>")
 	fmt.Println("\n# add provenance file data record:")
 	fmt.Println("foxden prov add-file <file.json>")
+	fmt.Println("\n# add provenance file data record but provide output in json format")
+	fmt.Println("foxden prov add-file <file.json> --json")
 }
 func provCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -244,12 +259,17 @@ func provCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			file, _ := cmd.Flags().GetString("file")
 			did, _ := cmd.Flags().GetString("did")
+			jsonOutput, _ := cmd.Flags().GetBool("json")
+			if jsonOutput {
+				// set _jsonOutputError to properly handle error output in JSON format
+				_jsonOutputError = true
+			}
 			if len(args) == 0 {
 				provUsage()
 			} else if args[0] == "ls" {
 				// obtain valid access token
 				accessToken()
-				provListRecord(args, did, file)
+				provListRecord(args, did, file, jsonOutput)
 			} else if args[0] == "add" {
 				writeToken()
 				provAddDataset(args)
@@ -266,6 +286,7 @@ func provCommand() *cobra.Command {
 	}
 	cmd.PersistentFlags().String("did", "", "did to use")
 	cmd.PersistentFlags().String("file", "", "file to use")
+	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		provUsage()
 		return nil
