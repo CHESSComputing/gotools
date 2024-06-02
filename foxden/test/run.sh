@@ -37,9 +37,14 @@ echo "+++ Add new dbs-data record $idir/ID3A-dbs1.json"
 echo
 echo "+++ Add new dbs-data record $idir/ID3A-dbs2.json"
 ./foxden prov add $idir/ID3A-dbs2.json
-# echo
-# echo "+++ Add parent record"
-# ./foxden prov add-parent $idir/parent.json
+
+echo
+echo "+++ Add new dbs-data record $idir/ID3A-dbs3.json"
+./foxden prov add $idir/ID3A-dbs3.json
+
+echo
+echo "+++ Add parent record"
+./foxden prov add-parent $idir/parent.json
 
 echo
 echo "+++ search for all records"
@@ -52,6 +57,10 @@ echo "+++ view record /beamline=3a/btr=3731-b/cycle=2023-3"
 echo
 echo "+++ view records /beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-1"
 ./foxden view /beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-1
+
+echo
+echo "+++ view records /beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-2"
+./foxden view /beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-2
 
 echo
 echo "+++ test dataset id updates"
@@ -68,11 +77,20 @@ echo "+++ update dbs record with processing info"
 ./foxden prov add test/data/ID3A-dbs1-empty-proc.json
 echo "+++ list files of our did"
 ./foxden prov ls files --did=$did
+echo "+++ list parents of our did"
+./foxden prov ls parents --did=$did
+echo "+++ list children of our did"
+./foxden prov ls child --did=$did
 
 
 echo
-echo "+++ test read token for writing (must fail)"
 export FOXDEN_WRITE_TOKEN=$FOXDEN_TOKEN
 schema=test
-./foxden meta add $schema $idir/test-data.json
-
+wfile=/tmp/foxden.wrong.token
+./foxden meta add $schema $idir/test-data.json 2>&1 1>& $wfile
+invalid=`grep invalid $wfile`
+if [ -z "$invalid" ]; then
+    echo "+++ use read token for writing, test failed"
+else
+    echo "+++ use read token for writing, test success"
+fi
