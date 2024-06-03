@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	dbs "github.com/CHESSComputing/DataBookkeeping/dbs"
@@ -107,7 +108,15 @@ func provListRecord(args []string, did, dfile string, jsonOutput bool) {
 				exit("unable to marshal data record", err)
 			}
 		} else {
-			printRecord(rec, "---")
+			// drop all _id fields to make more compact representation of the record
+			nrec := make(MapRecord)
+			for k, v := range rec {
+				if strings.HasSuffix(k, "_id") {
+					continue
+				}
+				nrec[k] = v
+			}
+			printRecord(nrec, "---")
 		}
 	}
 }
@@ -226,12 +235,12 @@ func provDeleteRecord(args []string) {
 // helper function to provide usage of dbs option
 func provUsage() {
 	fmt.Println("foxden prov <ls|add> [options]")
-	fmt.Println("options: provenance attributes like dataset(s), file(s) or")
+	fmt.Println("options: provenance attributes like dataset(s), file(s), parent(s), child(ren), etc.")
 	fmt.Sprintf("         --file=<file name>, --did=<dataset id>, --json\n")
 	fmt.Println("\nExamples:")
-	fmt.Println("\n# list all provenance records:")
-	fmt.Println("foxden prov ls <datasets|files>")
-	fmt.Println("\n# list all dataset records for given DID")
+	fmt.Println("\n# list all datasets provenance records:")
+	fmt.Println("foxden prov ls datasets --json")
+	fmt.Println("\n# list all datasets records for given DID")
 	fmt.Println("foxden prov ls datasets --did=<DID>")
 	fmt.Println("\n# list all file records for given DID")
 	fmt.Println("foxden prov ls files --did=<DID>")
@@ -239,8 +248,6 @@ func provUsage() {
 	fmt.Println("foxden prov ls parents --did=<DID>")
 	fmt.Println("\n# list all children for given DID")
 	fmt.Println("foxden prov ls child --did=<DID>")
-	//     fmt.Println("\n# remove provenance data record:")
-	//     fmt.Println("foxden prov rm <dataset|site|file>")
 	fmt.Println("\n# add provenance dataset data record:")
 	fmt.Println("foxden prov add <dataset.json>")
 	fmt.Println("\n# add provenance parent data record:")
