@@ -95,10 +95,14 @@ func provListRecord(args []string, did, dfile string, jsonOutput bool) {
 	for _, rec := range getData(rurl) {
 		// convert seconds since epoch to human readable string
 		if v, ok := rec["create_at"]; ok {
-			rec["create_at"] = parseTimestamp(fmt.Sprintf("%v", v))
+			if v != nil {
+				rec["create_at"] = parseTimestamp(fmt.Sprintf("%v", v))
+			}
 		}
 		if v, ok := rec["modify_at"]; ok {
-			rec["modify_at"] = parseTimestamp(fmt.Sprintf("%v", v))
+			if v != nil {
+				rec["modify_at"] = parseTimestamp(fmt.Sprintf("%v", v))
+			}
 		}
 		if jsonOutput {
 			data, err := json.Marshal(rec)
