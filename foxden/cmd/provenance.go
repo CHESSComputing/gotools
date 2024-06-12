@@ -201,11 +201,12 @@ func provAddParent(args []string) {
 	exit("", err)
 
 	// first, we need to check if requested parent did exists in MetaData
-	rurl := fmt.Sprintf("%s/%s", _srvConfig.Services.MetaDataURL, rec.Did)
-	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	rurl := fmt.Sprintf("%s/record?did=%s", _srvConfig.Services.MetaDataURL, rec.Parent)
+	resp, err := _httpReadRequest.Get(rurl)
 	if resp.StatusCode != 200 {
+		log.Println("### rurl", rurl)
 		err := errors.New("unable to find parent did")
-		msg := fmt.Sprintf("For provided data=%+v there is no parent did=%s in MetaData service", rec, rec.Did)
+		msg := fmt.Sprintf("For provided data=%+v there is no parent did=%s in MetaData service", rec, rec.Parent)
 		exit(msg, err)
 	}
 
@@ -291,12 +292,15 @@ func provCommand() *cobra.Command {
 				accessToken()
 				provListRecord(args, did, file, jsonOutput)
 			} else if args[0] == "add" {
+				accessToken()
 				writeToken()
 				provAddDataset(args)
 			} else if args[0] == "add-file" {
+				accessToken()
 				writeToken()
 				provAddFile(args)
 			} else if args[0] == "add-parent" {
+				accessToken()
 				writeToken()
 				provAddParent(args)
 			} else {
