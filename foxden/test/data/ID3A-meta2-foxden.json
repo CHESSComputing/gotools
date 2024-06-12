@@ -1,5 +1,5 @@
 {
-  "did": "unittest",
+  "did": "/beamline=3a/btr=3731-b/cycle=2023-3",
   "alignment": true,
   "energy_scan": true,
   "undulator_scan": false,
