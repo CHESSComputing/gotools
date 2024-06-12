@@ -200,8 +200,17 @@ func provAddParent(args []string) {
 	err = json.Unmarshal(data, &rec)
 	exit("", err)
 
-	rurl := fmt.Sprintf("%s/parent", _srvConfig.Services.DataBookkeepingURL)
+	// first, we need to check if requested parent did exists in MetaData
+	rurl := fmt.Sprintf("%s/%s", _srvConfig.Services.MetaDataURL, rec.Did)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	if resp.StatusCode != 200 {
+		err := errors.New("unable to find parent did")
+		msg := fmt.Sprintf("For provided data=%+v there is no parent did=%s in MetaData service", rec, rec.Did)
+		exit(msg, err)
+	}
+
+	rurl = fmt.Sprintf("%s/parent", _srvConfig.Services.DataBookkeepingURL)
+	resp, err = _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 
 	printResponse(resp, err)
 }
