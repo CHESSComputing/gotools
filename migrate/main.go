@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	authz "github.com/CHESSComputing/golib/authz"
 	srvConfig "github.com/CHESSComputing/golib/config"
@@ -39,7 +40,7 @@ func main() {
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if writeProvenance != "" {
-		provenance(readUri, readDBName, readCollection, writeProvenance)
+		provenance(readUri, readDBName, readCollection, writeProvenance, verbose)
 		return
 	}
 	migrate(readUri, readDBName, readCollection, writeUri, writeDBName, writeCollection, verbose)
@@ -54,7 +55,7 @@ type ProvRecord struct {
 }
 
 // helper function to add provenance information
-func provenance(readUri, readDBName, readCollection, provUri string) {
+func provenance(readUri, readDBName, readCollection, provUri string, verbose bool) {
 	// get FOXDEN configuration
 	hdir := os.Getenv("HOME")
 	cfgFile := fmt.Sprintf("%s/.foxden.yaml", hdir)
@@ -102,6 +103,12 @@ func provenance(readUri, readDBName, readCollection, provUri string) {
 			var files []string
 			err := filepath.Walk(rdir,
 				func(path string, _ os.FileInfo, err error) error {
+					if strings.Contains(path, "/tmp") {
+						if verbose {
+							log.Println("skip", path)
+						}
+						return nil
+					}
 					if err != nil {
 						return err
 					}
