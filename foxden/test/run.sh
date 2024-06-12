@@ -32,6 +32,13 @@ echo "+++ Add new meta-data record $idir/ID3A-meta2-foxden.json"
 ./foxden meta add $schema $idir/ID3A-meta2-foxden.json
 
 echo
+echo "### MetaData records: via search {}"
+./foxden search {}
+echo
+echo "### MetaData records: via meta ls"
+./foxden meta ls
+
+echo
 echo "+++ Add new dbs-data record $idir/ID3A-dbs1.json"
 ./foxden prov add $idir/ID3A-dbs1.json
 echo
