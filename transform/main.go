@@ -22,14 +22,15 @@ func main() {
 
 // MetaSchema describes FOXDEN meta-data schema record
 type MetaSchema struct {
-	Key         string `json:"key"`
-	Type        string `json:"type"`
-	Optional    bool   `json:"optional"`
-	Multiple    bool   `json:"multiple"`
-	Section     string `json:"section"`
-	Description string `json:"description"`
-	Units       string `json:"utils"`
-	Placeholder string `json:"placeholder"`
+	Key         string   `json:"key"`
+	Type        string   `json:"type"`
+	Optional    bool     `json:"optional"`
+	Multiple    bool     `json:"multiple"`
+	Section     string   `json:"section"`
+	Description string   `json:"description"`
+	Units       string   `json:"units"`
+	Placeholder string   `json:"placeholder"`
+	Value       []string `json:"value"`
 }
 
 func migrate(fileIn, fileOut string) {
