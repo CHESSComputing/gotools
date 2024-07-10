@@ -1,6 +1,7 @@
 #!/bin/bash
 cdir=/Users/vk/Work/CHESS/FOXDEN
 ddir=$cdir/DataBookkeeping
+sdir=$cdir/SpecScansService
 idir=$cdir/gotools/foxden/test/data
 schema=ID3A
 
@@ -19,10 +20,18 @@ echo "view issued tokens"
 ./foxden token view
 
 echo
-echo "remove dbs.db"
+echo "remove $ddir/dbs.db"
 rm $ddir/dbs.db
 sqlite3 $ddir/dbs.db < $ddir/static/schema/sqlite.sql
 
+echo
+echo "remove $sdir/motors.db"
+rm $sdir/motors.db
+sqlite3 $sdir/motors.db < $sdir/static/sql/create_tables.sql
+
+echo
+echo "+++ ADD NEW MetaData RECORDS"
+echo
 echo
 echo "+++ Add new meta-data record $idir/ID3A-meta1-foxden.json"
 ./foxden meta add $schema $idir/ID3A-meta1-foxden.json
@@ -39,6 +48,8 @@ echo "### MetaData records: via meta ls"
 ./foxden meta ls
 
 echo
+echo "+++ ADD NEW DBS RECORDS"
+echo
 echo "+++ Add new dbs-data record $idir/ID3A-dbs1.json"
 ./foxden prov add $idir/ID3A-dbs1.json
 echo
@@ -52,6 +63,16 @@ echo "+++ Add new dbs-data record $idir/ID3A-dbs3.json"
 echo
 echo "+++ Add parent record"
 ./foxden prov add-parent $idir/parent.json
+
+echo
+echo "+++ ADD NEW SpecScan DATA RECORDS"
+echo
+echo "+++ Add new SpecScans data record $idir/ID3A-specscan-1.json"
+./foxden spec add $idir/ID3A-specscan-1.json
+echo "+++ Add new SpecScans data record $idir/ID3A-specscan-2.json"
+./foxden spec add $idir/ID3A-specscan-2.json
+echo "+++ Add new SpecScans data record $idir/ID3A-specscan-3.json"
+./foxden spec add $idir/ID3A-specscan-3.json
 
 echo
 echo "+++ search for all records"
