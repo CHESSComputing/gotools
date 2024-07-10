@@ -49,6 +49,7 @@ func init() {
 	rootCmd.AddCommand(doiCommand())
 	rootCmd.AddCommand(metaCommand())
 	rootCmd.AddCommand(provCommand())
+	rootCmd.AddCommand(specCommand())
 	rootCmd.AddCommand(authCommand())
 	rootCmd.AddCommand(viewCommand())
 	rootCmd.AddCommand(syncCommand())
