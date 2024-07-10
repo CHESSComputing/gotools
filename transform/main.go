@@ -30,7 +30,7 @@ type MetaSchema struct {
 	Description string `json:"description"`
 	Units       string `json:"units"`
 	Placeholder string `json:"placeholder"`
-	Value       any    `json:"value"`
+	Value       any    `json:"value,omitempty"`
 }
 
 func migrate(fileIn, fileOut string) {
