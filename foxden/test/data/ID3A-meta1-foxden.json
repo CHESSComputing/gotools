@@ -36,10 +36,10 @@
     "DualDexelas"
   ],
   "experiment_type": [
-    "scattering/diffraction"
+    "Other"
   ],
   "technique": [
-    "high_energy_diffraction_microscopy_far_field"
+    "SingleCrystalDiffraction"
   ],
   "supplementary_technique": [
     ""
