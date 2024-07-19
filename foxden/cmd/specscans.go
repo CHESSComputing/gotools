@@ -193,7 +193,6 @@ func specListRecord(user, spec string, jsonOutput bool) {
 func specJsonRecord(user, did string, jsonOutput bool) {
 	//     query := fmt.Sprintf("{\"did\": \"%s\"}", did)
 	query := "did:" + did
-	log.Println("### query", query)
 	records, err := getSpecScans(user, query)
 	if err != nil {
 		fmt.Println("ERROR", err)
