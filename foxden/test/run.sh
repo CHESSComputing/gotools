@@ -41,6 +41,12 @@ echo "+++ Add new meta-data record $idir/ID3A-meta2-foxden.json"
 ./foxden meta add $schema $idir/ID3A-meta2-foxden.json
 
 echo
+echo "+++ Add new meta-data record $idir/ID3A-meta-wrong-foxden.json"
+echo "+++ MUST GET ERROR during insertion of the record"
+./foxden meta add $schema $idir/ID3A-meta-wrong-foxden.json 2>&1 1>& /tmp/foxden_error.txt
+grep ERROR /tmp/foxden_error.txt
+
+echo
 echo "### MetaData records: via search {}"
 ./foxden search {}
 echo
