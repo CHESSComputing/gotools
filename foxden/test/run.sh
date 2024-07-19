@@ -79,6 +79,10 @@ echo "+++ Add new SpecScans data record $idir/ID3A-specscan-2.json"
 ./foxden spec add $idir/ID3A-specscan-2.json
 echo "+++ Add new SpecScans data record $idir/ID3A-specscan-3.json"
 ./foxden spec add $idir/ID3A-specscan-3.json
+echo
+echo "View spec records"
+did=`grep did test/data/ID3A-specscan-1.json | awk '{print $2}'`
+./foxden spec view $did
 
 echo
 echo "+++ search for all records"
