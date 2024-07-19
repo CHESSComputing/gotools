@@ -145,12 +145,12 @@ func specAddRecord(args []string, jsonOutput bool) {
 		log.Println("unable to Unarshal data into ServiceResponse, the response is %+s", string(data))
 	}
 	exit("Unable to unmarshal the data", err)
-	if response.Status == "ok" {
-		fmt.Printf("SUCCESS: record was successfully added with did\n")
+	if response.Status == "ok" || response.HttpCode == 200 {
+		fmt.Printf("SUCCESS: record was successfully added with did, HTTP code 200\n")
 	} else {
 		// check if we got middleware error
-		if response.HttpCode == 0 {
-			fmt.Printf("ERROR: %s", string(data))
+		if response.SrvCode == 0 {
+			fmt.Printf("SUCCESS: record was successfully added with did, service code 0\n")
 		} else {
 			fmt.Printf("ERROR: failed to add record to SpecScans service\n%+v", response.String())
 		}
