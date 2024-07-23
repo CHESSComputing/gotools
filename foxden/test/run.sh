@@ -4,6 +4,7 @@ ddir=$cdir/DataBookkeeping
 sdir=$cdir/SpecScansService
 idir=$cdir/gotools/foxden/test/data
 schema=ID3A
+mongoPort=${FOXDEN_MONGODB_PORT:-8230}
 
 echo
 echo "get write token"
@@ -28,6 +29,17 @@ echo
 echo "remove $sdir/motors.db"
 rm $sdir/motors.db
 sqlite3 $sdir/motors.db < $sdir/static/sql/create_tables.sql
+
+echo
+echo "cleanup MetaData database chess.meta and chess.spec"
+cat > /tmp/cleanup.js << EOF
+use chess;
+db.meta.remove({});
+db.meta.count();
+db.spec.remove({});
+db.spec.count();
+EOF
+mongo --port $mongoPort < /tmp/cleanup.js
 
 echo
 echo "+++ ADD NEW MetaData RECORDS"
