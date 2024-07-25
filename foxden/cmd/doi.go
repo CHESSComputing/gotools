@@ -43,15 +43,8 @@ type DoiRecord struct {
 
 // Validate provides validation of our publish record
 func (r *PublishRecord) Validate() error {
-	var msg string
-	if len(r.Files) == 0 {
-		msg = fmt.Sprintf("missing files")
-	}
 	if err := r.MetaData.Validate(); err != nil {
 		return err
-	}
-	if msg != "" {
-		return errors.New(msg)
 	}
 	return nil
 }
@@ -187,7 +180,11 @@ func loadRecord(fname string) (PublishRecord, error) {
 }
 
 // helper function to create new document in Zenodo
-func doiCreate() {
+func doiCreate(args []string) {
+	var fname string
+	if len(args) == 2 {
+		fname = args[1]
+	}
 	// create new DOI resource
 	rurl := fmt.Sprintf("%s/create", _srvConfig.Services.PublicationURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer([]byte{}))
@@ -203,6 +200,11 @@ func doiCreate() {
 	err = json.Unmarshal(data, &doc)
 	exit("unable to unmarshal record", err)
 	fmt.Printf("Document is created: id=%d URL=%s\n", doc.Id, doc.Links.Html)
+
+	// update document if it was requested
+	if doc.Id != 0 {
+		doiUpdate(doc.Id, fname)
+	}
 }
 
 // helper function to get bucket id for given did
@@ -357,7 +359,7 @@ func doiCommand() *cobra.Command {
 			} else if args[0] == "create" {
 				accessToken()
 				writeToken()
-				doiCreate()
+				doiCreate(args)
 			} else if args[0] == "add" {
 				accessToken()
 				writeToken()
