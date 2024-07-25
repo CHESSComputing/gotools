@@ -67,14 +67,14 @@ func tempFilePath(fname string) string {
 
 // helper function to obtain read access token
 func accessToken() (string, error) {
+	tfile := fmt.Sprintf("%s/.foxden.read.token", os.Getenv("HOME"))
 	var token string
 	if _httpReadRequest.Token == "" {
 		if os.Getenv("FOXDEN_TOKEN") != "" {
 			token = utils.ReadToken(os.Getenv("FOXDEN_TOKEN"))
 		} else {
-			err := generateToken("")
+			err := generateToken(tfile, "")
 			exit("Unable to generate access token", err)
-			tfile := fmt.Sprintf("%s/.foxden.access", os.Getenv("HOME"))
 			token = utils.ReadToken(tfile)
 		}
 		if token == "" {
@@ -83,6 +83,46 @@ func accessToken() (string, error) {
 		_httpReadRequest.Token = token
 	}
 	return _httpReadRequest.Token, nil
+}
+
+// helper function to obtain write access token
+func writeAccessToken() (string, error) {
+	tfile := fmt.Sprintf("%s/.foxden.write.token", os.Getenv("HOME"))
+	var token string
+	if _httpWriteRequest.Token == "" {
+		if os.Getenv("FOXDEN_WRITE_TOKEN") != "" {
+			token = utils.ReadToken(os.Getenv("FOXDEN_WRITE_TOKEN"))
+		} else {
+			err := generateToken(tfile, "")
+			exit("Unable to generate write token", err)
+			token = utils.ReadToken(tfile)
+		}
+		if token == "" {
+			exit("Please obtain read access token and put it into FOXDEN_WRITE_TOKEN env or file", nil)
+		}
+		_httpWriteRequest.Token = token
+	}
+	return _httpWriteRequest.Token, nil
+}
+
+// helper function to obtain delete access token
+func deleteAccessToken() (string, error) {
+	tfile := fmt.Sprintf("%s/.foxden.delete.token", os.Getenv("HOME"))
+	var token string
+	if _httpDeleteRequest.Token == "" {
+		if os.Getenv("FOXDEN_DELETE_TOKEN") != "" {
+			token = utils.ReadToken(os.Getenv("FOXDEN_DELETE_TOKEN"))
+		} else {
+			err := generateToken(tfile, "")
+			exit("Unable to generate write token", err)
+			token = utils.ReadToken(tfile)
+		}
+		if token == "" {
+			exit("Please obtain read access token and put it into FOXDEN_DELETE_TOKEN env or file", nil)
+		}
+		_httpDeleteRequest.Token = token
+	}
+	return _httpDeleteRequest.Token, nil
 }
 
 // helper function to get user and token
@@ -102,12 +142,13 @@ func getUserToken() (string, string) {
 
 // helper function to obtain write access token
 func writeToken() (string, error) {
+	token, err := writeAccessToken()
 	if _httpWriteRequest.Token == "" {
-		token := utils.ReadToken(os.Getenv("FOXDEN_WRITE_TOKEN"))
+		token = utils.ReadToken(os.Getenv("FOXDEN_WRITE_TOKEN"))
 		if token == "" {
 			exit("Please obtain write access token and put it into FOXDEN_WRITE_TOKEN env or file", nil)
 		}
-		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+		_, err = authz.TokenClaims(token, _srvConfig.Authz.ClientID)
 		if err != nil {
 			exit("unable to use write token claims\nPlease check FOXDEN_WRITE_TOKEN env and set it up with token from 'foxden token create write' command", err)
 		}

@@ -112,9 +112,8 @@ func requestToken(scope, kfile string) (string, error) {
 }
 
 // helper function to generate access token
-func generateToken(keyFileName string) error {
+func generateToken(fname, keyFileName string) error {
 	// check if user has default read token
-	fname := fmt.Sprintf("%s/.foxden.access", os.Getenv("HOME"))
 	if _, err := os.Stat(fname); err == nil {
 		// file exists, let's read token and check its validity
 		file, err := os.Open(fname)
@@ -132,7 +131,7 @@ func generateToken(keyFileName string) error {
 		}
 	}
 
-	// if user does not have default foxden.access valid token file we'll proceed with
+	// if user does not have default foxden.read.token valid token file we'll proceed with
 	// getting user's kerberos credentials
 	var kfile string
 
@@ -179,13 +178,21 @@ func inspectAllTokens(tkn string) {
 		inspectToken(token)
 		return
 	}
-	tfile := fmt.Sprintf("%s/.foxden.access", os.Getenv("HOME"))
-	if _, err := os.Stat(tfile); err == nil {
+	rfile := fmt.Sprintf("%s/.foxden.read.token", os.Getenv("HOME"))
+	wfile := fmt.Sprintf("%s/.foxden.write.token", os.Getenv("HOME"))
+	dfile := fmt.Sprintf("%s/.foxden.delete.token", os.Getenv("HOME"))
+	found := false
+	for _, tfile := range []string{rfile, wfile, dfile} {
+		if _, err := os.Stat(tfile); os.IsNotExist(err) {
+			continue
+		}
 		token = utils.ReadToken(tfile)
-		fmt.Println(tfile)
-		inspectToken(token)
-	} else {
-		fmt.Println("No input token is provided, will lookup them from env: FOXDEN_TOKEN | FOXDEN_WRITE_TOKEN | FOXDEN_DELETE_TOKEN...")
+		if token != "" {
+			fmt.Println("")
+			fmt.Println(tfile)
+			inspectToken(token)
+			found = true
+		}
 	}
 	for _, env := range envTokens {
 		token = utils.ReadToken(os.Getenv(env))
@@ -194,7 +201,11 @@ func inspectAllTokens(tkn string) {
 			fmt.Println("")
 			fmt.Println(s)
 			inspectToken(token)
+			found = true
 		}
+	}
+	if !found {
+		fmt.Println("No input token is provided, will lookup them from env: FOXDEN_TOKEN | FOXDEN_WRITE_TOKEN | FOXDEN_DELETE_TOKEN...")
 	}
 }
 
@@ -243,7 +254,8 @@ func authCommand() *cobra.Command {
 					tokenKind = attr
 				}
 				if tokenKind == "read" {
-					err := generateToken(kfile)
+					fname := fmt.Sprintf("%s/.foxden.read.token", os.Getenv("HOME"))
+					err := generateToken(fname, kfile)
 					exit("unable to generate user access token", err)
 					return
 				}
@@ -251,8 +263,26 @@ func authCommand() *cobra.Command {
 				if err != nil {
 					exit("unable to get valid token", err)
 				}
-				fmt.Println(token)
-				fmt.Printf("\nSet %s env variable with this token to re-use it in other commands\n", tokenEnv)
+				if tokenKind == "write" {
+					fname := fmt.Sprintf("%s/.foxden.write.token", os.Getenv("HOME"))
+					file, err := os.Create(fname)
+					if err != nil {
+						log.Fatal(err)
+					}
+					defer file.Close()
+					file.Write([]byte(token))
+				} else if tokenKind == "delete" {
+					fname := fmt.Sprintf("%s/.foxden.delete.token", os.Getenv("HOME"))
+					file, err := os.Create(fname)
+					if err != nil {
+						log.Fatal(err)
+					}
+					defer file.Close()
+					file.Write([]byte(token))
+				} else {
+					fmt.Println(token)
+					fmt.Printf("\nSet %s env variable with this token to re-use it in other commands\n", tokenEnv)
+				}
 			} else {
 				fmt.Println("ERROR: wrong argument(s), please see --help")
 			}
