@@ -59,6 +59,11 @@ echo "+++ MUST GET ERROR during insertion of the record"
 grep ERROR /tmp/foxden_error.txt
 
 echo
+echo "+++ Test wrong DID in meta-data record"
+./foxden meta add $schema $idir/ID3A-meta1-foxden-did-nil.json 2>&1 1>& /tmp/foxden_error_did.txt
+cat /tmp/foxden_error_did.txt
+
+echo
 echo "### MetaData records: via search {}"
 ./foxden search {}
 echo
