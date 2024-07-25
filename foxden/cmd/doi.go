@@ -187,11 +187,7 @@ func loadRecord(fname string) (PublishRecord, error) {
 }
 
 // helper function to create new document in Zenodo
-func doiCreate(args []string) {
-	if len(args) != 1 {
-		fmt.Println("ERROR: wrong number of arguments in doiCreate", args, len(args))
-		os.Exit(1)
-	}
+func doiCreate() {
 	// create new DOI resource
 	rurl := fmt.Sprintf("%s/create", _srvConfig.Services.PublicationURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer([]byte{}))
@@ -361,7 +357,7 @@ func doiCommand() *cobra.Command {
 			} else if args[0] == "create" {
 				accessToken()
 				writeToken()
-				doiCreate(args[1:])
+				doiCreate()
 			} else if args[0] == "add" {
 				accessToken()
 				writeToken()
