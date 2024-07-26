@@ -45,7 +45,11 @@ func userPassword() (string, string) {
 
 // https://github.com/jcmturner/gokrb5/issues/7
 func kuserFromCache(cacheFile string) (*credentials.Credentials, error) {
-	cfg, err := config.Load("/etc/krb5.conf")
+	kfile = _srvConfig.Kerberos.Krb5Conf
+	if kfile == "" {
+		kfile = "/etc/krb5.conf"
+	}
+	cfg, err := config.Load(kfile)
 	ccache, err := credentials.LoadCCache(cacheFile)
 	client, err := client.NewClientFromCCache(ccache, cfg)
 	err = client.Login()
