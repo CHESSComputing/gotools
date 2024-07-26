@@ -190,9 +190,9 @@ func specListRecord(user, spec string, jsonOutput bool) {
 }
 
 // helper function to print spec data records in Json format
-func specJsonRecord(user, did string, jsonOutput bool) {
+func specJsonRecord(user, query string, jsonOutput bool) {
 	//     query := fmt.Sprintf("{\"did\": \"%s\"}", did)
-	query := "did:" + did
+	//     query := "did:" + did
 	records, err := getSpecScans(user, query)
 	if err != nil {
 		fmt.Println("ERROR", err)
