@@ -57,6 +57,10 @@ func authUsage() string {
 
 // helper function to return user's key file name
 func keyFile() string {
+	keyfile := strings.Replace(os.Getenv("KRB5CCNAME"), "FILE:", "", -1)
+	if keyfile != "" {
+		return keyfile
+	}
 	u, err := user.Current()
 	if err != nil {
 		log.Fatal("ERROR: ", err)
