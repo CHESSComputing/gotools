@@ -203,7 +203,9 @@ func doiCreate(args []string) {
 
 	// update document if it was requested
 	if doc.Id != 0 {
-		doiUpdate(doc.Id, fname)
+		if _, err := os.Stat(fname); err == nil {
+			doiUpdate(doc.Id, fname)
+		}
 	}
 }
 
