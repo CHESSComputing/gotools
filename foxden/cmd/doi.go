@@ -49,6 +49,21 @@ func (r *PublishRecord) Validate() error {
 	return nil
 }
 
+// helper function to initialize http request with user's zenodo access token
+func initZenodoAccess() {
+	// if user has its own Zenodo AccessToken we will use it in HTTP request
+	if _srvConfig.Publication.Zenodo.AccessToken != "" {
+		if _httpReadRequest.Headers == nil {
+			_httpReadRequest.Headers = make(map[string]string)
+		}
+		_httpReadRequest.Headers["ZenodoAccessToken"] = _srvConfig.Publication.Zenodo.AccessToken
+		if _httpWriteRequest.Headers == nil {
+			_httpWriteRequest.Headers = make(map[string]string)
+		}
+		_httpWriteRequest.Headers["ZenodoAccessToken"] = _srvConfig.Publication.Zenodo.AccessToken
+	}
+}
+
 // helper function to get did from given args
 func getDID(sdid string) int64 {
 	//     if len(args) < 2 {
@@ -353,6 +368,7 @@ func doiCommand() *cobra.Command {
 		Long:  "foxden doi command to access FOXDEN Publication service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			initZenodoAccess()
 			if len(args) == 0 {
 				doiUsage()
 			} else if args[0] == "ls" {
