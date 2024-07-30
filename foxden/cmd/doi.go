@@ -54,13 +54,13 @@ func initZenodoAccess() {
 	// if user has its own Zenodo AccessToken we will use it in HTTP request
 	if _srvConfig.Publication.Zenodo.AccessToken != "" {
 		if _httpReadRequest.Headers == nil {
-			_httpReadRequest.Headers = make(map[string]string)
+			_httpReadRequest.Headers = make(map[string][]string)
 		}
-		_httpReadRequest.Headers["ZenodoAccessToken"] = _srvConfig.Publication.Zenodo.AccessToken
+		_httpReadRequest.Headers["ZenodoAccessToken"] = []string{_srvConfig.Publication.Zenodo.AccessToken}
 		if _httpWriteRequest.Headers == nil {
-			_httpWriteRequest.Headers = make(map[string]string)
+			_httpWriteRequest.Headers = make(map[string][]string)
 		}
-		_httpWriteRequest.Headers["ZenodoAccessToken"] = _srvConfig.Publication.Zenodo.AccessToken
+		_httpWriteRequest.Headers["ZenodoAccessToken"] = []string{_srvConfig.Publication.Zenodo.AccessToken}
 	}
 }
 
