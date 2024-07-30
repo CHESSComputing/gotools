@@ -4,7 +4,7 @@ go 1.22.5
 
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.0.4
-	github.com/CHESSComputing/golib v0.3.2
+	github.com/CHESSComputing/golib v0.3.3
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/crypto v0.25.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
@@ -15,7 +15,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
-	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
