@@ -45,7 +45,7 @@ func userPassword() (string, string) {
 
 // https://github.com/jcmturner/gokrb5/issues/7
 func kuserFromCache(cacheFile string) (*credentials.Credentials, error) {
-	kfile = _srvConfig.Kerberos.Krb5Conf
+	kfile := _srvConfig.Kerberos.Krb5Conf
 	if kfile == "" {
 		kfile = "/etc/krb5.conf"
 	}
