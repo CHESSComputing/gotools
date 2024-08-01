@@ -1,10 +1,24 @@
 #!/bin/bash
 cdir=/Users/vk/Work/CHESS/FOXDEN
+dbname=foxden
+if [ "`hostname -s`" == "foxden-dev" ]; then
+    export FOXDEN_CONFIG=$HOME/.foxden-dev.yaml
+    export FOXDEN_MONGODB_PORT=27017
+    cdir=/home/chessdata_svc/FOXDEN
+    dbname=foxden-dev
+fi
+if [ "`hostname -s`" == "lnx15" ]; then
+    echo "We are not suppose to run this test on lnx15 (foxden) node"
+    exit 1
+fi
 ddir=$cdir/DataBookkeeping
 sdir=$cdir/SpecScansService
 idir=$cdir/gotools/foxden/test/data
 schema=ID3A
 mongoPort=${FOXDEN_MONGODB_PORT:-8230}
+
+echo "MongoDB port: $mongoPort"
+echo "MongoDB db  : $dbname"
 
 echo
 echo "get write token"
@@ -32,12 +46,15 @@ sqlite3 $sdir/motors.db < $sdir/static/sql/create_tables.sql
 
 echo
 echo "cleanup MetaData database chess.meta and chess.spec"
-cat > /tmp/cleanup.js << EOF
-use chess;
+if [ -f /tmp/cleanup.js ]; then
+    rm /tmp/cleanup.js
+fi
+echo "use $dnname" > /tmp/cleanup.js
+cat >> /tmp/cleanup.js << EOF
 db.meta.remove({});
 db.meta.count();
-db.spec.remove({});
-db.spec.count();
+db.specscans.remove({});
+db.specscans.count();
 EOF
 mongo --port $mongoPort < /tmp/cleanup.js
 
