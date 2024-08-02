@@ -123,8 +123,15 @@ func specAddRecord(args []string, jsonOutput bool) {
 	defer file.Close()
 	data, err := io.ReadAll(file)
 	exit(fmt.Sprintf("unable to read file %s", fname), err)
+	// Try to unmarshal the file's data as a single record first...
 	var record map[string]any
 	err = json.Unmarshal(data, &record)
+	if err != nil {
+		// If the file's data couldn't be unmarshalled to a single record, try to
+		// unmarshal them as multiple records...
+		var records []map[string]any
+		err = json.Unmarshal(data, &records)
+	}
 	exit(fmt.Sprintf("unable to unmarshal data, file %s", fname), err)
 
 	// add new SpecScans record
