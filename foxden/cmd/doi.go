@@ -50,7 +50,20 @@ func (r *PublishRecord) Validate() error {
 }
 
 // helper function to initialize http request with user's zenodo access token
-func initZenodoAccess() {
+func initZenodoAccess(tkn string) {
+	// if we provided with zenodo token we will use it
+	if tkn != "" {
+		ztoken := utils.ReadToken(tkn)
+		if _httpReadRequest.Headers == nil {
+			_httpReadRequest.Headers = make(map[string][]string)
+		}
+		_httpReadRequest.Headers["ZenodoAccessToken"] = []string{ztoken}
+		if _httpWriteRequest.Headers == nil {
+			_httpWriteRequest.Headers = make(map[string][]string)
+		}
+		_httpWriteRequest.Headers["ZenodoAccessToken"] = []string{ztoken}
+		return
+	}
 	// if user has its own Zenodo AccessToken we will use it in HTTP request
 	if _srvConfig.Publication.Zenodo.AccessToken != "" {
 		if _httpReadRequest.Headers == nil {
@@ -90,11 +103,14 @@ func getParams(args []string) (int64, string) {
 func doiUsage() {
 	fmt.Println("foxden doi <ls|create|update|publish|view> <DID> [options]")
 	fmt.Println("options: file name")
+	fmt.Println("         --ztoken=<zenodo token or file>")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# create new document (new document with some ID, e.g. 123456789, will be created)")
 	fmt.Println("foxden doi create")
 	fmt.Println("\n# the out of above command will be like")
 	fmt.Println("      Document is created: id=123456789 URL=https://zenodo.org/deposit/123456789")
+	fmt.Println("\n# create new document with user's zenodo token")
+	fmt.Println("foxden doi create --ztoken=alksjdfkds")
 	fmt.Println("\n# create new document from given record:")
 	fmt.Println("foxden doi create </path/record.json>")
 	fmt.Println("\n# add file to document id:")
@@ -368,7 +384,8 @@ func doiCommand() *cobra.Command {
 		Long:  "foxden doi command to access FOXDEN Publication service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			initZenodoAccess()
+			tkn, _ := cmd.Flags().GetString("ztoken")
+			initZenodoAccess(tkn)
 			if len(args) == 0 {
 				doiUsage()
 			} else if args[0] == "ls" {
@@ -402,6 +419,7 @@ func doiCommand() *cobra.Command {
 			}
 		},
 	}
+	cmd.PersistentFlags().String("ztoken", "", "zenodo token file or token string")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		doiUsage()
 		return nil
