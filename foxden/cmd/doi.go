@@ -51,30 +51,33 @@ func (r *PublishRecord) Validate() error {
 
 // helper function to initialize http request with user's zenodo access token
 func initZenodoAccess(tkn string) {
-	// if we provided with zenodo token we will use it
+	var ztoken string
+
+	// here we define priority of using user's token
+	// if user provide explicitly tkn string we'll use it first
+	// then if user specifies ZENODO_TOKEN env we'll use it next
+	// finally, if user will have Zenodo:AccessToken in his/her foxden config we'll use it
 	if tkn != "" {
-		ztoken := utils.ReadToken(tkn)
-		if _httpReadRequest.Headers == nil {
-			_httpReadRequest.Headers = make(map[string][]string)
-		}
-		_httpReadRequest.Headers["ZenodoAccessToken"] = []string{ztoken}
-		if _httpWriteRequest.Headers == nil {
-			_httpWriteRequest.Headers = make(map[string][]string)
-		}
-		_httpWriteRequest.Headers["ZenodoAccessToken"] = []string{ztoken}
+		ztoken = utils.ReadToken(tkn)
+	} else if os.Getenv("ZENODO_TOKEN") != "" {
+		ztoken = os.Getenv("ZENODO_TOKEN")
+	} else if _srvConfig.Publication.Zenodo.AccessToken != "" {
+		ztoken = _srvConfig.Publication.Zenodo.AccessToken
+	}
+
+	if ztoken == "" {
 		return
 	}
-	// if user has its own Zenodo AccessToken we will use it in HTTP request
-	if _srvConfig.Publication.Zenodo.AccessToken != "" {
-		if _httpReadRequest.Headers == nil {
-			_httpReadRequest.Headers = make(map[string][]string)
-		}
-		_httpReadRequest.Headers["ZenodoAccessToken"] = []string{_srvConfig.Publication.Zenodo.AccessToken}
-		if _httpWriteRequest.Headers == nil {
-			_httpWriteRequest.Headers = make(map[string][]string)
-		}
-		_httpWriteRequest.Headers["ZenodoAccessToken"] = []string{_srvConfig.Publication.Zenodo.AccessToken}
+
+	// if we provided with zenodo token we will use it
+	if _httpReadRequest.Headers == nil {
+		_httpReadRequest.Headers = make(map[string][]string)
 	}
+	_httpReadRequest.Headers["ZenodoAccessToken"] = []string{ztoken}
+	if _httpWriteRequest.Headers == nil {
+		_httpWriteRequest.Headers = make(map[string][]string)
+	}
+	_httpWriteRequest.Headers["ZenodoAccessToken"] = []string{ztoken}
 }
 
 // helper function to get did from given args
