@@ -7,6 +7,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -114,8 +115,8 @@ func didMetaData() (string, string, string) {
 func metaUsage() {
 	attrs, sep, div := didMetaData()
 	fmt.Println("foxden meta <ls|rm|view> [options]")
-	fmt.Println("foxden meta add <schema> <file.json> {options}")
-	fmt.Println("options: --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json")
+	fmt.Println("foxden meta add <file.json> {options}")
+	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all meta data records:")
 	fmt.Println("foxden meta ls")
@@ -124,27 +125,15 @@ func metaUsage() {
 	fmt.Println("\n# remove meta-data record:")
 	fmt.Println("foxden meta rm 123xyz")
 	fmt.Println("\n# add meta-data record with given schema, file and did attributes which create a did value:")
-	fmt.Printf("foxden meta add <schema> <file.json> --did-attrs=%s --did-sep=%s --did-div=%s\n", attrs, sep, div)
+	fmt.Printf("foxden meta add <file.json> --schema=<schema> --did-attrs=%s --did-sep=%s --did-div=%s\n", attrs, sep, div)
 	fmt.Println("\n# the same as above since it is default values")
-	fmt.Println("foxden meta add <schema> <file.json>")
+	fmt.Println("foxden meta add <file.json> --schema=<schema>")
 	fmt.Println("\n# the same as above but provide json output")
-	fmt.Println("foxden meta add <schema> <file.json> --json")
+	fmt.Println("foxden meta add <file.json> --schema=<schema> --json")
 }
 
 // helper function to add meta data record
-func metaAddRecord(args []string, attrs, sep, div string, jsonOutput bool) {
-	if len(args) == 1 {
-		fmt.Println("manual insertion is not implemented yet")
-		metaUsage()
-		os.Exit(1)
-	}
-	if len(args) != 3 {
-		metaUsage()
-		os.Exit(1)
-	}
-	// user must provide client meta add schema file.json
-	schemaName := args[1]
-	fname := args[2]
+func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput bool) {
 
 	// check if given fname is a file
 	_, err := os.Stat(fname)
@@ -297,12 +286,14 @@ func metaJsonRecord(user, did string, jsonOutput bool) {
 
 func metaCommand() *cobra.Command {
 	attrs, sep, div := didMetaData()
+	var schema string
 	cmd := &cobra.Command{
 		Use:   "meta",
 		Short: "foxden MetaData commands",
 		Long:  "foxden MetaData commands to access FOXDEN MetaData service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			schema, _ := cmd.Flags().GetString("schema")
 			attrs, _ := cmd.Flags().GetString("did-attrs")
 			sep, _ := cmd.Flags().GetString("did-sep")
 			div, _ := cmd.Flags().GetString("did-div")
@@ -329,7 +320,14 @@ func metaCommand() *cobra.Command {
 				}
 			} else if args[0] == "add" {
 				writeToken()
-				metaAddRecord(args, attrs, sep, div, jsonOutput)
+				var fname string
+				if len(args) == 2 {
+					fname = args[1]
+				} else {
+					metaUsage()
+					exit("please provide <file.json>", errors.New("no input file"))
+				}
+				metaAddRecord(schema, fname, attrs, sep, div, jsonOutput)
 			} else if args[0] == "rm" {
 				writeToken()
 				metaDeleteRecord(args, jsonOutput)
@@ -338,6 +336,7 @@ func metaCommand() *cobra.Command {
 			}
 		},
 	}
+	cmd.PersistentFlags().String("schema", schema, "schema name (ID1A3, ID3A, ID4B)")
 	cmd.PersistentFlags().String("did-attrs", attrs, "did attributes")
 	cmd.PersistentFlags().String("did-sep", sep, "did separator")
 	cmd.PersistentFlags().String("did-div", div, "did key-value divider")

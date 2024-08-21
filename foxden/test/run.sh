@@ -63,21 +63,21 @@ echo "+++ ADD NEW MetaData RECORDS"
 echo
 echo
 echo "+++ Add new meta-data record $idir/ID3A-meta1-foxden.json"
-./foxden meta add $schema $idir/ID3A-meta1-foxden.json
+./foxden meta add $idir/ID3A-meta1-foxden.json --schema=$schema
 
 echo
 echo "+++ Add new meta-data record $idir/ID3A-meta2-foxden.json"
-./foxden meta add $schema $idir/ID3A-meta2-foxden.json
+./foxden meta add $idir/ID3A-meta2-foxden.json --schema=$schema
 
 echo
 echo "+++ Add new meta-data record $idir/ID3A-meta-wrong-foxden.json"
 echo "+++ MUST GET ERROR during insertion of the record"
-./foxden meta add $schema $idir/ID3A-meta-wrong-foxden.json 2>&1 1>& /tmp/foxden_error.txt
+./foxden meta add $idir/ID3A-meta-wrong-foxden.json --schema=$schema 2>&1 1>& /tmp/foxden_error.txt
 grep ERROR /tmp/foxden_error.txt
 
 echo
 echo "+++ Test wrong DID in meta-data record"
-./foxden meta add $schema $idir/ID3A-meta1-foxden-did-nil.json 2>&1 1>& /tmp/foxden_error_did.txt
+./foxden meta add $idir/ID3A-meta1-foxden-did-nil.json --schema=$schema 2>&1 1>& /tmp/foxden_error_did.txt
 cat /tmp/foxden_error_did.txt
 
 echo
@@ -161,7 +161,7 @@ echo
 export FOXDEN_WRITE_TOKEN=$FOXDEN_TOKEN
 schema=test
 wfile=/tmp/foxden.wrong.token
-./foxden meta add $schema $idir/test-data.json 2>&1 1>& $wfile
+./foxden meta add $idir/test-data.json --schema=$schema 2>&1 1>& $wfile
 invalid=`grep invalid $wfile`
 if [ -z "$invalid" ]; then
     echo "+++ use read token for writing, test failed"
