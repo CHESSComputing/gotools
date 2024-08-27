@@ -236,6 +236,7 @@ func authCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			tkn, _ := cmd.Flags().GetString("token")
 			kfile, _ := cmd.Flags().GetString("kfile")
+			ofile, _ := cmd.Flags().GetString("ofile")
 			if len(args) == 0 {
 				authUsage()
 			} else if args[0] == "view" {
@@ -259,6 +260,9 @@ func authCommand() *cobra.Command {
 				}
 				if tokenKind == "read" {
 					fname := fmt.Sprintf("%s/.foxden.read.token", os.Getenv("HOME"))
+					if ofile != "" {
+						fname = ofile
+					}
 					err := generateToken(fname, kfile)
 					exit("unable to generate user access token", err)
 					return
@@ -269,6 +273,9 @@ func authCommand() *cobra.Command {
 				}
 				if tokenKind == "write" {
 					fname := fmt.Sprintf("%s/.foxden.write.token", os.Getenv("HOME"))
+					if ofile != "" {
+						fname = ofile
+					}
 					file, err := os.Create(fname)
 					if err != nil {
 						log.Fatal(err)
@@ -277,6 +284,9 @@ func authCommand() *cobra.Command {
 					file.Write([]byte(token))
 				} else if tokenKind == "delete" {
 					fname := fmt.Sprintf("%s/.foxden.delete.token", os.Getenv("HOME"))
+					if ofile != "" {
+						fname = ofile
+					}
 					file, err := os.Create(fname)
 					if err != nil {
 						log.Fatal(err)
@@ -294,6 +304,7 @@ func authCommand() *cobra.Command {
 	}
 	cmd.PersistentFlags().String("kfile", "", "Kerberos file to use")
 	cmd.PersistentFlags().String("token", "", "token file or token string")
+	cmd.PersistentFlags().String("ofile", "", "output file to write to")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		authUsage()
 		return nil
