@@ -76,7 +76,8 @@ func getSpecScans(user, query string) ([]map[string]any, error) {
 	if err != nil {
 		exit("unable to read data from SpecScans data service", err)
 	}
-	err = json.Unmarshal(data, &records)
+	var response services.ServiceResponse
+	err = json.Unmarshal(data, &response)
 
 	//     var response services.ServiceResponse
 	//     err = json.Unmarshal(data, &response)
@@ -87,6 +88,7 @@ func getSpecScans(user, query string) ([]map[string]any, error) {
 	//     if response.HttpCode == 200 {
 	//         records = response.Results.Records
 	//     }
+	records = response.Results.Records
 	return records, nil
 }
 
