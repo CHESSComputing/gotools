@@ -117,8 +117,8 @@ echo
 did=`grep did test/data/ID3A-specscan-1.json | awk '{print $2}'`
 # echo "View spec records for did:$did"
 # ./foxden spec view did:$did
-echo "query spec service with more complex query, e.g. '{"btr": "3731-b", "motors": {"monu_pitch": 0.26898878}}'"
-./foxden spec view '{"btr": "3731-b", "motors": {"monu_pitch": 0.26898878}}' | grep scan_number
+echo "query spec service with more complex query, e.g. '{"btr": "3731-b", "motors.monu_pitch": 0.26898878}'"
+./foxden spec view '{"btr": "3731-b", "motors.monu_pitch": 0.26898878}' | grep scan_number
 
 echo
 echo "+++ search for all records"
