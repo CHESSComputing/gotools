@@ -16,7 +16,7 @@ build:
 	cd migrate; CGO_ENABLED=0 go build; cd -
 	cd transform; CGO_ENABLED=0 go build; cd -
 
-build_all: build_darwin_amd64 build_darwin_arm64 build_linux_amd64 build_linux_arm64 build_linux_power8 build_windows_amd64 build_windows_arm64
+build_all: build_darwin_amd64 build_darwin_arm64 build_linux_amd64 build_linux_arm64 build_linux_power8 build_windows_amd64 build_windows_arm64 changes
 
 build_darwin_amd64:
 	cd enc; CGO_ENABLED=0 GOOS=darwin go build; cd -
@@ -94,6 +94,10 @@ build_windows_arm64:
 	mv enc/enc.exe foxden/foxden.exe validator/validator.exe migrate/migrate.exe transform/transform.exe tools
 	zip -r tools_windows_arm64.zip tools
 	rm -rf tools
+
+changes:
+	./changes.sh
+	./last_changes.sh
 
 test:
 	echo "No tests so far"
