@@ -1,10 +1,10 @@
 module github.com/CHESSComputing/gotools/migrate
 
-go 1.22.5
+go 1.23.1
 
 require (
-	github.com/CHESSComputing/golib v0.3.3
-	go.mongodb.org/mongo-driver v1.16.0
+	github.com/CHESSComputing/golib v0.3.5
+	go.mongodb.org/mongo-driver v1.16.1
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
 
@@ -56,6 +56,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
+	github.com/vkuznet/cryptoutils v0.0.2 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
