@@ -234,6 +234,49 @@ func inspectToken(token string) {
 	fmt.Println("Custom Claims: ", claims.CustomClaims.String())
 }
 
+// helper function to get token as trusted user
+func trustedUser() (string, error) {
+	var token string
+	scope := "write"
+
+	// prepare trusted client data
+	t := utils.NewTrustedClient()
+	salt := "lksjdlkjdfglkjdfg" // default salt should match Authz/handlers.go
+	if _srvConfig.Encryption.Secret != "" {
+		salt = _srvConfig.Encryption.Secret // production salt
+	}
+	edata, err := t.Encrypt(salt)
+
+	// send encrypted data back to Authz server
+	httpMgr := services.NewHttpRequest(scope, 1)
+	ctype := "applicatin/octet-stream"
+	buf := bytes.NewBuffer(edata)
+	rurl := fmt.Sprintf("%s/oauth/trusted", _srvConfig.Services.AuthzURL)
+	resp, err := httpMgr.Post(rurl, ctype, buf)
+	if err != nil {
+		return token, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return token, err
+	}
+	var response map[string]any
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return token, err
+	}
+	if token, ok := response["access_token"]; ok {
+		return fmt.Sprintf("%v", token), nil
+	}
+	if tokenScope, ok := response["scope"]; ok {
+		if tokenScope != scope {
+			return "", errors.New("wrong token scope")
+		}
+	}
+	return token, nil
+}
+
 func authCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "token",
