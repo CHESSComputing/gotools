@@ -134,6 +134,18 @@ func metaUsage() {
 
 // helper function to add meta data record
 func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput bool) {
+	// check if we got request from trusted client
+	if os.Getenv("TRUSTED_CLIENT") != "" {
+		// get trusted token and assign it to http write request
+		if _httpWriteRequest.Token == "" {
+			if token, err := trustedUser(); err == nil {
+				_httpWriteRequest.Token = token
+				defer func() {
+					_httpWriteRequest.Token = ""
+				}()
+			}
+		}
+	}
 
 	// check if given fname is a file
 	_, err := os.Stat(fname)
