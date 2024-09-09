@@ -57,6 +57,7 @@ func init() {
 	rootCmd.AddCommand(configCommand())
 	rootCmd.AddCommand(versionCommand())
 	rootCmd.AddCommand(describeCommand())
+	rootCmd.AddCommand(materialCommonsCommand())
 }
 
 func initConfig() {
