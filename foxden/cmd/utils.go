@@ -67,6 +67,9 @@ func tempFilePath(fname string) string {
 
 // helper function to obtain read access token
 func accessToken() (string, error) {
+	if os.Getenv("TRUSTED_CLIENT") != "" {
+		return "", nil
+	}
 	tfile := fmt.Sprintf("%s/.foxden.read.token", os.Getenv("HOME"))
 	var token string
 	if _httpReadRequest.Token == "" {
@@ -87,6 +90,9 @@ func accessToken() (string, error) {
 
 // helper function to obtain write access token
 func writeAccessToken() (string, error) {
+	if os.Getenv("TRUSTED_CLIENT") != "" {
+		return "", nil
+	}
 	tfile := fmt.Sprintf("%s/.foxden.write.token", os.Getenv("HOME"))
 	var token string
 	if _httpWriteRequest.Token == "" {
@@ -107,6 +113,9 @@ func writeAccessToken() (string, error) {
 
 // helper function to obtain delete access token
 func deleteAccessToken() (string, error) {
+	if os.Getenv("TRUSTED_CLIENT") != "" {
+		return "", nil
+	}
 	tfile := fmt.Sprintf("%s/.foxden.delete.token", os.Getenv("HOME"))
 	var token string
 	if _httpDeleteRequest.Token == "" {
@@ -142,6 +151,9 @@ func getUserToken() (string, string) {
 
 // helper function to obtain write access token
 func writeToken() (string, error) {
+	if os.Getenv("TRUSTED_CLIENT") != "" {
+		return "", nil
+	}
 	token, err := writeAccessToken()
 	if _httpWriteRequest.Token == "" {
 		token = utils.ReadToken(os.Getenv("FOXDEN_WRITE_TOKEN"))
@@ -159,6 +171,9 @@ func writeToken() (string, error) {
 
 // helper function to obtain delete access token
 func deleteToken() (string, error) {
+	if os.Getenv("TRUSTED_CLIENT") != "" {
+		return "", nil
+	}
 	if _httpDeleteRequest.Token == "" {
 		token := utils.ReadToken(os.Getenv("FOXDEN_DELETE_TOKEN"))
 		if token == "" {
