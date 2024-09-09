@@ -4,7 +4,7 @@ go 1.22.5
 
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.0.4
-	github.com/CHESSComputing/golib v0.3.3
+	github.com/CHESSComputing/golib v0.3.4
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/crypto v0.25.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
@@ -58,6 +58,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
+	github.com/vkuznet/cryptoutils v0.0.2 // indirect
 	go.mongodb.org/mongo-driver v1.13.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
