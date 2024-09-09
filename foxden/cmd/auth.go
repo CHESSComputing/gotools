@@ -261,6 +261,14 @@ func trustedUser() (string, error) {
 	if err != nil {
 		return token, err
 	}
+	if resp.StatusCode != 200 {
+		var sresp services.ServiceResponse
+		err = json.Unmarshal(data, &sresp)
+		if err != nil {
+			return "", errors.New(string(data))
+		}
+		return "", errors.New(sresp.Error)
+	}
 	var response map[string]any
 	err = json.Unmarshal(data, &response)
 	if err != nil {
