@@ -24,8 +24,9 @@ build_darwin_amd64:
 	cd validator; CGO_ENABLED=0 GOOS=darwin go build; cd -
 	cd migrate; CGO_ENABLED=0 GOOS=darwin go build; cd -
 	cd transform; CGO_ENABLED=0 GOOS=darwin go build; cd -
+	cd hostinfo; CGO_ENABLED=0 GOOS=darwin go build; cd -
 	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform tools
+	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo/hostinfo tools
 	tar cfz tools_darwin_amd64.tar.gz tools
 	rm -rf tools
 
@@ -35,8 +36,9 @@ build_darwin_arm64:
 	cd validator; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
 	cd migrate; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
 	cd transform; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
+	cd hostinfo; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
 	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform tools
+	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo/hostinfo tools
 	tar cfz tools_darwin_arm64.tar.gz tools
 	rm -rf tools
 
@@ -46,8 +48,9 @@ build_linux_amd64:
 	cd validator; CGO_ENABLED=0 GOOS=linux go build; cd -
 	cd migrate; CGO_ENABLED=0 GOOS=linux go build; cd -
 	cd transform; CGO_ENABLED=0 GOOS=linux go build; cd -
+	cd hostinfo; CGO_ENABLED=0 GOOS=linux go build; cd -
 	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform tools
+	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo tools
 	tar cfz tools_linux_amd64.tar.gz tools
 	rm -rf tools
 
@@ -57,8 +60,9 @@ build_linux_power8:
 	cd validator; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
 	cd migrate; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
 	cd transform; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
+	cd hostinfo; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
 	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform tools
+	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo tools
 	tar cfz tools_linux_power8.tar.gz tools
 	rm -rf tools
 
@@ -68,8 +72,9 @@ build_linux_arm64:
 	cd validator; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
 	cd migrate; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
 	cd transform; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
+	cd hostinfo; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
 	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform tools
+	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo tools
 	tar cfz tools_linux_arm64.tar.gz tools
 	rm -rf tools
 
@@ -79,8 +84,9 @@ build_windows_amd64:
 	cd validator; CGO_ENABLED=0 GOOS=windows go build; cd -
 	cd migrate; CGO_ENABLED=0 GOOS=windows go build; cd -
 	cd transform; CGO_ENABLED=0 GOOS=windows go build; cd -
+	cd hostinfo; CGO_ENABLED=0 GOOS=windows go build; cd -
 	mkdir tools
-	mv enc/enc.exe foxden/foxden.exe validator/validator.exe migrate/migrate.exe transform/transform.exe tools
+	mv enc/enc.exe foxden/foxden.exe validator/validator.exe migrate/migrate.exe transform/transform.exe hostinfo/hostinfo.exe tools
 	zip -r tools_windows_amd64.zip tools
 	rm -rf tools
 
@@ -90,8 +96,9 @@ build_windows_arm64:
 	cd validator; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
 	cd migrate; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
 	cd transform; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
+	cd hostinfo; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
 	mkdir tools
-	mv enc/enc.exe foxden/foxden.exe validator/validator.exe migrate/migrate.exe transform/transform.exe tools
+	mv enc/enc.exe foxden/foxden.exe validator/validator.exe migrate/migrate.exe transform/transform.exe hostinfo/hostinfo.exe tools
 	zip -r tools_windows_arm64.zip tools
 	rm -rf tools
 
