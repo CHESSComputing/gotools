@@ -3,7 +3,7 @@ module github.com/CHESSComputing/gotools/migrate
 go 1.23.1
 
 require (
-	github.com/CHESSComputing/golib v0.3.5
+	github.com/CHESSComputing/golib v0.3.6
 	go.mongodb.org/mongo-driver v1.16.1
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
