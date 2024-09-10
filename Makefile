@@ -15,6 +15,7 @@ build:
 	cd validator; CGO_ENABLED=0 go build; cd -
 	cd migrate; CGO_ENABLED=0 go build; cd -
 	cd transform; CGO_ENABLED=0 go build; cd -
+	cd hostinfo; CGO_ENABLED=0 go build; cd -
 
 build_all: build_darwin_amd64 build_darwin_arm64 build_linux_amd64 build_linux_arm64 build_linux_power8 build_windows_amd64 build_windows_arm64 changes
 
