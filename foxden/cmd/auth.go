@@ -241,10 +241,7 @@ func trustedUser() (string, error) {
 
 	// prepare trusted client data
 	t := utils.NewTrustedClient()
-	salt := "lksjdlkjdfglkjdfg" // default salt should match Authz/handlers.go
-	if _srvConfig.Encryption.Secret != "" {
-		salt = _srvConfig.Encryption.Secret // production salt
-	}
+	salt := authz.ReadSecret(_srvConfig.Encryption.Secret)
 	edata, err := t.Encrypt(salt)
 
 	// send encrypted data back to Authz server

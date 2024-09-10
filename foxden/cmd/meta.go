@@ -59,6 +59,18 @@ func metadata(site string) MetaDataRecord {
 
 // helper function to get meta-data records
 func getMeta(user, query string) ([]map[string]any, error) {
+	// check if we got request from trusted client
+	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
+		// get trusted token and assign it to http write request
+		if _httpReadRequest.Token == "" {
+			if token, err := trustedUser(); err == nil {
+				_httpReadRequest.Token = token
+				defer func() {
+					_httpReadRequest.Token = ""
+				}()
+			}
+		}
+	}
 	var records []map[string]any
 	if query == "" {
 		query = "{}"
@@ -135,7 +147,7 @@ func metaUsage() {
 // helper function to add meta data record
 func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput bool) {
 	// check if we got request from trusted client
-	if os.Getenv("TRUSTED_CLIENT") != "" {
+	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
 		if _httpWriteRequest.Token == "" {
 			if token, err := trustedUser(); err == nil {
