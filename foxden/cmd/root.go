@@ -54,6 +54,7 @@ func init() {
 	rootCmd.AddCommand(viewCommand())
 	rootCmd.AddCommand(syncCommand())
 	rootCmd.AddCommand(searchCommand())
+	rootCmd.AddCommand(globusCommand())
 	rootCmd.AddCommand(configCommand())
 	rootCmd.AddCommand(versionCommand())
 	rootCmd.AddCommand(describeCommand())
