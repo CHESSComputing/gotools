@@ -2,55 +2,69 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	globus "github.com/CHESSComputing/golib/globus"
 	"github.com/spf13/cobra"
 )
 
-// helper function to provide usage of meta option
+// helper function to provide usage of globus option
 func globusUsage() {
-	fmt.Println("foxden globus <ls|rm|view> [options]")
-	fmt.Println("foxden globus add <file.json> {options}")
+	fmt.Println("foxden globus <ls|search|link> [options]")
 	fmt.Println("options: --scope=<globus_scopes> --json")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# search Globus records within CHESS pattern:")
 	fmt.Println("foxden globus search CHESS")
 	fmt.Println("\n# list all globus data records:")
-	fmt.Println("foxden globus ls")
+	fmt.Println("foxden globus ls <id:/path>")
+	fmt.Println("\n# create globus data link:")
+	fmt.Println("foxden globus link <id:/path>")
 }
 
-// helper function to get meta-data records
+// helper function to get globus-data records
 func getGlobus(token, query string) ([]map[string]any, error) {
 	var records []map[string]any
 	globus.Search(token, query)
 	return records, nil
 }
 
-// helper function to list meta-data records
+// helper function to list globus-data records
 func globusListRecord(token, spec string, jsonOutput bool) {
-	records, err := getGlobus(token, spec)
-	if err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
+	arr := strings.Split(spec, ":")
+	if len(arr) > 2 {
+		exit(fmt.Sprintf("unable to extract endpoint id and path from the spec %s", spec), errors.New("insufficient argument"))
 	}
-	if jsonOutput {
-		if data, err := json.MarshalIndent(records, "", " "); err == nil {
-			fmt.Println(string(data))
-		} else {
+	endpointId := arr[0]
+	path := ""
+	if len(arr) == 2 {
+		path = arr[1]
+	}
+	globus.Ls(token, endpointId, path)
+	/*
+		if err != nil {
 			fmt.Println("ERROR", err)
 			os.Exit(1)
 		}
-		return
-	}
+		if jsonOutput {
+			if data, err := json.MarshalIndent(records, "", " "); err == nil {
+				fmt.Println(string(data))
+			} else {
+				fmt.Println("ERROR", err)
+				os.Exit(1)
+			}
+			return
+		}
 
-	for _, r := range records {
-		fmt.Printf("%+v", r)
-	}
-	fmt.Println("---")
-	fmt.Println("Total   :", len(records), "records")
+		for _, r := range records {
+			fmt.Printf("%+v", r)
+		}
+		fmt.Println("---")
+		fmt.Println("Total   :", len(records), "records")
+	*/
 
 }
 
@@ -99,7 +113,7 @@ func globusCommand() *cobra.Command {
 				log.Println("ERROR", err)
 			}
 			if len(args) == 0 {
-				metaUsage()
+				globusUsage()
 			} else if args[0] == "ls" {
 				if len(args) == 2 {
 					globusListRecord(token, args[1], jsonOutput)
@@ -120,7 +134,7 @@ func globusCommand() *cobra.Command {
 	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.PersistentFlags().Int("verbose", 0, "verbosity level")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
-		metaUsage()
+		globusUsage()
 		return nil
 	})
 	return cmd
