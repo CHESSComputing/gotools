@@ -15,7 +15,7 @@ import (
 func version() {
 	goVersion := runtime.Version()
 	tstamp := time.Now()
-	fmt.Printf("git={{VERSION}} go=%s date=%s\n", goVersion, tstamp)
+	fmt.Printf("git={{VERSION}} commit={{COMMIT}} go=%s date=%s\n", goVersion, tstamp)
 }
 
 func versionCommand() *cobra.Command {
