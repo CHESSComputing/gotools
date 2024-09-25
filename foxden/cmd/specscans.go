@@ -56,6 +56,19 @@ func specdata(did string) SpecScansRecord {
 
 // helper function to get SpecScans data records
 func getSpecScans(user, query string) ([]map[string]any, error) {
+	// check if we got request from trusted client
+	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
+		// get trusted token and assign it to http write request
+		if _httpReadRequest.Token == "" {
+			if token, err := trustedUser(); err == nil {
+				_httpReadRequest.Token = token
+				defer func() {
+					_httpReadRequest.Token = ""
+				}()
+			}
+		}
+	}
+
 	var records []map[string]any
 	if query == "" {
 		query = "{}"
@@ -116,6 +129,19 @@ func specAddRecord(args []string, jsonOutput bool) {
 	}
 	// user must provide client spec add schema file.json
 	fname := args[1]
+
+	// check if we got request from trusted client
+	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
+		// get trusted token and assign it to http write request
+		if _httpWriteRequest.Token == "" {
+			if token, err := trustedUser(); err == nil {
+				_httpWriteRequest.Token = token
+				defer func() {
+					_httpWriteRequest.Token = ""
+				}()
+			}
+		}
+	}
 
 	// check if given fname is a file
 	_, err := os.Stat(fname)
