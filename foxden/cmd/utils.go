@@ -134,6 +134,9 @@ func deleteAccessToken() (string, error) {
 // helper function to get user and token
 func getUserToken() (string, string) {
 	token, err := accessToken()
+	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" && token == "" {
+		return "trusted", ""
+	}
 	if err != nil {
 		exit("unable to get access token", err)
 	}
