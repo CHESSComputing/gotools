@@ -10,7 +10,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 
+	mcapi "github.com/materials-commons/gomcapi"
 	"github.com/spf13/cobra"
 )
 
@@ -35,16 +37,65 @@ type MCResponse struct {
 	Data []map[string]any `json:"data"`
 }
 
+var mcClient *mcapi.Client
+
+func getMcClient() {
+	if mcClient != nil {
+		return
+	}
+	args := &mcapi.ClientArgs{
+		BaseURL: _srvConfig.MaterialCommons.Url,
+		APIKey:  _srvConfig.MaterialCommons.ApiKey,
+	}
+	mcClient = mcapi.NewClient(args)
+	return
+}
+
+func createMcDataset(pid int, did, description, summary string) {
+	getMcClient()
+	req := mcapi.CreateOrUpdateDatasetRequest{
+		Name:        did,
+		Description: description,
+		Summary:     summary,
+	}
+	ds, err := mcClient.CreateDataset(pid, req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("New dataset has been created...\n")
+	fmt.Printf("ID       : %+v\n", ds.ID)
+	fmt.Printf("UUID     : %+v\n", ds.UUID)
+	fmt.Printf("Name     : %+v\n", ds.Name)
+	fmt.Printf("DOI      : %+v\n", ds.DOI)
+	fmt.Printf("Created  : %+v\n", ds.CreatedAt)
+	fmt.Printf("Published: %+v\n", ds.PublishedAt)
+}
+
+func getMcProject(pid int) {
+	getMcClient()
+	proj, err := mcClient.GetProject(pid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("ID       : %+v\n", proj.ID)
+	fmt.Printf("UUID     : %s\n", proj.UUID)
+	fmt.Printf("Name     : %s\n", proj.Name)
+	fmt.Printf("Owner    : %s (%s)\n", proj.Owner.Name, proj.Owner.Email)
+	fmt.Printf("Size     : %+v\n", proj.Size)
+	fmt.Printf("FileCount: %+v\n", proj.FileCount)
+	fmt.Printf("Created  : %+v\n", proj.CreatedAt)
+	fmt.Printf("Updated  : %+v\n", proj.UpdatedAt)
+}
+
 // helper function to get meta-data records
 func getMaterialCommons(user, query string) ([]map[string]any, error) {
 	var records []map[string]any
 	materialCommonsUrl := "https://materialscommons.org/api"
-	if _srvConfig.MaterialCommons.Url == "" {
+	if _srvConfig.MaterialCommons.Url != "" {
 		materialCommonsUrl = _srvConfig.MaterialCommons.Url
 	}
 	rurl := fmt.Sprintf("%s/projects", materialCommonsUrl)
 	_httpReadRequest.Token = _srvConfig.MaterialCommons.Token
-	//     resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	resp, err := _httpReadRequest.Get(rurl)
 	if err != nil {
 		exit("unable to fetch data from meta-data service", err)
@@ -117,10 +168,21 @@ func materialCommonsCommand() *cobra.Command {
 			}
 			if len(args) == 0 {
 				metaUsage()
+			} else if args[0] == "add" {
+				if pid, err := strconv.Atoi(args[1]); err == nil {
+					if len(args) > 1 {
+						did := args[2]
+						description := "foxden dataset"
+						summary := "foxden dataset summary"
+						createMcDataset(pid, did, description, summary)
+					}
+				}
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					mcListRecord(user, args[1], jsonOutput)
+					if val, err := strconv.Atoi(args[1]); err == nil {
+						getMcProject(val)
+					}
 				} else {
 					mcListRecord(user, "", jsonOutput)
 				}
