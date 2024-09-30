@@ -52,7 +52,6 @@ func getMcClient() {
 }
 
 func createMcDataset(pid int, did, description, summary string) {
-	getMcClient()
 	req := mcapi.CreateOrUpdateDatasetRequest{
 		Name:        did,
 		Description: description,
@@ -71,8 +70,21 @@ func createMcDataset(pid int, did, description, summary string) {
 	fmt.Printf("Published: %+v\n", ds.PublishedAt)
 }
 
+func publishMcDataset(pid, mcDid int) {
+	ds, err := mcClient.PublishDataset(pid, mcDid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Dataset has been published...\n")
+	fmt.Printf("ID       : %+v\n", ds.ID)
+	fmt.Printf("UUID     : %+v\n", ds.UUID)
+	fmt.Printf("Name     : %+v\n", ds.Name)
+	fmt.Printf("DOI      : %+v\n", ds.DOI)
+	fmt.Printf("Created  : %+v\n", ds.CreatedAt)
+	fmt.Printf("Published: %+v\n", ds.PublishedAt)
+}
+
 func getMcProject(pid int) {
-	getMcClient()
 	proj, err := mcClient.GetProject(pid)
 	if err != nil {
 		log.Fatal(err)
@@ -168,7 +180,10 @@ func materialCommonsCommand() *cobra.Command {
 			}
 			if len(args) == 0 {
 				metaUsage()
-			} else if args[0] == "add" {
+				return
+			}
+			getMcClient()
+			if args[0] == "add" {
 				if pid, err := strconv.Atoi(args[1]); err == nil {
 					if len(args) > 1 {
 						did := args[2]
@@ -180,11 +195,24 @@ func materialCommonsCommand() *cobra.Command {
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					if val, err := strconv.Atoi(args[1]); err == nil {
-						getMcProject(val)
+					if pid, err := strconv.Atoi(args[1]); err == nil {
+						getMcProject(pid)
 					}
 				} else {
 					mcListRecord(user, "", jsonOutput)
+				}
+			} else if args[0] == "publish" {
+				if len(args) != 3 {
+					log.Fatal("unable to publish MaterialCommons dataset, please provide project and dataset IDs")
+				}
+				if pid, err := strconv.Atoi(args[1]); err == nil {
+					if mcDid, err := strconv.Atoi(args[2]); err == nil {
+						publishMcDataset(pid, mcDid)
+					} else {
+						fmt.Println("WARNING: please provide MaterialCommons dataset ID")
+					}
+				} else {
+					fmt.Println("WARNING: please provide project ID")
 				}
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
