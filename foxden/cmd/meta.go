@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
@@ -58,7 +59,7 @@ func metadata(site string) MetaDataRecord {
 }
 
 // helper function to get meta-data records
-func getMeta(user, query string) ([]map[string]any, error) {
+func getMeta(user, query string, skeys []string, sorder int) ([]map[string]any, error) {
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -77,7 +78,7 @@ func getMeta(user, query string) ([]map[string]any, error) {
 	}
 	rec := services.ServiceRequest{
 		Client:       "foxden",
-		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1},
+		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1, SortKeys: skeys, SortOrder: sorder},
 	}
 
 	data, err := json.Marshal(rec)
@@ -132,6 +133,8 @@ func metaUsage() {
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all meta data records:")
 	fmt.Println("foxden meta ls")
+	fmt.Println("\n# list all meta data records using specific sorting key(s) and order:")
+	fmt.Println("foxden meta ls --sort-keys=date --sort-order=1")
 	fmt.Println("\n# list specific meta-data record:")
 	fmt.Println("foxden meta view <DID>")
 	fmt.Println("\n# remove meta-data record:")
@@ -249,8 +252,8 @@ func metaDeleteRecord(args []string, jsonOutput bool) {
 }
 
 // helper funtion to list meta-data records
-func metaListRecord(user, spec string, jsonOutput bool) {
-	records, err := getMeta(user, spec)
+func metaListRecord(user, spec string, skeys []string, sorder int, jsonOutput bool) {
+	records, err := getMeta(user, spec, skeys, sorder)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -273,6 +276,12 @@ func metaListRecord(user, spec string, jsonOutput bool) {
 		fmt.Printf("beamline   : %v\n", r["beamline"])
 		fmt.Printf("btr        : %v\n", r["btr"])
 		fmt.Printf("sample_name: %v\n", r["sample_name"])
+		tstamp := "Not Available"
+		if val, ok := r["date"]; ok {
+			secondsSinceEpoch := int64(val.(float64))
+			tstamp = time.Unix(secondsSinceEpoch, 0).Format(time.RFC3339)
+		}
+		fmt.Printf("date       : %v\n", tstamp)
 		//         fmt.Printf("%+v", r)
 	}
 	fmt.Println("---")
@@ -281,10 +290,10 @@ func metaListRecord(user, spec string, jsonOutput bool) {
 }
 
 // helper function to print meta data records in Json format
-func metaJsonRecord(user, did string, jsonOutput bool) {
+func metaJsonRecord(user, did string, skeys []string, sorder int, jsonOutput bool) {
 	query := "did:" + did
 	log.Println("### query", query)
-	records, err := getMeta(user, query)
+	records, err := getMeta(user, query, skeys, sorder)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -321,26 +330,37 @@ func metaCommand() *cobra.Command {
 			attrs, _ := cmd.Flags().GetString("did-attrs")
 			sep, _ := cmd.Flags().GetString("did-sep")
 			div, _ := cmd.Flags().GetString("did-div")
+			sortKeys, _ := cmd.Flags().GetString("sort-keys")
+			sortOrder, _ := cmd.Flags().GetInt("sort-order")
 			jsonOutput, _ := cmd.Flags().GetBool("json")
 			if jsonOutput {
 				// set _jsonOutputError to properly handle error output in JSON format
 				_jsonOutputError = true
+			}
+			var skeys []string
+			if sortKeys != "" {
+				for _, k := range strings.Split(sortKeys, ",") {
+					skeys = append(skeys, k)
+				}
+			}
+			if sortOrder == 0 {
+				sortOrder = -1
 			}
 			if len(args) == 0 {
 				metaUsage()
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaListRecord(user, args[1], jsonOutput)
+					metaListRecord(user, args[1], skeys, sortOrder, jsonOutput)
 				} else {
-					metaListRecord(user, "", jsonOutput)
+					metaListRecord(user, "", skeys, sortOrder, jsonOutput)
 				}
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaJsonRecord(user, args[1], jsonOutput)
+					metaJsonRecord(user, args[1], skeys, sortOrder, jsonOutput)
 				} else {
-					metaJsonRecord(user, "", jsonOutput)
+					metaJsonRecord(user, "", skeys, sortOrder, jsonOutput)
 				}
 			} else if args[0] == "add" {
 				writeToken()
@@ -365,6 +385,8 @@ func metaCommand() *cobra.Command {
 	cmd.PersistentFlags().String("did-sep", sep, "did separator")
 	cmd.PersistentFlags().String("did-div", div, "did key-value divider")
 	cmd.PersistentFlags().Bool("json", false, "json output")
+	cmd.PersistentFlags().String("sort-keys", "date", "sort key(s), if multiple keys separate them by comma (default: date)")
+	cmd.PersistentFlags().Int("sort-order", -1, "sort order: 1 ascending, -1 desecnding (default)")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		metaUsage()
 		return nil

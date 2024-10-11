@@ -68,6 +68,8 @@ func searchUsage() {
 	fmt.Println("foxden search pi:name")
 	fmt.Println("\n# same as above but provide output in JSON data-format:")
 	fmt.Println("foxden search pi:name --json")
+	fmt.Println("\n# same as above but provide sorting order:")
+	fmt.Println("foxden search pi:name --sort-keys=date --sort-order=1")
 }
 
 // helper function to get all known search (QL) keys across all FOXDEN services
@@ -185,7 +187,7 @@ func searchCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
 			sortKeys, _ := cmd.Flags().GetString("sort-keys")
-			sortOrder, _ := cmd.Flags().GetInt("sort-keys")
+			sortOrder, _ := cmd.Flags().GetInt("sort-order")
 			if jsonOutput {
 				// set _jsonOutputError to properly handle error output in JSON format
 				_jsonOutputError = true
