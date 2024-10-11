@@ -11,17 +11,19 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
+	"time"
 
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
 
-func metaRecords(user, query string) ([]map[string]any, error) {
+func metaRecords(user, query string, skeys []string, sorder int) ([]map[string]any, error) {
 	var records []map[string]any
 	rec := services.ServiceRequest{
 		Client:       "foxden",
-		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1},
+		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1, SortKeys: skeys, SortOrder: sorder},
 	}
 	data, err := json.Marshal(rec)
 	rurl := fmt.Sprintf("%s/search", _srvConfig.Services.DiscoveryURL)
@@ -103,7 +105,7 @@ func getSearchKeys() []string {
 }
 
 // helper function to list search-data records
-func searchListRecord(user, spec string, jsonOutput bool) {
+func searchListRecord(user, spec string, skeys []string, sorder int, jsonOutput bool) {
 	if spec == "keys" {
 		skeys := getSearchKeys()
 		fmt.Println("FOXDEN search keys:")
@@ -112,7 +114,7 @@ func searchListRecord(user, spec string, jsonOutput bool) {
 		}
 		return
 	}
-	records, err := metaRecords(user, spec)
+	records, err := metaRecords(user, spec, skeys, sorder)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -144,6 +146,12 @@ func searchListRecord(user, spec string, jsonOutput bool) {
 		fmt.Printf("beamline   : %v\n", r["beamline"])
 		fmt.Printf("btr        : %v\n", r["btr"])
 		fmt.Printf("sample_name: %v\n", r["sample_name"])
+		tstamp := "Not Available"
+		if val, ok := r["date"]; ok {
+			secondsSinceEpoch := int64(val.(float64))
+			tstamp = time.Unix(secondsSinceEpoch, 0).Format(time.RFC3339)
+		}
+		fmt.Printf("date       : %v\n", tstamp)
 		//         fmt.Println(fmt.Sprintf("%f", val), int64(val.(float64)), did)
 	}
 	fmt.Println("---")
@@ -151,9 +159,9 @@ func searchListRecord(user, spec string, jsonOutput bool) {
 }
 
 // helper function to print search data records in Json format
-func searchJsonRecord(user, did string) {
+func searchJsonRecord(user, did string, skeys []string, sorder int) {
 	query := "did:" + did
-	records, err := metaRecords(user, query)
+	records, err := metaRecords(user, query, skeys, sorder)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -176,19 +184,32 @@ func searchCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			sortKeys, _ := cmd.Flags().GetString("sort-keys")
+			sortOrder, _ := cmd.Flags().GetInt("sort-keys")
 			if jsonOutput {
 				// set _jsonOutputError to properly handle error output in JSON format
 				_jsonOutputError = true
+			}
+			var skeys []string
+			if sortKeys != "" {
+				for _, k := range strings.Split(sortKeys, ",") {
+					skeys = append(skeys, k)
+				}
+			}
+			if sortOrder == 0 {
+				sortOrder = -1
 			}
 			user, _ := getUserToken()
 			if len(args) == 0 {
 				searchUsage()
 			} else {
-				searchListRecord(user, args[0], jsonOutput)
+				searchListRecord(user, args[0], skeys, sortOrder, jsonOutput)
 			}
 		},
 	}
 	cmd.PersistentFlags().Bool("json", false, "json output")
+	cmd.PersistentFlags().String("sort-keys", "date", "sort key(s), if multiple keys separate them by comma (default: date)")
+	cmd.PersistentFlags().Int("sort-order", -1, "sort order: 1 ascending, -1 desecnding (default)")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		searchUsage()
 		return nil

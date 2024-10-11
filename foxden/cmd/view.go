@@ -22,7 +22,9 @@ func viewUsage() {
 // helper function to print view data records in Json format
 func viewMetaRecord(user, did string) {
 	query := "did:" + did
-	records, err := metaRecords(user, query)
+	var skeys []string
+	sorder := 0
+	records, err := metaRecords(user, query, skeys, sorder)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
