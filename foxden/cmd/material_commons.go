@@ -71,6 +71,7 @@ func createMcDataset(pid int, did, description, summary string) {
 }
 
 func uploadMcFile(pid int, fname string) {
+	dirId := 0 // to be defined somehow
 	fs, err := mcClient.UploadFile(pid, dirId, fname)
 	if err != nil {
 		log.Fatal(err)
@@ -81,7 +82,6 @@ func uploadMcFile(pid int, fname string) {
 	fmt.Printf("Name     : %+v\n", fs.Name)
 	fmt.Printf("Path     : %+v\n", fs.Path)
 	fmt.Printf("Created  : %+v\n", fs.CreatedAt)
-	fmt.Printf("Published: %+v\n", fs.PublishedAt)
 }
 
 func publishMcDataset(pid, mcDid int) {
@@ -207,7 +207,7 @@ func materialCommonsCommand() *cobra.Command {
 					}
 				}
 			} else if args[0] == "ls" {
-				//                 user, _ := getUserToken()
+				user, _ := getUserToken()
 				if len(args) == 2 {
 					if pid, err := strconv.Atoi(args[1]); err == nil {
 						getMcProject(pid)
