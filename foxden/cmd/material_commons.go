@@ -70,6 +70,20 @@ func createMcDataset(pid int, did, description, summary string) {
 	fmt.Printf("Published: %+v\n", ds.PublishedAt)
 }
 
+func uploadMcFile(pid int, fname string) {
+	fs, err := mcClient.UploadFile(pid, dirId, fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("New file has been uploaded...\n")
+	fmt.Printf("ID       : %+v\n", fs.ID)
+	fmt.Printf("UUID     : %+v\n", fs.UUID)
+	fmt.Printf("Name     : %+v\n", fs.Name)
+	fmt.Printf("Path     : %+v\n", fs.Path)
+	fmt.Printf("Created  : %+v\n", fs.CreatedAt)
+	fmt.Printf("Published: %+v\n", fs.PublishedAt)
+}
+
 func publishMcDataset(pid, mcDid int) {
 	ds, err := mcClient.PublishDataset(pid, mcDid)
 	if err != nil {
@@ -193,13 +207,19 @@ func materialCommonsCommand() *cobra.Command {
 					}
 				}
 			} else if args[0] == "ls" {
-				user, _ := getUserToken()
+				//                 user, _ := getUserToken()
 				if len(args) == 2 {
 					if pid, err := strconv.Atoi(args[1]); err == nil {
 						getMcProject(pid)
 					}
 				} else {
 					mcListRecord(user, "", jsonOutput)
+				}
+			} else if args[0] == "upload" {
+				if len(args) == 3 {
+					if pid, err := strconv.Atoi(args[1]); err == nil {
+						uploadMcFile(pid, args[2])
+					}
 				}
 			} else if args[0] == "publish" {
 				if len(args) != 3 {
