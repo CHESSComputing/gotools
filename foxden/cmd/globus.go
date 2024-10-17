@@ -22,7 +22,7 @@ func globusUsage() {
 	fmt.Println("\n# list all globus data records:")
 	fmt.Println("foxden globus ls <id:/path>")
 	fmt.Println("\n# create globus data link:")
-	fmt.Println("foxden globus link <id:/path>")
+	fmt.Println("foxden globus link </path>")
 }
 
 // helper function to get globus-data records
@@ -91,6 +91,12 @@ func globusSearch(token, pat string, jsonOutput bool) {
 	fmt.Println("Total   :", len(records), "records")
 }
 
+func globusLink(pat, path string) {
+	gurl, err := globus.ChessGlobusLink(pat, path)
+	exit("ChessGlobusLink", err)
+	fmt.Println("Globus link:", gurl)
+}
+
 func globusCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "globus",
@@ -107,8 +113,8 @@ func globusCommand() *cobra.Command {
 			if verbose > 0 {
 				globus.Verbose = verbose
 			}
-			scope := "urn:globus:auth:scope:transfer.api.globus.org:all"
-			token, err := globus.Token(scope)
+			scopes := []string{"urn:globus:auth:scope:transfer.api.globus.org:all"}
+			token, err := globus.Token(scopes)
 			if err != nil {
 				log.Println("ERROR", err)
 			}
@@ -116,7 +122,12 @@ func globusCommand() *cobra.Command {
 				globusUsage()
 			} else if args[0] == "ls" {
 				if len(args) == 2 {
-					globusListRecord(token, args[1], jsonOutput)
+					eid := strings.Split(args[1], ":")[0]
+					token, err = globus.Token(scopes)
+					if err != nil {
+						log.Println("ERROR", err)
+					}
+					globusListRecord(token, eid, jsonOutput)
 				} else {
 					globusListRecord(token, "", jsonOutput)
 				}
@@ -126,6 +137,13 @@ func globusCommand() *cobra.Command {
 					pat = args[1]
 				}
 				globusSearch(token, pat, jsonOutput)
+			} else if args[0] == "link" {
+				pat := "CHESS Raw"
+				path := ""
+				if len(args) == 2 {
+					path = args[1]
+				}
+				globusLink(pat, path)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
 			}
