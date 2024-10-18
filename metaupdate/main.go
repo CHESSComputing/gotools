@@ -64,7 +64,7 @@ func updateMetaRecords(uri, dbName, dbCol string) {
 			path := val.(string)
 			gurl, err := globus.ChessGlobusLink(pat, path)
 			if err != nil {
-				log.Println("WARNING: skip %s, error: %v", did, err)
+				log.Printf("WARNING: skip %s, error: %v\n", did, err)
 				continue
 			}
 			filter := bson.M{"did": did}
