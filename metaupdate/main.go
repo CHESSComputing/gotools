@@ -17,17 +17,17 @@ func main() {
 	flag.StringVar(&uri, "uri", "", "mongodb uri")
 	var dbName string
 	flag.StringVar(&dbName, "dbName", "", "mongodb dbname")
-	var collection string
-	flag.StringVar(&collection, "collection", "", "mongodb collection")
+	var dbCol string
+	flag.StringVar(&dbCol, "dbCol", "", "mongodb collection")
 	var verbose bool
 	flag.BoolVar(&verbose, "verbose", false, "verbose output")
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	updateMetaRecords(uri, dbName, collection, verbose)
+	updateMetaRecords(uri, dbName, dbCol)
 }
 
 // function which updates MongoDB records
-func updateMetaRecords(uri, dbName, collection string, verbose bool) {
+func updateMetaRecords(uri, dbName, dbCol string) {
 	var err error
 	var spec bson.M
 
@@ -36,7 +36,7 @@ func updateMetaRecords(uri, dbName, collection string, verbose bool) {
 	mongodb := mongo.Connection{URI: uri}
 	ctx := context.TODO()
 	mongoClient := mongodb.Connect()
-	c := mongoClient.Database(dbName).Collection(collection)
+	c := mongoClient.Database(dbName).Collection(dbCol)
 	opts := options.Find()
 	cur, err := c.Find(ctx, spec, opts)
 	if err != nil {
