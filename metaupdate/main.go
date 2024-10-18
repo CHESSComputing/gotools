@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/CHESSComputing/golib/globus"
@@ -71,8 +72,15 @@ func updateMetaRecords(uri, dbName, collection string, verbose bool) {
 			nrec["globus_link"] = gurl
 
 			update := bson.M{"$set": nrec}
-			if _, err := c.UpdateOne(ctx, filter, update, opts); err != nil {
+			result, err := c.UpdateOne(ctx, filter, update, opts)
+			if err != nil {
 				log.Fatal(err)
+			}
+			// Check how many documents were modified
+			if result.MatchedCount == 0 {
+				log.Println("No document found with the given ID", did)
+			} else if result.ModifiedCount > 0 {
+				fmt.Printf("Successfully updated the document with ID: %s\n", did)
 			}
 		}
 	}
