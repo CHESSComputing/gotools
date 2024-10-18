@@ -66,13 +66,11 @@ func updateMetaRecords(uri, dbName, collection string, verbose bool) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			opts := options.Update().SetUpsert(true)
 			filter := bson.M{"did": did}
-			nrec := make(map[string]any)
-			nrec["globus_link"] = gurl
-
-			update := bson.M{"$set": nrec}
-			result, err := c.UpdateOne(ctx, filter, update, opts)
+			update := bson.M{"$set": bson.M{"globus_link": gurl}}
+			result, err := c.UpdateOne(ctx, filter, update)
+			//             opts := options.Update().SetUpsert(true)
+			//             result, err := c.UpdateOne(ctx, filter, update, opts)
 			if err != nil {
 				log.Fatal(err)
 			}
