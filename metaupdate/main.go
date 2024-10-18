@@ -77,9 +77,9 @@ func updateMetaRecords(uri, dbName, dbCol string) {
 			}
 			// Check how many documents were modified
 			if result.MatchedCount == 0 {
-				log.Println("No document found with the given ID", did)
+				log.Println("No document found with the given did", did)
 			} else if result.ModifiedCount > 0 {
-				fmt.Printf("Successfully updated the document with ID: %s\n", did)
+				fmt.Printf("Successfully updated the document did: %s\n", did)
 			}
 		}
 	}
