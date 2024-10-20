@@ -10,8 +10,7 @@ import (
 
 // helper function to determine which DOI provider to use
 func doiProvider() string {
-	var provider string
-	return provider
+	return _srvConfig.DOI.Name
 }
 
 // helper function to view document ID in DOI provider
@@ -20,6 +19,7 @@ func doiView(did int64) {
 	if provider == "Zenodo" {
 		zenodoView(did)
 	} else if provider == "MaterialCommons" {
+		getMcClient()
 		mcView(did)
 	} else {
 		exit("Unsupported DOI provider", errors.New("unsupported"))
@@ -32,6 +32,7 @@ func doiPublish(did int64) {
 	if provider == "Zenodo" {
 		zenodoView(did)
 	} else if provider == "MaterialCommons" {
+		getMcClient()
 		mcView(did)
 	} else {
 		exit("Unsupported DOI provider", errors.New("unsupported"))
@@ -44,6 +45,7 @@ func doiUpdate(did int64, fname string) {
 	if provider == "Zenodo" {
 		zenodoUpdate(did, fname)
 	} else if provider == "MaterialCommons" {
+		getMcClient()
 		mcUpdate(did, fname)
 	} else {
 		exit("Unsupported DOI provider", errors.New("unsupported"))
@@ -56,6 +58,7 @@ func doiAdd(did int64, fname string) {
 	if provider == "Zenodo" {
 		zenodoAdd(did, fname)
 	} else if provider == "MaterialCommons" {
+		getMcClient()
 		mcAdd(did, fname)
 	} else {
 		exit("Unsupported DOI provider", errors.New("unsupported"))
@@ -68,6 +71,7 @@ func doiCreate(fname string) {
 	if provider == "Zenodo" {
 		zenodoCreate(fname)
 	} else if provider == "MaterialCommons" {
+		getMcClient()
 		mcCreate(fname)
 	} else {
 		exit("Unsupported DOI provider", errors.New("unsupported"))
@@ -80,6 +84,7 @@ func doiDocs(did int64) {
 	if provider == "Zenodo" {
 		zenodoDocs(did)
 	} else if provider == "MaterialCommons" {
+		getMcClient()
 		mcDocs(did)
 	} else {
 		exit("Unsupported DOI provider", errors.New("unsupported"))
@@ -88,45 +93,39 @@ func doiDocs(did int64) {
 
 // helper function to provide doi usage info
 func doiUsage() {
-	fmt.Println("foxden doi <ls|create|update|publish|view> <DID> [options]")
-	fmt.Println("options: file name")
-	fmt.Println("         --ztoken=<zenodo token or file>")
+	fmt.Println("foxden doi <ls|create|update|publish|view> [options]")
+	fmt.Println("options:")
+	fmt.Println("         <did> (document/project id)")
+	fmt.Println("         <datasetID> (dataset id within document/project)")
+	fmt.Println("         <file.json> file name")
+	fmt.Println("         --token=<token or token file name>")
 	fmt.Println("\nExamples:")
+	fmt.Println("\n# list documents from DOI provider:")
+	fmt.Println("foxden doi ls")
+	fmt.Println("\n# get details of document id:")
+	fmt.Println("foxden doi view <id>")
 	fmt.Println("\n# create new document (new document with some ID, e.g. 123456789, will be created)")
 	fmt.Println("foxden doi create")
-	fmt.Println("\n# the out of above command will be like")
-	fmt.Println("      Document is created: id=123456789 URL=https://zenodo.org/deposit/123456789")
-	fmt.Println("\n# create new document with user's zenodo token")
-	fmt.Println("foxden doi create --ztoken=alksjdfkds")
+	fmt.Println("\n# create new document with user's token")
+	fmt.Println("foxden doi create --token=alksjdfkds")
 	fmt.Println("\n# create new document from given record:")
 	fmt.Println("foxden doi create </path/record.json>")
 	fmt.Println("\n# add file to document id:")
-	fmt.Println("foxden doi add <id> </path/regular/file>")
+	fmt.Println("foxden doi add <did> </path/regular/file>")
 	fmt.Println("\n# update document id with publish data record:")
-	fmt.Println("foxden doi update <id> /path/record.json")
+	fmt.Println("foxden doi update <did> /path/record.json")
 	fmt.Println("\n# publish document id:")
-	fmt.Println("foxden doi publish <id>")
-	fmt.Println("\n# list existing documents:")
-	fmt.Println("foxden doi ls <id>")
-	fmt.Println("\n# get details of document id:")
-	fmt.Println("foxden doi view <id>")
+	fmt.Println("foxden doi publish <did>")
+	fmt.Println("\n# publish document id and dataset id:")
+	fmt.Println("foxden doi publish <did> <datasetID>")
 	fmt.Println()
-	fmt.Println("Here is example of record.json")
 	record := `
-{
-    "files": [
-        {"name": "file1.txt", "file": "/path/file1.txt"},
-        {"name": "file2.txt", "file": "/path/file2.txt"}
-    ],
-    "metadata": {
-        "publication_type": "article",
-        "upload_type": "publication",
-        "description": "Test FOXDEN publication",
-        "keywords": ["bla", "foo"],
-        "creators": [{"name": "First Last", "affiliation": "Zenodo"}],
-        "title": "Test experiment"
-    }
-}`
+# example of Zenodo meta-data record
+https://raw.githubusercontent.com/CHESSComputing/gotools/refs/heads/main/foxden/test/data/doi.json
+
+# example of MaterialCommons meta-data record
+https://raw.githubusercontent.com/CHESSComputing/gotools/refs/heads/main/foxden/test/data/materialcommons-doi.json
+`
 	fmt.Println(record)
 }
 

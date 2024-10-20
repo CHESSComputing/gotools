@@ -6,6 +6,7 @@ package cmd
 //
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -51,18 +52,43 @@ func getMcClient() {
 	return
 }
 
-func mcView(did int64) {
-}
-func mcUpdate(did int64, fname string) {
-}
-func mcDocs(did int64) {
-}
-func mcAdd(did int64, fname string) {
+func mcView(pid int64) {
+	mcListDatasets(int(pid))
 }
 
-func createMcDataset(pid int, did, description, summary string) {
+func mcUpdate(did int64, fname string) {
+}
+
+func mcDocs(did int64) {
+	mcListProjects()
+}
+func mcAdd(did int64, fname string) {
+	if fname == "" {
+		exit("not input file is provided", errors.New("missing file"))
+	}
+	// look-up project name from given dataset ID
+	pid := 0 // TODO: should be project name
+	name := findDatasetName(int(pid), int(did))
+	description := "FOXDEN dataset"
+	summary := "FOXDEN dataset summary"
+	createMcDataset(pid, name, description, summary)
+
+	file := mcapi.DatasetFileUpload{File: fname}
+	var files []mcapi.DatasetFileUpload
+	files = append(files, file)
+	deposit := mcapi.DepositDatasetRequest{
+		Files:    files,
+		Metadata: mcapi.DatasetMetadata{Name: name, Description: description, Summary: summary},
+	}
+
+	ds, err := mcClient.DepositDataset(pid, deposit)
+	exit("unable to deposit data to MaterialCommons", err)
+	fmt.Printf("%+v\n", ds)
+}
+
+func createMcDataset(pid int, name, description, summary string) {
 	req := mcapi.CreateOrUpdateDatasetRequest{
-		Name:        did,
+		Name:        name,
 		Description: description,
 		Summary:     summary,
 	}
@@ -208,6 +234,18 @@ func mcListDatasets(projID int) {
 	fmt.Printf("Total      : %d records\n", len(records))
 }
 
+// helper function to find MaterialCommons dataset name for given dataset id
+func findDatasetName(pid, did int) string {
+	records, err := mcClient.ListDatasets(pid)
+	exit("unable to list datasets", err)
+	for _, r := range records {
+		if r.ID == did {
+			return r.Name
+		}
+	}
+	return ""
+}
+
 // helper function to list meta-data records
 func mcListRecord(user, spec string, jsonOutput bool) {
 	records, err := getMaterialCommons(user, spec)
@@ -233,22 +271,34 @@ func mcListRecord(user, spec string, jsonOutput bool) {
 
 }
 
+// helper function to create new project ID
 func mcCreate(fname string) {
+	name := "FOXDEN placeholder project"
+	description := "FOXDEN placeholder description"
+	summary := "FOXDEN placehoder summary"
+	var deposit mcapi.DepositDatasetRequest
+
+	if fname != "" {
+		file, err := os.Open(fname)
+		exit("unable to open file", err)
+		defer file.Close()
+		data, err := io.ReadAll(file)
+		exit("unable to read file", err)
+		err = json.Unmarshal(data, &deposit)
+		name = deposit.Metadata.Name
+		description = deposit.Metadata.Description
+		summary = deposit.Metadata.Summary
+	}
+
+	// create new project in MaterialCommons
 	req := mcapi.CreateProjectRequest{
-		Name:        "FOXDEN Test",
-		Description: "FOXDEN test project description",
-		Summary:     "FOXDEN test project summary",
+		Name:        name,
+		Description: description,
+		Summary:     summary,
 	}
 	proj, err := mcClient.CreateProject(req)
 	exit("unable to create foxden project", err)
 
-	file, err := os.Open(fname)
-	exit("unable to open file", err)
-	defer file.Close()
-	data, err := io.ReadAll(file)
-	exit("unable to read file", err)
-	var deposit mcapi.DepositDatasetRequest
-	err = json.Unmarshal(data, &deposit)
 	ds, err := mcClient.DepositDataset(proj.ID, deposit)
 	exit("unable to deposit data to MaterialCommons", err)
 	fmt.Printf("%+v\n", ds)
