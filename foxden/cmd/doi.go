@@ -107,7 +107,7 @@ func doiUsage() {
 	fmt.Println("\n# create new document (new document with some ID, e.g. 123456789, will be created)")
 	fmt.Println("foxden doi create")
 	fmt.Println("\n# create new document with user's token")
-	fmt.Println("foxden doi create --token=alksjdfkds")
+	fmt.Println("foxden doi create --token=<token_string>")
 	fmt.Println("\n# create new document from given record:")
 	fmt.Println("foxden doi create </path/record.json>")
 	fmt.Println("\n# add file to document id:")
