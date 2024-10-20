@@ -1,0 +1,16 @@
+{
+    "files": [
+        {"description": "vimrc", "file": "/Users/vk/.vimrc", "directory": ""}
+    ],
+    "metadata": {
+        "name": "test dataset",
+        "description":"Test FOXDEN publication",
+        "summary": "summary",
+        "license": "MIT",
+        "funding": "NSF",
+        "communities": null,
+        "authors": [{"name": "vk", "email": "test@gmail.com", "affiliations": "Cornell"}],
+        "tags": [{"value":"tag"}],
+        "doi": ""
+    }
+}

@@ -44,11 +44,20 @@ func getMcClient() {
 		return
 	}
 	args := &mcapi.ClientArgs{
-		BaseURL: _srvConfig.MaterialCommons.Url,
-		APIKey:  _srvConfig.MaterialCommons.ApiKey,
+		BaseURL: _srvConfig.DOI.URL,
+		APIKey:  _srvConfig.DOI.AccessToken,
 	}
 	mcClient = mcapi.NewClient(args)
 	return
+}
+
+func mcView(did int64) {
+}
+func mcUpdate(did int64, fname string) {
+}
+func mcDocs(did int64) {
+}
+func mcAdd(did int64, fname string) {
 }
 
 func createMcDataset(pid int, did, description, summary string) {
@@ -85,10 +94,10 @@ func uploadMcFile(pid int, fname string) {
 }
 
 func publishMcDataset(pid, mcDid int) {
-	ds, err := mcClient.PublishDataset(pid, mcDid)
-	if err != nil {
-		log.Fatal(err)
-	}
+	_, err := mcClient.PublishDataset(pid, mcDid)
+	exit("unable to publish dataset", err)
+	ds, err := mcClient.MintDOIForDataset(pid, mcDid)
+	exit("unable to mint DOI for dataset", err)
 	fmt.Printf("Dataset has been published...\n")
 	fmt.Printf("ID       : %+v\n", ds.ID)
 	fmt.Printf("UUID     : %+v\n", ds.UUID)
@@ -117,11 +126,11 @@ func getMcProject(pid int) {
 func getMaterialCommons(user, query string) ([]map[string]any, error) {
 	var records []map[string]any
 	materialCommonsUrl := "https://materialscommons.org/api"
-	if _srvConfig.MaterialCommons.Url != "" {
-		materialCommonsUrl = _srvConfig.MaterialCommons.Url
+	if _srvConfig.DOI.URL != "" {
+		materialCommonsUrl = _srvConfig.DOI.URL
 	}
 	rurl := fmt.Sprintf("%s/projects", materialCommonsUrl)
-	_httpReadRequest.Token = _srvConfig.MaterialCommons.Token
+	_httpReadRequest.Token = _srvConfig.DOI.AccessToken
 	resp, err := _httpReadRequest.Get(rurl)
 	if err != nil {
 		exit("unable to fetch data from meta-data service", err)
@@ -151,11 +160,55 @@ func mcUsage() {
 	fmt.Println("foxden mc add <file.json> {options}")
 	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json")
 	fmt.Println("\nExamples:")
+	fmt.Println("\n# create new document from given record:")
+	fmt.Println("foxden mc create </path/record.json>")
 	fmt.Println("\n# list all mc data records:")
 	fmt.Println("foxden mc ls")
+	fmt.Println("\n# view project datasets:")
+	fmt.Println("foxden mc view <project-id>")
 }
 
-// helper funtion to list meta-data records
+// helper function to list MaterialCommons projects
+func mcListProjects() {
+	records, err := mcClient.ListProjects()
+	exit("unable to list projects", err)
+	for _, r := range records {
+		fmt.Printf("ID         : %+v\n", r.ID)
+		fmt.Printf("Name       : %+v\n", r.Name)
+		fmt.Printf("Description: %+v\n", r.Description)
+		fmt.Printf("Summary    : %+v\n", r.Summary)
+	}
+	fmt.Println("---")
+	fmt.Printf("Total      : %d records\n", len(records))
+}
+
+// helper function to list MaterialCommons datasets within given project id
+func mcListDatasets(projID int) {
+	records, err := mcClient.ListDatasets(projID)
+	exit("unable to list datasets", err)
+	for _, r := range records {
+		fmt.Printf("ID         : %+v\n", r.ID)
+		fmt.Printf("Name       : %+v\n", r.Name)
+		fmt.Printf("Description: %+v\n", r.Description)
+		fmt.Printf("Summary    : %+v\n", r.Summary)
+		fmt.Printf("Authors    : %+v\n", r.Authors)
+		fmt.Printf("DOI        : %+v\n", r.DOI)
+		fmt.Printf("CreatedAt  : %+v\n", r.CreatedAt)
+		fmt.Printf("Files      :\n")
+		for _, f := range r.Files {
+			fmt.Printf("ID       : %+v\n", f.CreatedAt)
+			fmt.Printf("Name     : %+v\n", f.CreatedAt)
+			fmt.Printf("Path     : %+v\n", f.CreatedAt)
+			fmt.Printf("Size     : %+v\n", f.CreatedAt)
+			fmt.Printf("MimeType : %+v\n", f.CreatedAt)
+			fmt.Printf("CreatedAt: %+v\n", f.CreatedAt)
+		}
+	}
+	fmt.Println("---")
+	fmt.Printf("Total      : %d records\n", len(records))
+}
+
+// helper function to list meta-data records
 func mcListRecord(user, spec string, jsonOutput bool) {
 	records, err := getMaterialCommons(user, spec)
 	if err != nil {
@@ -180,6 +233,27 @@ func mcListRecord(user, spec string, jsonOutput bool) {
 
 }
 
+func mcCreate(fname string) {
+	req := mcapi.CreateProjectRequest{
+		Name:        "FOXDEN Test",
+		Description: "FOXDEN test project description",
+		Summary:     "FOXDEN test project summary",
+	}
+	proj, err := mcClient.CreateProject(req)
+	exit("unable to create foxden project", err)
+
+	file, err := os.Open(fname)
+	exit("unable to open file", err)
+	defer file.Close()
+	data, err := io.ReadAll(file)
+	exit("unable to read file", err)
+	var deposit mcapi.DepositDatasetRequest
+	err = json.Unmarshal(data, &deposit)
+	ds, err := mcClient.DepositDataset(proj.ID, deposit)
+	exit("unable to deposit data to MaterialCommons", err)
+	fmt.Printf("%+v\n", ds)
+}
+
 func materialCommonsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "mc",
@@ -193,7 +267,7 @@ func materialCommonsCommand() *cobra.Command {
 				_jsonOutputError = true
 			}
 			if len(args) == 0 {
-				metaUsage()
+				mcUsage()
 				return
 			}
 			getMcClient()
@@ -206,14 +280,23 @@ func materialCommonsCommand() *cobra.Command {
 						createMcDataset(pid, did, description, summary)
 					}
 				}
+			} else if args[0] == "create" {
+				mcCreate(args[1])
+			} else if args[0] == "view" {
+				if len(args) == 2 {
+					if pid, err := strconv.Atoi(args[1]); err == nil {
+						mcListDatasets(pid)
+					}
+				}
 			} else if args[0] == "ls" {
-				user, _ := getUserToken()
+				//                 user, _ := getUserToken()
 				if len(args) == 2 {
 					if pid, err := strconv.Atoi(args[1]); err == nil {
 						getMcProject(pid)
 					}
 				} else {
-					mcListRecord(user, "", jsonOutput)
+					//                     mcListRecord(user, "", jsonOutput)
+					mcListProjects()
 				}
 			} else if args[0] == "upload" {
 				if len(args) == 3 {
@@ -241,7 +324,7 @@ func materialCommonsCommand() *cobra.Command {
 	}
 	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
-		metaUsage()
+		mcUsage()
 		return nil
 	})
 	return cmd
