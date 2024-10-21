@@ -41,14 +41,21 @@ type MCResponse struct {
 
 var mcClient *mcapi.Client
 
+func getMcProjectName() string {
+	name := os.Getenv("FOXDEN_DOI_PROJECT")
+	if name == "" {
+		if _srvConfig.DOI.ProjectName != "" {
+			name = _srvConfig.DOI.ProjectName
+		} else {
+			name = "FOXDEN"
+		}
+	}
+	return name
+}
+
 // helper function to get project Id from a project name
 func getMcProjectId() int {
-	name := os.Getenv("FOXDEN_DOR_PROJECT")
-	if name == "" && _srvConfig.DOI.ProjectName != "" {
-		name = _srvConfig.DOI.ProjectName
-	} else {
-		name = "FOXDEN"
-	}
+	name := getMcProjectName()
 	records, err := mcClient.ListProjects()
 	exit("unable to list projects", err)
 	for _, r := range records {
@@ -56,6 +63,8 @@ func getMcProjectId() int {
 			return r.ID
 		}
 	}
+	exit(fmt.Sprintf("unable to find project %s", name), errors.New("unknown project"))
+	// we should not reach this ever
 	return 0
 }
 func getMcClient() {
@@ -247,8 +256,8 @@ func mcListDatasets(projID int) {
 			fmt.Printf("MimeType : %+v\n", f.CreatedAt)
 			fmt.Printf("CreatedAt: %+v\n", f.CreatedAt)
 		}
+		fmt.Println("---")
 	}
-	fmt.Println("---")
 	fmt.Printf("Total      : %d records\n", len(records))
 }
 
@@ -292,9 +301,9 @@ func mcListRecord(user, spec string, jsonOutput bool) {
 // helper function to create new project ID
 func mcCreate(fname string) {
 	tstamp := time.Now().String()
-	name := fmt.Sprintf("FOXDEN placeholder project: %s", tstamp)
-	description := fmt.Sprintf("FOXDEN placeholder description: %s", tstamp)
-	summary := fmt.Sprintf("FOXDEN placehoder summary: %s", tstamp)
+	name := fmt.Sprintf("FOXDEN dataset placeholder: %s", tstamp)
+	description := fmt.Sprintf("FOXDEN dataset description: %s", tstamp)
+	summary := fmt.Sprintf("FOXDEN dataset summary: %s", tstamp)
 	deposit := mcapi.DepositDatasetRequest{
 		Metadata: mcapi.DatasetMetadata{
 			Name:        name,
@@ -315,22 +324,16 @@ func mcCreate(fname string) {
 		summary = deposit.Metadata.Summary
 	}
 
-	/*
-		// create new project in MaterialCommons
-		req := mcapi.CreateProjectRequest{
-			Name:        name,
-			Description: description,
-			Summary:     summary,
-		}
-		proj, err := mcClient.CreateProject(req)
-		exit("unable to create foxden project", err)
-	*/
 	// look-up FOXDEN project in MaterialCommons
 	pid := getMcProjectId()
 
 	ds, err := mcClient.DepositDataset(pid, deposit)
 	exit("unable to deposit data to MaterialCommons", err)
-	fmt.Printf("%+v\n", ds)
+	fmt.Printf("SUCCESS  : new deposit has been made to:\n")
+	fmt.Printf("Name     : %s\n", getMcProjectName())
+	fmt.Printf("ProjectID: %v\n", pid)
+	fmt.Printf("Dataset  : %s\n", name)
+	fmt.Printf("DatasetID: %v\n", ds.ID)
 }
 
 func materialCommonsCommand() *cobra.Command {
