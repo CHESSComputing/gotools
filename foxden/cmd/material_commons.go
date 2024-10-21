@@ -40,6 +40,23 @@ type MCResponse struct {
 
 var mcClient *mcapi.Client
 
+// helper function to get project Id from a project name
+func getMcProjectId() int {
+	name := os.Getenv("FOXDEN_DOR_PROJECT")
+	if name == "" && _srvConfig.DOI.ProjectName != "" {
+		name = _srvConfig.DOI.ProjectName
+	} else {
+		name = "FOXDEN"
+	}
+	records, err := mcClient.ListProjects()
+	exit("unable to list projects", err)
+	for _, r := range records {
+		if r.Name == name {
+			return r.ID
+		}
+	}
+	return 0
+}
 func getMcClient() {
 	if mcClient != nil {
 		return
@@ -67,7 +84,7 @@ func mcAdd(did int64, fname string) {
 		exit("not input file is provided", errors.New("missing file"))
 	}
 	// look-up project name from given dataset ID
-	pid := 0 // TODO: should be project name
+	pid := getMcProjectId()
 	name := findDatasetName(int(pid), int(did))
 	description := "FOXDEN dataset"
 	summary := "FOXDEN dataset summary"
