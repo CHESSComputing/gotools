@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	mcapi "github.com/materials-commons/gomcapi"
 	"github.com/spf13/cobra"
@@ -290,10 +291,17 @@ func mcListRecord(user, spec string, jsonOutput bool) {
 
 // helper function to create new project ID
 func mcCreate(fname string) {
-	name := "FOXDEN placeholder project"
-	description := "FOXDEN placeholder description"
-	summary := "FOXDEN placehoder summary"
-	var deposit mcapi.DepositDatasetRequest
+	tstamp := time.Now().String()
+	name := fmt.Sprintf("FOXDEN placeholder project: %s", tstamp)
+	description := fmt.Sprintf("FOXDEN placeholder description: %s", tstamp)
+	summary := fmt.Sprintf("FOXDEN placehoder summary: %s", tstamp)
+	deposit := mcapi.DepositDatasetRequest{
+		Metadata: mcapi.DatasetMetadata{
+			Name:        name,
+			Description: description,
+			Summary:     summary,
+		},
+	}
 
 	if fname != "" {
 		file, err := os.Open(fname)
@@ -307,16 +315,20 @@ func mcCreate(fname string) {
 		summary = deposit.Metadata.Summary
 	}
 
-	// create new project in MaterialCommons
-	req := mcapi.CreateProjectRequest{
-		Name:        name,
-		Description: description,
-		Summary:     summary,
-	}
-	proj, err := mcClient.CreateProject(req)
-	exit("unable to create foxden project", err)
+	/*
+		// create new project in MaterialCommons
+		req := mcapi.CreateProjectRequest{
+			Name:        name,
+			Description: description,
+			Summary:     summary,
+		}
+		proj, err := mcClient.CreateProject(req)
+		exit("unable to create foxden project", err)
+	*/
+	// look-up FOXDEN project in MaterialCommons
+	pid := getMcProjectId()
 
-	ds, err := mcClient.DepositDataset(proj.ID, deposit)
+	ds, err := mcClient.DepositDataset(pid, deposit)
 	exit("unable to deposit data to MaterialCommons", err)
 	fmt.Printf("%+v\n", ds)
 }
