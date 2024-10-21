@@ -30,10 +30,10 @@ func doiView(did int64) {
 func doiPublish(did int64) {
 	provider := doiProvider()
 	if provider == "Zenodo" {
-		zenodoView(did)
+		zenodoPublish(did)
 	} else if provider == "MaterialCommons" {
 		getMcClient()
-		mcView(did)
+		mcPublish(did)
 	} else {
 		exit("Unsupported DOI provider", errors.New("unsupported"))
 	}
