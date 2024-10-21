@@ -15,6 +15,7 @@ import (
 	"time"
 
 	mcapi "github.com/materials-commons/gomcapi"
+	"github.com/materials-commons/hydra/pkg/mcdb/mcmodel"
 	"github.com/spf13/cobra"
 )
 
@@ -95,22 +96,18 @@ func mcAdd(did int64, fname string) {
 	}
 	// look-up project name from given dataset ID
 	pid := getMcProjectId()
-	name := findDatasetName(int(pid), int(did))
-	description := "FOXDEN dataset"
-	summary := "FOXDEN dataset summary"
-	createMcDataset(pid, name, description, summary)
 
-	file := mcapi.DatasetFileUpload{File: fname}
-	var files []mcapi.DatasetFileUpload
-	files = append(files, file)
-	deposit := mcapi.DepositDatasetRequest{
-		Files:    files,
-		Metadata: mcapi.DatasetMetadata{Name: name, Description: description, Summary: summary},
-	}
+	// find our dataset with given did
+	dataset := findMcDataset(pid, int(did))
 
-	ds, err := mcClient.DepositDataset(pid, deposit)
-	exit("unable to deposit data to MaterialCommons", err)
-	fmt.Printf("%+v\n", ds)
+	// create directory using dataset UUID
+	dir, err := mcClient.CreateDirectoryByPath(pid, "/"+dataset.UUID)
+	exit("unable to create dataset directory", err)
+
+	// upload file to dataset directory
+	_, err = mcClient.UploadFileTo(pid, fname, dir.Path)
+	exit("unable to upload file to dataset directory", err)
+	fmt.Printf("SUCCESS: a file %s has been added to dataset %s within project %s\n", fname, dataset.Name, getMcProjectName())
 }
 
 func createMcDataset(pid int, name, description, summary string) {
@@ -262,15 +259,15 @@ func mcListDatasets(projID int) {
 }
 
 // helper function to find MaterialCommons dataset name for given dataset id
-func findDatasetName(pid, did int) string {
+func findMcDataset(pid, did int) *mcmodel.Dataset {
 	records, err := mcClient.ListDatasets(pid)
 	exit("unable to list datasets", err)
 	for _, r := range records {
 		if r.ID == did {
-			return r.Name
+			return &r
 		}
 	}
-	return ""
+	return nil
 }
 
 // helper function to list meta-data records
