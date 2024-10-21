@@ -11,7 +11,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"time"
 
 	mcapi "github.com/materials-commons/gomcapi"
 	"github.com/materials-commons/hydra/pkg/mcdb/mcmodel"
@@ -157,10 +156,9 @@ func findMcDataset(pid, did int) *mcmodel.Dataset {
 
 // helper function to create new project ID
 func mcCreate(fname string) {
-	tstamp := time.Now().String()
-	name := fmt.Sprintf("FOXDEN dataset placeholder: %s", tstamp)
-	description := fmt.Sprintf("FOXDEN dataset description: %s", tstamp)
-	summary := fmt.Sprintf("FOXDEN dataset summary: %s", tstamp)
+	name := "FOXDEN dataset placeholder"
+	description := "FOXDEN dataset description"
+	summary := "FOXDEN dataset summary"
 	deposit := mcapi.DepositDatasetRequest{
 		Metadata: mcapi.DatasetMetadata{
 			Name:        name,
