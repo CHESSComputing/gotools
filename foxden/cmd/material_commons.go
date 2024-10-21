@@ -62,9 +62,17 @@ func getMcProjectId() int {
 			return r.ID
 		}
 	}
-	exit(fmt.Sprintf("unable to find project %s", name), errors.New("unknown project"))
-	// we should not reach this ever
-	return 0
+
+	// if project does not exist we'll create it
+	req := mcapi.CreateProjectRequest{
+		Name:        name,
+		Description: "FOXDEN project description",
+		Summary:     "FOXDEN project summary",
+	}
+	proj, err := mcClient.CreateProject(req)
+	exit(fmt.Sprintf("unable to create project %s", name), err)
+	fmt.Printf("SUCCESS: created new project '%s' in MaterialCommons\n\n", name)
+	return proj.ID
 }
 
 // helper function to get MaterialCommons client
