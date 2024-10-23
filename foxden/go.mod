@@ -3,9 +3,10 @@ module github.com/CHESSComputing/gotools/foxden
 go 1.23.2
 
 require (
-	github.com/CHESSComputing/DataBookkeeping v0.0.9
-	github.com/CHESSComputing/golib v0.4.0
+	github.com/CHESSComputing/DataBookkeeping v0.1.0
+	github.com/CHESSComputing/golib v0.4.1
 	github.com/materials-commons/gomcapi v0.0.5
+	github.com/materials-commons/hydra v1.0.0
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/crypto v0.28.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
@@ -50,7 +51,6 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/materials-commons/config v0.0.0-20180218183642-ed5747ab2e08 // indirect
-	github.com/materials-commons/hydra v1.0.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
