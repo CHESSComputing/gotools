@@ -3,8 +3,8 @@ module github.com/CHESSComputing/gotools/foxden
 go 1.23.2
 
 require (
-	github.com/CHESSComputing/DataBookkeeping v0.1.0
-	github.com/CHESSComputing/golib v0.4.1
+	github.com/CHESSComputing/DataBookkeeping v0.1.1
+	github.com/CHESSComputing/golib v0.4.2
 	github.com/materials-commons/gomcapi v0.0.5
 	github.com/materials-commons/hydra v1.0.0
 	github.com/spf13/cobra v1.8.1
