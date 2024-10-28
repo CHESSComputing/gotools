@@ -9,6 +9,7 @@ import (
 
 	"github.com/CHESSComputing/golib/globus"
 	mongo "github.com/CHESSComputing/golib/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -123,8 +124,15 @@ func updateDIDs(uri, dbName, dbCol string) {
 			var newBeamline []string
 			if val, ok := rec["beamline"]; ok {
 				var blines []string
-				for _, b := range val.([]string) {
-					blines = append(blines, strings.ToLower(b))
+				switch vvv := val.(type) {
+				case primitive.A:
+					for _, b := range vvv {
+						blines = append(blines, strings.ToLower(fmt.Sprintf("%v", b)))
+					}
+				case []string:
+					for _, b := range val.([]string) {
+						blines = append(blines, strings.ToLower(b))
+					}
 				}
 				newBeamline = blines
 			}
