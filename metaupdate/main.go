@@ -119,9 +119,14 @@ func updateDIDs(uri, dbName, dbCol string) {
 
 		if did != strings.ToLower(did) {
 			newDid := strings.ToLower(did)
-			var newBeamline, newBtr, newCycle, newSample string
+			var newBtr, newCycle, newSample string
+			var newBeamline []string
 			if val, ok := rec["beamline"]; ok {
-				newBeamline = strings.ToLower(fmt.Sprintf("%v", val))
+				var blines []string
+				for _, b := range val.([]string) {
+					blines = append(blines, strings.ToLower(b))
+				}
+				newBeamline = blines
 			}
 			if val, ok := rec["btr"]; ok {
 				newBtr = strings.ToLower(fmt.Sprintf("%v", val))
