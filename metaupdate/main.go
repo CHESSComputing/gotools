@@ -138,7 +138,7 @@ func updateDIDs(uri, dbName, dbCol string) {
 				"beamline":    newBeamline,
 				"btr":         newBtr,
 				"cycle":       newCycle,
-				"samepl_name": newSample,
+				"sample_name": newSample,
 			}}
 			/*
 				result, err := c.UpdateOne(ctx, filter, update)
