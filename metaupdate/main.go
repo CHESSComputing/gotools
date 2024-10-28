@@ -118,16 +118,16 @@ func updateDIDs(uri, dbName, dbCol string) {
 			newDid := strings.ToLower(did)
 			var newBeamline, newBtr, newCycle, newSample string
 			if val, ok := rec["beamline"]; ok {
-				newBeamline = strings.ToLower(val.(string))
+				newBeamline = strings.ToLower(fmt.Sprintf("%v", val))
 			}
 			if val, ok := rec["btr"]; ok {
-				newBtr = strings.ToLower(val.(string))
+				newBtr = strings.ToLower(fmt.Sprintf("%v", val))
 			}
 			if val, ok := rec["cycle"]; ok {
-				newCycle = strings.ToLower(val.(string))
+				newCycle = strings.ToLower(fmt.Sprintf("%v", val))
 			}
 			if val, ok := rec["sample_name"]; ok {
-				newSample = strings.ToLower(val.(string))
+				newSample = strings.ToLower(fmt.Sprintf("%v", val))
 			}
 			filter := bson.M{"did": did}
 			update := bson.M{"$set": bson.M{
