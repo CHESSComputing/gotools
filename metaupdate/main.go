@@ -24,8 +24,11 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", false, "verbose output")
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.Println("### update globus links")
 	updateMetaRecords(uri, dbName, dbCol)
+	log.Println("### update DIDs")
 	updateDIDs(uri, dbName, dbCol)
+	log.Println("### update BTRs")
 	updateBTRs(uri, dbName, dbCol)
 }
 
