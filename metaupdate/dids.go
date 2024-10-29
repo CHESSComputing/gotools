@@ -39,22 +39,9 @@ func updateDIDs(uri, dbName, dbCol string, execute bool) {
 
 		if did != strings.ToLower(did) {
 			newDid := strings.ToLower(did)
-			var newBtr, newCycle, newSample string
-			if val, ok := rec["btr"]; ok {
-				newBtr = strings.ToLower(fmt.Sprintf("%v", val))
-			}
-			if val, ok := rec["cycle"]; ok {
-				newCycle = strings.ToLower(fmt.Sprintf("%v", val))
-			}
-			if val, ok := rec["sample_name"]; ok {
-				newSample = strings.ToLower(fmt.Sprintf("%v", val))
-			}
 			filter := bson.M{"did": did}
 			update := bson.M{"$set": bson.M{
-				"did":         newDid,
-				"btr":         newBtr,
-				"cycle":       newCycle,
-				"sample_name": newSample,
+				"did": newDid,
 			}}
 			if execute {
 				result, err := c.UpdateOne(ctx, filter, update)
