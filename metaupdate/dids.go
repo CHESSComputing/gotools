@@ -37,8 +37,12 @@ func updateDIDs(uri, dbName, dbCol string, execute bool) {
 		}
 		did := val.(string)
 
-		if did != strings.ToLower(did) {
+		if did != strings.ToLower(did) ||
+			did != strings.ReplaceAll(did, "\n", "") ||
+			did != strings.ReplaceAll(did, "kinigstein-4149-a", "kinigste-4149-a") {
 			newDid := strings.ToLower(did)
+			newDid = strings.ReplaceAll(newDid, "\n", "")
+			newDid = strings.ReplaceAll(did, "kinigstein-4149-a", "kinigste-4149-a")
 			filter := bson.M{"did": did}
 			update := bson.M{"$set": bson.M{
 				"did": newDid,

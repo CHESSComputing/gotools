@@ -41,18 +41,23 @@ func updateBTRs(uri, dbName, dbCol string, execute bool) {
 		btr := val.(string)
 
 		// if btr contains two dashes nothing needs to be done
-		if len(strings.Split(btr, "-")) > 2 {
+		if len(strings.Split(btr, "-")) > 2 &&
+			btr != "Kinigstein-4149-a" {
 			continue
 		}
 		var newBtr string
-		// extract from data_location_raw btr field
-		if val, ok := rec["data_location_raw"]; ok {
-			path := val.(string)
-			arr := strings.Split(path, "/")
-			for _, elem := range arr {
-				if strings.Contains(elem, btr) {
-					newBtr = elem
-					break
+		if btr == "Kinigstein-4149-a" {
+			newBtr = "kinigste-4149-a"
+		} else {
+			// extract from data_location_raw btr field
+			if val, ok := rec["data_location_raw"]; ok {
+				path := val.(string)
+				arr := strings.Split(path, "/")
+				for _, elem := range arr {
+					if strings.Contains(elem, btr) {
+						newBtr = elem
+						break
+					}
 				}
 			}
 		}
