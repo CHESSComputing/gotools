@@ -67,7 +67,7 @@ func updateGlobusLinks(uri, dbName, dbCol string, execute bool) {
 					}
 				}
 			} else {
-				log.Println("update meta-data records with filter %+v and spec %+v", did, filter, update)
+				log.Printf("update meta-data records did %s with filter %+v and spec %+v", did, filter, update)
 			}
 		}
 	}
