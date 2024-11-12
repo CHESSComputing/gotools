@@ -10,7 +10,7 @@ import (
 
 // helper function to determine which DOI provider to use
 func doiProvider() string {
-	return _srvConfig.DOI.Name
+	return _srvConfig.DOI.Provider
 }
 
 // helper function to view document ID in DOI provider
