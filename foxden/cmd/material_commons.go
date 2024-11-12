@@ -42,8 +42,8 @@ var mcClient *mcapi.Client
 func getMcProjectName() string {
 	name := os.Getenv("FOXDEN_DOI_PROJECT")
 	if name == "" {
-		if _srvConfig.MaterialCommons.ProjectName != "" {
-			name = _srvConfig.MaterialCommons.ProjectName
+		if _srvConfig.DOI.MaterialCommons.ProjectName != "" {
+			name = _srvConfig.DOI.MaterialCommons.ProjectName
 		} else {
 			name = "FOXDEN"
 		}
@@ -80,8 +80,8 @@ func getMcClient() {
 		return
 	}
 	args := &mcapi.ClientArgs{
-		BaseURL: _srvConfig.MaterialCommons.Url,
-		APIKey:  _srvConfig.MaterialCommons.AccessToken,
+		BaseURL: _srvConfig.DOI.MaterialCommons.Url,
+		APIKey:  _srvConfig.DOI.MaterialCommons.AccessToken,
 	}
 	mcClient = mcapi.NewClient(args)
 	return

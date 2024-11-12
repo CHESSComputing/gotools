@@ -60,8 +60,8 @@ func initZenodoAccess(tkn string) {
 		ztoken = utils.ReadToken(tkn)
 	} else if os.Getenv("ZENODO_TOKEN") != "" {
 		ztoken = os.Getenv("ZENODO_TOKEN")
-	} else if _srvConfig.Zenodo.AccessToken != "" {
-		ztoken = _srvConfig.Zenodo.AccessToken
+	} else if _srvConfig.DOI.Zenodo.AccessToken != "" {
+		ztoken = _srvConfig.DOI.Zenodo.AccessToken
 	}
 
 	if ztoken == "" {
