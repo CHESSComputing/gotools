@@ -22,7 +22,7 @@ func doiView(did int64) {
 		getMcClient()
 		mcView(did)
 	} else {
-		exit("Unsupported DOI provider", errors.New("unsupported"))
+		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
 	}
 }
 
@@ -35,7 +35,7 @@ func doiPublish(did int64) {
 		getMcClient()
 		mcPublish(did)
 	} else {
-		exit("Unsupported DOI provider", errors.New("unsupported"))
+		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
 	}
 }
 
@@ -48,7 +48,7 @@ func doiUpdate(did int64, fname string) {
 		getMcClient()
 		mcUpdate(did, fname)
 	} else {
-		exit("Unsupported DOI provider", errors.New("unsupported"))
+		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
 	}
 }
 
@@ -61,7 +61,7 @@ func doiAdd(did int64, fname string) {
 		getMcClient()
 		mcAdd(did, fname)
 	} else {
-		exit("Unsupported DOI provider", errors.New("unsupported"))
+		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
 	}
 }
 
@@ -74,7 +74,7 @@ func doiCreate(fname string) {
 		getMcClient()
 		mcCreate(fname)
 	} else {
-		exit("Unsupported DOI provider", errors.New("unsupported"))
+		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
 	}
 }
 
@@ -87,7 +87,7 @@ func doiDocs(did int64) {
 		getMcClient()
 		mcDocs(did)
 	} else {
-		exit("Unsupported DOI provider", errors.New("unsupported"))
+		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
 	}
 }
 
