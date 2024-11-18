@@ -14,30 +14,11 @@ import (
 	"github.com/CHESSComputing/golib/zenodo"
 )
 
-// File describes common file record
-type File struct {
-	Name string `json:"name"`
-	File string `json:"file"`
-}
-
-// MetaRecords used to publish meta-data record to zenodo
-type MetaRecord struct {
-	Metadata zenodo.MetaDataRecord `json:"metadata"`
-}
-
-// DoiRecord represents doi record
-type DoiRecord struct {
-	Id     int64        `json:"id"`
-	Doi    string       `json:"doi"`
-	DoiUrl string       `json:"doi_url"`
-	Files  []File       `json:"files,omitempty"`
-	Links  zenodo.Links `json:"links"`
-}
-
 // PublishRecord describes publicatin record
 type PublishRecord struct {
 	MetaData zenodo.MetaDataRecord `json:"metadata"`
-	Files    []File                `json:"files"`
+	//     Files    []zenodo.File         `json:"files"`
+	Files any `json:"files,omitempty"`
 }
 
 // Validate provides validation of our publish record
@@ -187,7 +168,7 @@ func getBucketId(did int64) string {
 	}
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
-	var rec DoiRecord
+	var rec zenodo.DoiRecord
 	err = json.Unmarshal(data, &rec)
 	exit("unable to unmarshal record", err)
 	arr := strings.Split(rec.Links.Bucket, "/")
@@ -213,7 +194,7 @@ func zenodoUpdate(did int64, fname string) {
 	// add meta-data record
 	err = rec.MetaData.Validate()
 	exit("fail to validate meta-data record", err)
-	mrec := MetaRecord{Metadata: rec.MetaData}
+	mrec := zenodo.MetaRecord{Metadata: rec.MetaData}
 	data, err := json.Marshal(mrec)
 	exit("unable to marshal meta-data record", err)
 	if verbose > 0 {
@@ -239,7 +220,7 @@ func zenodoPublish(did int64) {
 	rurl := fmt.Sprintf("%s/publish/%d", _srvConfig.Services.PublicationURL, did)
 	publishResp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer([]byte{}))
 	if err != nil || (publishResp.StatusCode < 200 || publishResp.StatusCode >= 400) {
-		fmt.Printf("ERROR: unable to publish record, response %s, error %v\n", publishResp, err)
+		fmt.Printf("ERROR: unable to publish record, response %+v, error %v\n", publishResp, err)
 		os.Exit(1)
 	}
 	defer publishResp.Body.Close()
@@ -260,7 +241,7 @@ func zenodoPublish(did int64) {
 	exit("unable to read server response", err)
 
 	// parse doi record
-	var doiRecord DoiRecord
+	var doiRecord zenodo.DoiRecord
 	err = json.Unmarshal(data, &doiRecord)
 	if err == nil {
 		fmt.Println("DOI", doiRecord.DoiUrl)
