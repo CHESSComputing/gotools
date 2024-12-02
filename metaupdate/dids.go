@@ -8,13 +8,12 @@ import (
 
 	mongo "github.com/CHESSComputing/golib/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // function which updates DIDs in MongoDB
 func updateDIDs(uri, dbName, dbCol string, execute bool) {
 	var err error
-	var spec bson.M
+	var spec map[string]any
 
 	// read records from readUri MongoDB
 	records := []map[string]any{}
@@ -43,8 +42,8 @@ func updateDIDs(uri, dbName, dbCol string, execute bool) {
 			newDid := strings.ToLower(did)
 			newDid = strings.ReplaceAll(newDid, "\n", "")
 			newDid = strings.ReplaceAll(newDid, "kinigstein-4149-a", "kinigste-4149-a")
-			filter := bson.M{"did": did}
-			update := bson.M{"$set": bson.M{
+			filter := map[string]any{"did": did}
+			update := map[string]any{"$set": map[string]any{
 				"did": newDid,
 			}}
 			if execute {

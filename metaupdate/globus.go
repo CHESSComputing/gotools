@@ -8,13 +8,12 @@ import (
 	"github.com/CHESSComputing/golib/globus"
 	mongo "github.com/CHESSComputing/golib/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // function which updates globus links MongoDB records
 func updateGlobusLinks(uri, dbName, dbCol string, execute bool) {
 	var err error
-	var spec bson.M
+	var spec map[string]any
 
 	// read records from readUri MongoDB
 	records := []map[string]any{}
@@ -52,8 +51,8 @@ func updateGlobusLinks(uri, dbName, dbCol string, execute bool) {
 				log.Printf("WARNING: skip %s, error: %v\n", did, err)
 				continue
 			}
-			filter := bson.M{"did": did}
-			update := bson.M{"$set": bson.M{"globus_link": gurl}}
+			filter := map[string]any{"did": did}
+			update := map[string]any{"$set": map[string]any{"globus_link": gurl}}
 			if execute {
 				result, err := c.UpdateOne(ctx, filter, update)
 				if err != nil {

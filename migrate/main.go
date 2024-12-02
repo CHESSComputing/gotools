@@ -17,7 +17,6 @@ import (
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func main() {
@@ -89,7 +88,7 @@ func provenance(readUri, readDBName, readCollection, provUri string, verbose boo
 	readClient := readMongo.Connect()
 	c := readClient.Database(readDBName).Collection(readCollection)
 	opts := options.Find()
-	var spec bson.M
+	var spec map[string]any
 	cur, err := c.Find(readctx, spec, opts)
 	if err != nil {
 		log.Fatal(err)
@@ -159,7 +158,7 @@ func provenance(readUri, readDBName, readCollection, provUri string, verbose boo
 // another (output) MongoDB URI/DB/Collection
 func migrate(readUri, readDBName, readCollection, writeUri, writeDBName, writeCollection string, verbose bool) {
 	var err error
-	var spec bson.M
+	var spec map[string]any
 
 	// read records from readUri MongoDB
 	records := []map[string]any{}
@@ -204,7 +203,7 @@ func migrate(readUri, readDBName, readCollection, writeUri, writeDBName, writeCo
 		}
 		rec["did"] = did
 		opts := options.Update().SetUpsert(true)
-		filter := bson.M{
+		filter := map[string]any{
 			"beamline":    rec["Beamline"],
 			"btr":         rec["BTR"],
 			"cycle":       rec["Cycle"],
@@ -214,7 +213,7 @@ func migrate(readUri, readDBName, readCollection, writeUri, writeDBName, writeCo
 		// perform conversion from CamelCase to camel_case
 		nrec := utils.ConvertCamelCaseKeys(rec)
 
-		update := bson.M{"$set": nrec}
+		update := map[string]any{"$set": nrec}
 		if _, err := c.UpdateOne(writectx, filter, update, opts); err != nil {
 			log.Fatal(err)
 		}

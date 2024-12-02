@@ -8,13 +8,12 @@ import (
 
 	mongo "github.com/CHESSComputing/golib/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // function which updates BTRs in MongoDB
 func updateBTRs(uri, dbName, dbCol string, execute bool) {
 	var err error
-	var spec bson.M
+	var spec map[string]any
 
 	// read records from readUri MongoDB
 	records := []map[string]any{}
@@ -66,8 +65,8 @@ func updateBTRs(uri, dbName, dbCol string, execute bool) {
 			continue
 		}
 		newDid := strings.Replace(did, btr, newBtr, -1)
-		filter := bson.M{"did": did}
-		update := bson.M{"$set": bson.M{
+		filter := map[string]any{"did": did}
+		update := map[string]any{"$set": map[string]any{
 			"did": newDid,
 			"btr": newBtr,
 		}}
