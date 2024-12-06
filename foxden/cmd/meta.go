@@ -85,7 +85,7 @@ func getMeta(user, query string, skeys []string, sorder int) ([]map[string]any, 
 	rurl := fmt.Sprintf("%s/search", _srvConfig.Services.MetaDataURL)
 	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	if err != nil {
-		exit("unable to fetch data from meta-data service", err)
+		exit("fail /search, unable to fetch data from meta-data service", err)
 	}
 	defer resp.Body.Close()
 	data, err = io.ReadAll(resp.Body)
@@ -189,7 +189,8 @@ func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput 
 	exit("unable to marshal data", err)
 	rurl := fmt.Sprintf("%s", _srvConfig.Services.MetaDataURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
-	exit("unable to fetch data from meta-data service", err)
+	msg := fmt.Sprintf("fail %s unable to fetch data from meta-data service", rurl)
+	exit(msg, err)
 	defer resp.Body.Close()
 	data, err = io.ReadAll(resp.Body)
 	exit("unable to read data from meta-data service", err)
