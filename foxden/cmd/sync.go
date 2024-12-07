@@ -18,7 +18,11 @@ import (
 
 // helper function to provide usage of sync option
 func syncUsage() {
-	fmt.Println("foxden sync <service: meta or provenance> URL1 URL2")
+	fmt.Println("foxden sync <service: meta or provenance> [options]")
+	fmt.Println("options: --src=<src> --dst=<dst> --spec=<spec> --poolSize=<poolSize> --batchSize=<batchSize>")
+	fmt.Println("\nExamples:")
+	fmt.Println("\n# sync meta-data records:")
+	fmt.Println("foxden sync meta --src=http://localhost:8300 --dst=https://foxden.... --spec={}")
 }
 
 // generic function to sync records from src to dst given spec (JSON query) and pool parameters
@@ -115,23 +119,23 @@ func syncCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			spec, _ := cmd.Flags().GetString("spec")
-			source, _ := cmd.Flags().GetString("source")
-			destination, _ := cmd.Flags().GetString("destination")
+			src, _ := cmd.Flags().GetString("src")
+			dst, _ := cmd.Flags().GetString("dst")
 			poolSize, _ := cmd.Flags().GetInt("poolSize")
 			batchSize, _ := cmd.Flags().GetInt("batchSize")
 			writeToken()
 			if len(args) == 0 {
 				syncUsage()
 			} else if args[1] == "meta" || args[1] == "prov" {
-				syncRecords(source, destination, spec, poolSize, batchSize)
+				syncRecords(src, dst, spec, poolSize, batchSize)
 			} else {
 				syncUsage()
 			}
 		},
 	}
 	cmd.PersistentFlags().String("spec", "", "query spec (JSON)")
-	cmd.PersistentFlags().String("source", "", "specify source uri")
-	cmd.PersistentFlags().String("destination", "", "specify destination uri")
+	cmd.PersistentFlags().String("src", "", "specify src uri")
+	cmd.PersistentFlags().String("dst", "", "specify dst uri")
 	cmd.PersistentFlags().Int("poolSize", 5, "pool size, default: 5")
 	cmd.PersistentFlags().Int("batchSize", 10, "batch size, default: 10")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
