@@ -4,11 +4,11 @@ go 1.23.4
 
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.1.5
-	github.com/CHESSComputing/golib v0.5.4
+	github.com/CHESSComputing/golib v0.5.5
 	github.com/materials-commons/gomcapi v0.0.5
 	github.com/materials-commons/hydra v1.0.0
 	github.com/spf13/cobra v1.8.1
-	golang.org/x/crypto v0.30.0
+	golang.org/x/crypto v0.31.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
 )
 
