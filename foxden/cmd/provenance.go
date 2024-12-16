@@ -89,6 +89,12 @@ func provListRecord(args []string, did, dfile string, jsonOutput bool) {
 		rurl = fmt.Sprintf("%s/child?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
 	} else if args[1] == "buckets" {
 		rurl = fmt.Sprintf("%s/buckets", _srvConfig.Services.DataBookkeepingURL)
+	} else if args[1] == "osinfo" {
+		rurl = fmt.Sprintf("%s/osinfo?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
+	} else if args[1] == "environment" {
+		rurl = fmt.Sprintf("%s/environment?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
+	} else if args[1] == "script" {
+		rurl = fmt.Sprintf("%s/script?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
 	} else {
 		exit("Not implemented yet", errors.New("unsupported"))
 	}
