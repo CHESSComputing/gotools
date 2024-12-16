@@ -42,7 +42,7 @@ sqlite3 $ddir/dbs.db < $ddir/static/schema/sqlite.sql
 echo
 echo "remove $sdir/motors.db"
 rm $sdir/motors.db
-sqlite3 $sdir/motors.db < $sdir/static/sql/create_tables.sql
+sqlite3 $sdir/motors.db < $sdir/static/sql/sqlite.sql
 
 echo
 echo "cleanup MetaData database chess.meta and chess.spec"

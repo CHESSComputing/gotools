@@ -9,5 +9,8 @@
   ],
   "did": "/beamline=3a/btr=3731-b/cycle=2023-3",
   "processing": "glibc",
+  "osinfo": {"name": "linux-cc7", "kernel": "1-2-3", "version": "cc7-123"},
+  "environment": {"name": "conda-123", "version": "version", "details": "details"},
+  "script": {"name": "myscript", "options": "-m -p"},
   "site": "Cornell"
 }
