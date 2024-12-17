@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.1.6
-	github.com/CHESSComputing/golib v0.5.6
+	github.com/CHESSComputing/golib v0.5.7
 	github.com/materials-commons/gomcapi v0.0.5
 	github.com/materials-commons/hydra v1.0.0
 	github.com/spf13/cobra v1.8.1
