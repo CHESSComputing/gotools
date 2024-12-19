@@ -17,7 +17,7 @@ import (
 )
 
 // helper function to get metadata
-// MaterialsCommons represents MaterialCommons object returned from discovery service
+// MaterialsCommons represents MaterialsCommons object returned from discovery service
 type MaterialsCommons struct {
 	ID          string   `json:"id"`
 	Site        string   `json:"site"`
