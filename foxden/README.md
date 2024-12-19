@@ -17,7 +17,7 @@ Available Commands:
   describe    foxden describe command
   doi         foxden doi command
   help        Help about any command
-  mc          foxden MaterialCommons commands
+  mc          foxden MaterialsCommons commands
   meta        foxden MetaData commands
   ml          foxden ml commands
   prov        foxden provenance commands

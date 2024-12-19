@@ -18,7 +18,7 @@ func doiView(did int64) {
 	provider := doiProvider()
 	if provider == "Zenodo" {
 		zenodoView(did)
-	} else if provider == "MaterialCommons" {
+	} else if provider == "MaterialsCommons" {
 		getMcClient()
 		mcView(did)
 	} else {
@@ -31,7 +31,7 @@ func doiPublish(did int64) {
 	provider := doiProvider()
 	if provider == "Zenodo" {
 		zenodoPublish(did)
-	} else if provider == "MaterialCommons" {
+	} else if provider == "MaterialsCommons" {
 		getMcClient()
 		mcPublish(did)
 	} else {
@@ -44,7 +44,7 @@ func doiUpdate(did int64, fname string) {
 	provider := doiProvider()
 	if provider == "Zenodo" {
 		zenodoUpdate(did, fname)
-	} else if provider == "MaterialCommons" {
+	} else if provider == "MaterialsCommons" {
 		getMcClient()
 		mcUpdate(did, fname)
 	} else {
@@ -57,7 +57,7 @@ func doiAdd(did int64, fname string) {
 	provider := doiProvider()
 	if provider == "Zenodo" {
 		zenodoAdd(did, fname)
-	} else if provider == "MaterialCommons" {
+	} else if provider == "MaterialsCommons" {
 		getMcClient()
 		mcAdd(did, fname)
 	} else {
@@ -70,7 +70,7 @@ func doiCreate(fname string) {
 	provider := doiProvider()
 	if provider == "Zenodo" {
 		zenodoCreate(fname)
-	} else if provider == "MaterialCommons" {
+	} else if provider == "MaterialsCommons" {
 		getMcClient()
 		mcCreate(fname)
 	} else {
@@ -83,7 +83,7 @@ func doiDocs(did int64) {
 	provider := doiProvider()
 	if provider == "Zenodo" {
 		zenodoDocs(did)
-	} else if provider == "MaterialCommons" {
+	} else if provider == "MaterialsCommons" {
 		getMcClient()
 		mcDocs(did)
 	} else {
@@ -123,8 +123,8 @@ func doiUsage() {
 # example of Zenodo meta-data record
 https://raw.githubusercontent.com/CHESSComputing/gotools/refs/heads/main/foxden/test/data/doi.json
 
-# example of MaterialCommons meta-data record
-https://raw.githubusercontent.com/CHESSComputing/gotools/refs/heads/main/foxden/test/data/materialcommons-doi.json
+# example of MaterialsCommons meta-data record
+https://raw.githubusercontent.com/CHESSComputing/gotools/refs/heads/main/foxden/test/data/materialscommons-doi.json
 `
 	fmt.Println(record)
 }

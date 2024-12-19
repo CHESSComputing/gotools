@@ -17,8 +17,8 @@ import (
 )
 
 // helper function to get metadata
-// MaterialCommons represents MaterialCommons object returned from discovery service
-type MaterialCommons struct {
+// MaterialsCommons represents MaterialCommons object returned from discovery service
+type MaterialsCommons struct {
 	ID          string   `json:"id"`
 	Site        string   `json:"site"`
 	Description string   `json:"description"`
@@ -28,8 +28,8 @@ type MaterialCommons struct {
 
 // MetaDataRecord represents MetaData record returned by discovery service
 type MCDataRecord struct {
-	Status string            `json:"status"`
-	Data   []MaterialCommons `json:"data"`
+	Status string             `json:"status"`
+	Data   []MaterialsCommons `json:"data"`
 }
 
 // MCResponse represents HTTP response from Material Commons API
@@ -42,8 +42,8 @@ var mcClient *mcapi.Client
 func getMcProjectName() string {
 	name := os.Getenv("FOXDEN_DOI_PROJECT")
 	if name == "" {
-		if _srvConfig.DOI.MaterialCommons.ProjectName != "" {
-			name = _srvConfig.DOI.MaterialCommons.ProjectName
+		if _srvConfig.DOI.MaterialsCommons.ProjectName != "" {
+			name = _srvConfig.DOI.MaterialsCommons.ProjectName
 		} else {
 			name = "FOXDEN"
 		}
@@ -70,18 +70,18 @@ func getMcProjectId() int {
 	}
 	proj, err := mcClient.CreateProject(req)
 	exit(fmt.Sprintf("unable to create project %s", name), err)
-	fmt.Printf("SUCCESS: created new project '%s' in MaterialCommons\n\n", name)
+	fmt.Printf("SUCCESS: created new project '%s' in MaterialsCommons\n\n", name)
 	return proj.ID
 }
 
-// helper function to get MaterialCommons client
+// helper function to get MaterialsCommons client
 func getMcClient() {
 	if mcClient != nil {
 		return
 	}
 	args := &mcapi.ClientArgs{
-		BaseURL: _srvConfig.DOI.MaterialCommons.Url,
-		APIKey:  _srvConfig.DOI.MaterialCommons.AccessToken,
+		BaseURL: _srvConfig.DOI.MaterialsCommons.Url,
+		APIKey:  _srvConfig.DOI.MaterialsCommons.AccessToken,
 	}
 	mcClient = mcapi.NewClient(args)
 	return
@@ -102,7 +102,7 @@ func getMcProject(pid int) {
 	fmt.Printf("Updated  : %+v\n", proj.UpdatedAt)
 }
 
-// helper function to list MaterialCommons projects
+// helper function to list MaterialsCommons projects
 func mcListProjects() {
 	records, err := mcClient.ListProjects()
 	exit("unable to list projects", err)
@@ -116,7 +116,7 @@ func mcListProjects() {
 	fmt.Printf("Total      : %d records\n", len(records))
 }
 
-// helper function to list MaterialCommons datasets within given project id
+// helper function to list MaterialsCommons datasets within given project id
 func mcListDatasets(projID int) {
 	records, err := mcClient.ListDatasets(projID)
 	exit("unable to list datasets", err)
@@ -142,7 +142,7 @@ func mcListDatasets(projID int) {
 	fmt.Printf("Total      : %d records\n", len(records))
 }
 
-// helper function to find MaterialCommons dataset name for given dataset id
+// helper function to find MaterialsCommons dataset name for given dataset id
 func findMcDataset(pid, did int) *mcmodel.Dataset {
 	records, err := mcClient.ListDatasets(pid)
 	exit("unable to list datasets", err)
@@ -179,11 +179,11 @@ func mcCreate(fname string) {
 		summary = deposit.Metadata.Summary
 	}
 
-	// look-up FOXDEN project in MaterialCommons
+	// look-up FOXDEN project in MaterialsCommons
 	pid := getMcProjectId()
 
 	ds, err := mcClient.DepositDataset(pid, deposit)
-	exit("unable to deposit data to MaterialCommons", err)
+	exit("unable to deposit data to MaterialsCommons", err)
 	fmt.Printf("SUCCESS  : new deposit has been made to:\n")
 	fmt.Printf("Name     : %s\n", getMcProjectName())
 	fmt.Printf("ProjectID: %v\n", pid)
@@ -196,7 +196,7 @@ func mcView(pid int64) {
 	mcListDatasets(int(pid))
 }
 
-// helper function to update meta-data record in MaterialCommons
+// helper function to update meta-data record in MaterialsCommons
 func mcUpdate(did int64, fname string) {
 	if fname != "" {
 		exit("no given file name", errors.New("unknown file"))
