@@ -4,6 +4,7 @@ import (
   "context"
   "fmt"
   "log"
+  "strconv"
 
   mongo "github.com/CHESSComputing/golib/mongo"
   "go.mongodb.org/mongo-driver/mongo/options"
@@ -34,7 +35,7 @@ func updateSIDs(uri, dbName, dbCol string, execute bool) {
 			continue
 		}
 		sid := val.(float64)
-		newSid := sid * 1e9
+		newSid := strconv.Itoa(int(sid))
 		update := map[string]any{"$set": map[string]any{
 			"sid": newSid,
 		}}
