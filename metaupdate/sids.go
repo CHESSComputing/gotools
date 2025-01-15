@@ -1,13 +1,12 @@
 package main
 
 import (
-  "context"
-  "fmt"
-  "log"
-  "strconv"
+	"context"
+	"fmt"
+	"log"
 
-  mongo "github.com/CHESSComputing/golib/mongo"
-  "go.mongodb.org/mongo-driver/mongo/options"
+	mongo "github.com/CHESSComputing/golib/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Update Scan Ids. Values should represent a timestamp in ns, not sec.
@@ -35,7 +34,12 @@ func updateSIDs(uri, dbName, dbCol string, execute bool) {
 			continue
 		}
 		sid := val.(float64)
-		newSid := strconv.Itoa(int(sid))
+		var newSid string
+		if sid == float64(int(sid)) {
+			newSid = fmt.Sprintf("%.0f", sid)
+		} else {
+			newSid = fmt.Sprintf("%.10f", sid)
+		}
 		update := map[string]any{"$set": map[string]any{
 			"sid": newSid,
 		}}
