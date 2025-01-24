@@ -95,6 +95,8 @@ func provListRecord(args []string, did, dfile string, jsonOutput bool) {
 		rurl = fmt.Sprintf("%s/environment?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
 	} else if args[1] == "script" {
 		rurl = fmt.Sprintf("%s/script?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
+	} else if args[1] == "provenance" {
+		rurl = fmt.Sprintf("%s/provenance?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
 	} else {
 		exit("Not implemented yet", errors.New("unsupported"))
 	}
@@ -262,6 +264,14 @@ func provUsage() {
 	fmt.Println("foxden prov ls datasets --json")
 	fmt.Println("\n# list all datasets records for given DID")
 	fmt.Println("foxden prov ls datasets --did=<DID>")
+	fmt.Println("\n# list all osinfo records for given DID")
+	fmt.Println("foxden prov ls osinfo --did=<DID>")
+	fmt.Println("\n# list all envronments records for given DID")
+	fmt.Println("foxden prov ls envronments --did=<DID>")
+	fmt.Println("\n# list all script records for given DID")
+	fmt.Println("foxden prov ls scripts --did=<DID>")
+	fmt.Println("\n# list provenance record for given DID")
+	fmt.Println("foxden prov ls provenance --did=<DID>")
 	fmt.Println("\n# list all file records for given DID")
 	fmt.Println("foxden prov ls files --did=<DID>")
 	fmt.Println("\n# list all parents for given DID")
