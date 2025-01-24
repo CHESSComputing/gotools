@@ -12,7 +12,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -21,6 +23,44 @@ import (
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
+
+// UrlParams represents all possible parameters we can pass to datasets query
+type UrlParams struct {
+	Did         string `url:"did"`
+	File        string `url:"file"`
+	Script      string `url:"script"`
+	Environment string `url:"environment"`
+	Package     string `url:"package"`
+	Site        string `url:"site"`
+	Bucket      string `url:"bucket"`
+	Processing  string `url:"processing"`
+	Osname      string `url:"osname"`
+}
+
+// helper function to construct Url
+func buildUrl(rurl string, params UrlParams) string {
+	baseURL, err := url.Parse(rurl)
+	if err != nil {
+		return rurl // Return original if parsing fails
+	}
+
+	query := url.Values{}
+	val := reflect.ValueOf(params)
+	typ := reflect.TypeOf(params)
+
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		tag := field.Tag.Get("url")
+		value := fmt.Sprintf("%v", val.Field(i).Interface())
+
+		if tag != "" && value != "" { // Ensure the field is not empty
+			query.Set(tag, value)
+		}
+	}
+
+	baseURL.RawQuery = query.Encode()
+	return baseURL.String()
+}
 
 // helper function to fetch data from DBS service
 func getData(rurl string) []MapRecord {
@@ -43,63 +83,9 @@ func getData(rurl string) []MapRecord {
 	return results
 }
 
-/*
-// helper function to print dbs record items
-func printRecord(rec MapRecord) {
-	fmt.Println("---")
-	maxKey := 0
-	for key, _ := range rec {
-		if len(key) > maxKey {
-			maxKey = len(key)
-		}
-	}
-	keys := utils.MapKeys(rec)
-	sort.Strings(keys)
-	for _, key := range keys {
-		val, _ := rec[key]
-		pad := strings.Repeat(" ", maxKey-len(key))
-		fmt.Printf("%s%s\t%v\n", key, pad, val)
-	}
-}
-*/
-
 // helper function to list dataset information
-func provListRecord(args []string, did, dfile string, jsonOutput bool) {
-	var rurl string
-	if len(args) == 1 {
-		fmt.Println("WARNING: please provide provenance attribute")
-		os.Exit(1)
-	} else if args[1] == "datasets" {
-		rurl = fmt.Sprintf("%s/datasets", _srvConfig.Services.DataBookkeepingURL)
-		if did != "" {
-			rurl = fmt.Sprintf("%s?did=%s", rurl, did)
-		} else if dfile != "" {
-			rurl = fmt.Sprintf("%s?file=%s", rurl, dfile)
-		}
-	} else if args[1] == "files" {
-		rurl = fmt.Sprintf("%s/files", _srvConfig.Services.DataBookkeepingURL)
-		if did != "" {
-			rurl = fmt.Sprintf("%s?did=%s", rurl, did)
-		} else if dfile != "" {
-			rurl = fmt.Sprintf("%s?file=%s", rurl, dfile)
-		}
-	} else if args[1] == "parents" {
-		rurl = fmt.Sprintf("%s/parents?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
-	} else if args[1] == "child" {
-		rurl = fmt.Sprintf("%s/child?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
-	} else if args[1] == "buckets" {
-		rurl = fmt.Sprintf("%s/buckets", _srvConfig.Services.DataBookkeepingURL)
-	} else if args[1] == "osinfo" {
-		rurl = fmt.Sprintf("%s/osinfo?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
-	} else if args[1] == "environment" {
-		rurl = fmt.Sprintf("%s/environment?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
-	} else if args[1] == "script" {
-		rurl = fmt.Sprintf("%s/script?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
-	} else if args[1] == "provenance" {
-		rurl = fmt.Sprintf("%s/provenance?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
-	} else {
-		exit("Not implemented yet", errors.New("unsupported"))
-	}
+func provListRecord(endpoint string, params UrlParams, jsonOutput bool) {
+	rurl := fmt.Sprintf("%s/%s", _srvConfig.Services.DataBookkeepingURL, buildUrl(endpoint, params))
 	for _, rec := range getData(rurl) {
 		// convert seconds since epoch to human readable string
 		if v, ok := rec["create_at"]; ok {
@@ -212,7 +198,7 @@ func provAddParent(args []string) {
 	rurl := fmt.Sprintf("%s/record?did=%s", _srvConfig.Services.MetaDataURL, rec.Parent)
 	resp, err := _httpReadRequest.Get(rurl)
 	if resp.StatusCode != 200 {
-		log.Println("### rurl", rurl)
+		log.Println("### rurl ", rurl, "status code ", resp.StatusCode)
 		err := errors.New("unable to find parent did")
 		msg := fmt.Sprintf("For provided data=%+v there is no parent did=%s in MetaData service", rec, rec.Parent)
 		exit(msg, err)
@@ -258,12 +244,22 @@ func provDeleteRecord(args []string) {
 func provUsage() {
 	fmt.Println("foxden prov <ls|add> [options]")
 	fmt.Println("options: provenance attributes like dataset(s), file(s), parent(s), child(ren), etc.")
-	fmt.Sprintf("         --file=<file name>, --did=<dataset id>, --json\n")
+	fmt.Println("         --file=<file name>, --did=<dataset id>, --script=<script>")
+	fmt.Println("         --site=<site name>, --bucket=<bucket name>")
+	fmt.Println("         --environment=<environment name>, --package=<package name>")
+	fmt.Println("         --processing=<processing name>, --osname=<os name>")
+	fmt.Println("         --json")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all datasets provenance records:")
 	fmt.Println("foxden prov ls datasets --json")
 	fmt.Println("\n# list all datasets records for given DID")
 	fmt.Println("foxden prov ls datasets --did=<DID>")
+	fmt.Println("\n# list all datasets records for given os name")
+	fmt.Println("foxden prov ls datasets --osname=<os name>")
+	fmt.Println("\n# list all datasets records for file")
+	fmt.Println("foxden prov ls datasets --file=<filename>")
+	fmt.Println("... and so on, you may provide any supported options here to look-up your datasets")
+
 	fmt.Println("\n# list all osinfo records for given DID")
 	fmt.Println("foxden prov ls osinfo --did=<DID>")
 	fmt.Println("\n# list all envronments records for given DID")
@@ -287,6 +283,7 @@ func provUsage() {
 	fmt.Println("\n# add provenance file data record but provide output in json format")
 	fmt.Println("foxden prov add-file <file.json> --json")
 }
+
 func provCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "prov",
@@ -294,9 +291,28 @@ func provCommand() *cobra.Command {
 		Long:  "foxden provenance commands to access FOXDEN Provenance service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			jsonOutput, _ := cmd.Flags().GetBool("json")
 			file, _ := cmd.Flags().GetString("file")
 			did, _ := cmd.Flags().GetString("did")
-			jsonOutput, _ := cmd.Flags().GetBool("json")
+			script, _ := cmd.Flags().GetString("script")
+			environment, _ := cmd.Flags().GetString("environment")
+			pkg, _ := cmd.Flags().GetString("pkg")
+			site, _ := cmd.Flags().GetString("site")
+			bucket, _ := cmd.Flags().GetString("bucket")
+			processing, _ := cmd.Flags().GetString("processing")
+			osname, _ := cmd.Flags().GetString("osname")
+			params := UrlParams{
+				Did:         did,
+				File:        file,
+				Script:      script,
+				Environment: environment,
+				Package:     pkg,
+				Site:        site,
+				Bucket:      bucket,
+				Processing:  processing,
+				Osname:      osname,
+			}
+
 			if jsonOutput {
 				// set _jsonOutputError to properly handle error output in JSON format
 				_jsonOutputError = true
@@ -306,7 +322,10 @@ func provCommand() *cobra.Command {
 			} else if args[0] == "ls" {
 				// obtain valid access token
 				accessToken()
-				provListRecord(args, did, file, jsonOutput)
+				if len(args) > 1 {
+					endpoint := args[1]
+					provListRecord(endpoint, params, jsonOutput)
+				}
 			} else if args[0] == "add" {
 				accessToken()
 				writeToken()
@@ -326,6 +345,13 @@ func provCommand() *cobra.Command {
 	}
 	cmd.PersistentFlags().String("did", "", "did to use")
 	cmd.PersistentFlags().String("file", "", "file to use")
+	cmd.PersistentFlags().String("script", "", "script to use")
+	cmd.PersistentFlags().String("environment", "", "environment to use")
+	cmd.PersistentFlags().String("package", "", "package to use")
+	cmd.PersistentFlags().String("site", "", "site to use")
+	cmd.PersistentFlags().String("bucket", "", "bucket to use")
+	cmd.PersistentFlags().String("processing", "", "processing to use")
+	cmd.PersistentFlags().String("osname", "", "osname to use")
 	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		provUsage()
