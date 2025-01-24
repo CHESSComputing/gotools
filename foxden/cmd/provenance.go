@@ -240,7 +240,7 @@ func provAddDataset(args []string) {
 	data, err := readInput(args)
 	var rec dbs.DatasetRecord
 	err = json.Unmarshal(data, &rec)
-	exit("", err)
+	exit("unable to unmarshal provenance record", err)
 
 	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
