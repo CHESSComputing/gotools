@@ -3,8 +3,8 @@ module github.com/CHESSComputing/gotools/foxden
 go 1.23.5
 
 require (
-	github.com/CHESSComputing/DataBookkeeping v0.1.7
-	github.com/CHESSComputing/golib v0.6.1
+	github.com/CHESSComputing/DataBookkeeping v0.1.8
+	github.com/CHESSComputing/golib v0.6.2
 	github.com/materials-commons/gomcapi v0.0.5
 	github.com/materials-commons/hydra v1.0.0
 	github.com/spf13/cobra v1.8.1
@@ -85,3 +85,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/gorm v1.25.11 // indirect
 )
+
+replace github.com/CHESSComputing/golib => ../../golib
