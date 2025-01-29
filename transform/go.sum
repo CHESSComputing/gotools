@@ -1,5 +1,5 @@
-github.com/CHESSComputing/golib v0.6.2 h1:IdrdJks4VY+/R+djXX4+fr51DnQsmtsLpWfAvHFwGeY=
-github.com/CHESSComputing/golib v0.6.2/go.mod h1:kxRvcrGM5gX2R98Rmt7yhTTN5lVYaLpxEgjkpyLg424=
+github.com/CHESSComputing/golib v0.6.3 h1:8bZz0xaYice2nSnTheexFzKHYF1+ow9Ge2lnT/z2r9c=
+github.com/CHESSComputing/golib v0.6.3/go.mod h1:kxRvcrGM5gX2R98Rmt7yhTTN5lVYaLpxEgjkpyLg424=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
