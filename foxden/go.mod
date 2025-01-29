@@ -3,7 +3,7 @@ module github.com/CHESSComputing/gotools/foxden
 go 1.23.5
 
 require (
-	github.com/CHESSComputing/DataBookkeeping v0.1.9
+	github.com/CHESSComputing/DataBookkeeping v0.2.0
 	github.com/CHESSComputing/golib v0.6.3
 	github.com/materials-commons/gomcapi v0.0.5
 	github.com/materials-commons/hydra v1.0.0
@@ -70,7 +70,7 @@ require (
 	go.mongodb.org/mongo-driver v1.17.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/exp v0.0.0-20250128144449-3edf0e91c1ae // indirect
+	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
