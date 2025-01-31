@@ -244,6 +244,7 @@ func printRecords(records []MapRecord, show string) {
 
 // helper function to print given JSON file
 func recordInfo(fname string) {
+	fmt.Printf("### Example of %s\n", fname)
 	// Open the file from the embedded file system
 	file, err := StaticFs.Open(fmt.Sprintf("static/%s", fname))
 	if err != nil {
