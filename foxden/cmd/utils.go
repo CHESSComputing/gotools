@@ -5,8 +5,10 @@ package cmd
 // Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
 //
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -19,6 +21,9 @@ import (
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/CHESSComputing/golib/utils"
 )
+
+//go:embed static
+var StaticFs embed.FS
 
 var doc = "Complete documentation at https://foxden.classe.cornell.edu:8344/docs"
 
@@ -235,4 +240,23 @@ func printRecords(records []MapRecord, show string) {
 	for _, item := range out {
 		fmt.Println(item)
 	}
+}
+
+// helper function to print given JSON file
+func recordInfo(fname string) {
+	// Open the file from the embedded file system
+	file, err := StaticFs.Open(fmt.Sprintf("static/%s", fname))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// Read the file content
+	data, err := io.ReadAll(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Print the content
+	fmt.Println(string(data))
 }
