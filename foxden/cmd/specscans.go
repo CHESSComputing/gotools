@@ -118,6 +118,8 @@ func specUsage() {
 	fmt.Println("foxden spec add <file.json>")
 	fmt.Println("\n# the same as above but provide json output")
 	fmt.Println("foxden spec add <file.json> --json")
+	fmt.Println("\n# show example of specscan record")
+	fmt.Println("foxden spec info")
 }
 
 // helper function to add spec data record
@@ -283,6 +285,8 @@ func specCommand() *cobra.Command {
 			} else if args[0] == "add" {
 				writeToken()
 				specAddRecord(args, jsonOutput)
+			} else if args[0] == "info" {
+				recordInfo("specscan.json")
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
 			}

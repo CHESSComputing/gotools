@@ -145,6 +145,8 @@ func metaUsage() {
 	fmt.Println("foxden meta add <file.json> --schema=<schema>")
 	fmt.Println("\n# the same as above but provide json output")
 	fmt.Println("foxden meta add <file.json> --schema=<schema> --json")
+	fmt.Println("\n# show example of meta-data record")
+	fmt.Println("foxden meta info")
 }
 
 // helper function to add meta data record
@@ -373,6 +375,8 @@ func metaCommand() *cobra.Command {
 					exit("please provide <file.json>", errors.New("no input file"))
 				}
 				metaAddRecord(schema, fname, attrs, sep, div, jsonOutput)
+			} else if args[0] == "info" {
+				recordInfo("metadata.json")
 			} else if args[0] == "rm" {
 				writeToken()
 				metaDeleteRecord(args, jsonOutput)

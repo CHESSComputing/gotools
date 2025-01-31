@@ -277,6 +277,8 @@ func provUsage() {
 	// fmt.Println("foxden prov add-file <file.json>")
 	// fmt.Println("\n# add provenance file data record but provide output in json format")
 	// fmt.Println("foxden prov add-file <file.json> --json")
+	fmt.Println("\n# show example of provenance record")
+	fmt.Println("foxden prov info")
 }
 
 func provCommand() *cobra.Command {
@@ -321,6 +323,8 @@ func provCommand() *cobra.Command {
 					endpoint := args[1]
 					provListRecord(endpoint, params, jsonOutput)
 				}
+			} else if args[0] == "info" {
+				recordInfo("provenance.json")
 			} else if args[0] == "add" {
 				accessToken()
 				writeToken()
