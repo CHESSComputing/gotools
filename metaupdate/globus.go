@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/CHESSComputing/golib/globus"
 	mongo "github.com/CHESSComputing/golib/mongo"
@@ -52,7 +51,7 @@ func updateGlobusLinks(uri, dbName, dbCol string, execute bool) {
 			path = val.(string)
 		} else {
 			log.Println("data_location_raw or btr_location_raw has found in meta-data record")
-			os.Exit(1)
+			continue
 		}
 		gurl, err := globus.ChessGlobusLink(pat, path)
 		if err != nil {
