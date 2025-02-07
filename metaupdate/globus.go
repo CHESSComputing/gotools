@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/CHESSComputing/golib/globus"
 	mongo "github.com/CHESSComputing/golib/mongo"
@@ -44,30 +45,36 @@ func updateGlobusLinks(uri, dbName, dbCol string, execute bool) {
 
 		// otherwise we'll create new globus link and update the record
 		pat := "CHESS Raw"
+		var path string
 		if val, ok := rec["data_location_raw"]; ok {
-			path := val.(string)
-			gurl, err := globus.ChessGlobusLink(pat, path)
+			path = val.(string)
+		} else if val, ok := rec["btr_location_raw"]; ok {
+			path = val.(string)
+		} else {
+			log.Println("data_location_raw or btr_location_raw has found in meta-data record")
+			os.Exit(1)
+		}
+		gurl, err := globus.ChessGlobusLink(pat, path)
+		if err != nil {
+			log.Printf("WARNING: skip %s, error: %v\n", did, err)
+			continue
+		}
+		filter := map[string]any{"did": did}
+		update := map[string]any{"$set": map[string]any{"globus_link": gurl}}
+		if execute {
+			result, err := c.UpdateOne(ctx, filter, update)
 			if err != nil {
-				log.Printf("WARNING: skip %s, error: %v\n", did, err)
-				continue
-			}
-			filter := map[string]any{"did": did}
-			update := map[string]any{"$set": map[string]any{"globus_link": gurl}}
-			if execute {
-				result, err := c.UpdateOne(ctx, filter, update)
-				if err != nil {
-					log.Printf("ERROR: updating did %s, error %v\n", did, err)
-				} else {
-					// Check how many documents were modified
-					if result.MatchedCount == 0 {
-						log.Println("No document found with the given did", did)
-					} else if result.ModifiedCount > 0 {
-						fmt.Printf("Successfully updated the document did: %s\n", did)
-					}
-				}
+				log.Printf("ERROR: updating did %s, error %v\n", did, err)
 			} else {
-				log.Printf("update meta-data records did %s with filter %+v and spec %+v", did, filter, update)
+				// Check how many documents were modified
+				if result.MatchedCount == 0 {
+					log.Println("No document found with the given did", did)
+				} else if result.ModifiedCount > 0 {
+					fmt.Printf("Successfully updated the document did: %s\n", did)
+				}
 			}
+		} else {
+			log.Printf("update meta-data records did %s with filter %+v and spec %+v", did, filter, update)
 		}
 	}
 }
