@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-  "database/sql"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
 	"strconv"
-  "strings"
+	"strings"
 
 	mongo "github.com/CHESSComputing/golib/mongo"
 	sqldb "github.com/CHESSComputing/golib/sqldb"
@@ -15,6 +15,8 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	var uri string
 	flag.StringVar(&uri, "uri", "", "mongodb uri")
 	var dbName string
@@ -34,12 +36,45 @@ func main() {
 }
 
 func migrate(uri, dbName, dbCol, dbFileOld, dbFileNew string, execute bool) {
-	oldSids := updateMongoSids(uri, dbName, dbCol, execute)
+	// oldSids := updateMongoSids(uri, dbName, dbCol, execute)
+	oldSids := getOldSids(uri, dbName, dbCol)
+	log.Printf("migrating %v records", len(oldSids))
 	updateSql(dbFileOld, dbFileNew, oldSids, execute)
 }
 
 func convertSid(sid float64) string {
+	if sid < 1e18 {
+		sid = sid * 1e9
+	}
 	return strconv.Itoa(int(sid))
+}
+
+// get all old_sids from mongodb
+func getOldSids(uri, dbName, dbCol string) []float64 {
+	var oldSids []float64
+	// read records from readUri MongoDB
+	var spec map[string]any
+	records := []map[string]any{}
+	mongodb := mongo.Connection{URI: uri}
+	ctx := context.TODO()
+	mongoClient := mongodb.Connect()
+	c := mongoClient.Database(dbName).Collection(dbCol)
+	opts := options.Find()
+	cur, err := c.Find(ctx, spec, opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cur.All(ctx, &records)
+	log.Printf("got %v records from mongodb", len(records))
+	for _, rec := range records {
+		val, ok := rec["sid_old"]
+		if !ok {
+			continue
+		}
+		sid := val.(float64)
+		oldSids = append(oldSids, sid)
+	}
+	return oldSids
 }
 
 // update data type of sid in mongo db, return list of all old sids in the db.
@@ -58,6 +93,7 @@ func updateMongoSids(uri, dbName, dbCol string, execute bool) []float64 {
 		log.Fatal(err)
 	}
 	cur.All(ctx, &records)
+	log.Printf("got %v records from mongodb", len(records))
 	for _, rec := range records {
 		val, ok := rec["sid"]
 		if !ok {
@@ -100,7 +136,9 @@ func updateSql(dbFileOld, dbFileNew string, oldSids []float64, execute bool) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rows, err := tx.Query(`
+	placeholders := strings.Repeat("?,", len(oldSids))
+	placeholders = placeholders[:len(placeholders)-1]
+	query := fmt.Sprintf(`
     SELECT S.sid, group_concat(M.motor_mne), group_concat(P.motor_position)
     FROM MotorPositions AS P
     JOIN MotorMnes AS M ON M.motor_id=P.motor_id
@@ -110,14 +148,19 @@ func updateSql(dbFileOld, dbFileNew string, oldSids []float64, execute bool) {
         FROM MotorPositions AS P
         JOIN MotorMnes AS M ON M.motor_id=P.motor_id
         JOIN ScanIds AS S ON S.scan_id=M.scan_id
-        WHERE S.sid IN (?)
-    GROUP BY S.sid;
-    `, oldSids)
+        WHERE S.sid IN (%s)
+    )
+    GROUP BY S.sid`, placeholders)
+	args := make([]interface{}, len(oldSids))
+	for i, sid := range oldSids {
+		args[i] = sid
+	}
+	rows, err := tx.Query(query, args...)
 	if err != nil {
 		log.Fatal(err)
 	}
 	motorRecords := parseMotorRecords(rows)
-
+	tx.Commit()
 	// add records to new db
 	newSqlDb, err := sqldb.InitDB("mysql", dbFileNew)
 	if err != nil {
@@ -125,14 +168,14 @@ func updateSql(dbFileOld, dbFileNew string, oldSids []float64, execute bool) {
 		return
 	}
 	for _, rec := range motorRecords {
-    if execute {
-      _, err := InsertMotors(rec, newSqlDb)
-      if err != nil {
-        log.Fatal(err)
-      }
-    } else {
-      log.Printf("will add record with sid: %+v\n", rec.ScanId)
-    }
+		if execute {
+			_, err := InsertMotors(rec, newSqlDb)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Printf("will add record with sid: %+v\n", rec.ScanId)
+		}
 	}
 }
 
