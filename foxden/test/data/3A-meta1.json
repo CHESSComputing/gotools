@@ -1,0 +1,89 @@
+{
+  "affiliation": [
+    "Industry"
+  ],
+  "alignment": false,
+  "beam_energy": 312.462,
+  "beamline": [
+    "3A"
+  ],
+  "beamline_funding_partner": [
+    "CHEXS_NSF"
+  ],
+  "beamline_setup_document": "/tmp",
+  "btr": "btr-1-b",
+  "calibration": false,
+  "calibration_document": "",
+  "cesr_conditions": [
+    "9x5_bunch_mode"
+  ],
+  "cycle": "2024-1",
+  "data_location_beamtime_notes": "/tmp",
+  "data_location_meta": "/tmp",
+  "data_location_raw": "/tmp",
+  "data_location_reduced": "/tmp",
+  "data_location_scratch": "/tmp",
+  "date": 1730913016,
+  "detectors": [
+    "other"
+  ],
+  "did": "/beamline=3a/btr=btr-1-b/cycle=2024-1/sample_name=lup-20kev-1",
+  "energy_foil": [
+    "Sn"
+  ],
+  "energy_scan_document": "null",
+  "experiment_type": [
+    "other"
+  ],
+  "experimenters": "FleischauerV, WolfordN, ChanB, TerjesenC, FisherY",
+  "facility": "CHESS",
+  "focusing": [
+    "None"
+  ],
+  "furnace": [
+    ""
+  ],
+  "in_situ": false,
+  "insertion_device": [
+    "CCU"
+  ],
+  "material_safety_hazardous_samples": false,
+  "mechanical_grips": [
+    ""
+  ],
+  "mechanical_load_frame": [
+    "RAMSII"
+  ],
+  "mechanical_test": false,
+  "mechanical_test_type": [
+    ""
+  ],
+  "monochromator": [
+    "double_crystal_bragg_si220"
+  ],
+  "pi": "wolford",
+  "processing_environment": [
+    ""
+  ],
+  "sample_chemical_formula": "none",
+  "sample_common_name": "none",
+  "sample_geometry": "none",
+  "sample_mat_ped_heat_treatment": "none",
+  "sample_mat_ped_processing_route": "none",
+  "sample_name": "lup-20kev-1",
+  "sample_state": [
+    ""
+  ],
+  "schema": "ID3A",
+  "schema_file": "/home/chessdata_svc/FOXDEN/FOXDEN/configs/ID3A.json",
+  "staff_scientist": [
+    "ShanksKS"
+  ],
+  "supplementary_technique": [
+    ""
+  ],
+  "technique": [
+    "other"
+  ],
+  "undulator_scan_document": "null"
+}

@@ -1,0 +1,15 @@
+{
+    "files": [
+        {"name": "vimrc", "file": "/Users/vk/.vimrc"}
+    ],
+    "metadata": {
+        "title": "foxden-dataset",
+        "upload_type":"dataset",
+        "description":"FOXDEN dataset",
+        "keywords": ["bla", "foo"],
+        "creators": [{"name": "First Last", "affiliation": "Zenodo"}],
+        "access_right": "open",
+        "license": "MIT",
+        "communities": [{"identifier": "foxden-test"}]
+    }
+}

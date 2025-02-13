@@ -1,0 +1,12 @@
+{
+    "files": {"enabled":"false"},
+    "metadata": {
+        "publication_type": "deliverable",
+        "upload_type":"dataset",
+        "description":"Test FOXDEN publication",
+        "title": "FOXDEN dataset with did",
+        "keywords": ["bla", "foo"],
+        "creators": [{"name": "First Last", "affiliation": "Zenodo"}],
+        "license": "MIT"
+    }
+}
