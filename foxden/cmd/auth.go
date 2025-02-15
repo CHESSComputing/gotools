@@ -78,6 +78,9 @@ func requestToken(scope, kfile string) (string, error) {
 	if kfile == "" {
 		kfile = keyFile()
 	}
+	if os.Getenv("FOXDEN_DEBUG") != "" {
+		fmt.Println("request token from", kfile)
+	}
 	var token string
 	user, ticket := getKerberosTicket(kfile)
 	rec := authz.Kerberos{
@@ -123,6 +126,9 @@ func requestToken(scope, kfile string) (string, error) {
 
 // helper function to generate access token
 func generateToken(fname, keyFileName string) error {
+	if os.Getenv("FOXDEN_DEBUG") != "" {
+		fmt.Println("generate token from", fname)
+	}
 	// check if user has default read token
 	if _, err := os.Stat(fname); err == nil {
 		// file exists, let's read token and check its validity
