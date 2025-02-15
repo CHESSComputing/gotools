@@ -24,22 +24,25 @@ func main() {
 	var dbCol string
 	flag.StringVar(&dbCol, "dbCol", "", "mongodb colection")
 	var dbFileOld string
-	flag.StringVar(&dbFileOld, "dbFileOld", "", "old motorsdb file (sqlite)")
+	flag.StringVar(&dbFileOld, "dbFileOld", "", "old motorsdb file")
 	var dbFileNew string
-	flag.StringVar(&dbFileNew, "dbFileNew", "", "new motorsdb file (mysql)")
+	flag.StringVar(&dbFileNew, "dbFileNew", "", "new motorsdb file")
+	var dbTypeOld string
+	flag.StringVar(&dbTypeOld, "dbTypeOld", "", "old motorsdb type")
+	var dbTypeNew string
+	flag.StringVar(&dbTypeNew, "dbTypeNew", "", "new motorsdb type")
 	var execute bool
 	flag.BoolVar(&execute, "execute", false, "execute flag")
 
 	flag.Parse()
 	//addNewSids(uri, dbName, collection, dbFile, true)
-	migrate(uri, dbName, dbCol, dbFileOld, dbFileNew, execute)
+	migrate(uri, dbName, dbCol, dbFileOld, dbFileNew, dbTypeOld, dbTypeNew, execute)
 }
 
-func migrate(uri, dbName, dbCol, dbFileOld, dbFileNew string, execute bool) {
-	// oldSids := updateMongoSids(uri, dbName, dbCol, execute)
-	oldSids := getOldSids(uri, dbName, dbCol)
+func migrate(uri, dbName, dbCol, dbFileOld, dbFileNew, dbTypeOld, dbTypeNew string, execute bool) {
+	oldSids := updateMongoSids(uri, dbName, dbCol, execute)
 	log.Printf("migrating %v records", len(oldSids))
-	updateSql(dbFileOld, dbFileNew, oldSids, execute)
+	updateSql(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew, oldSids, execute)
 }
 
 func convertSid(sid float64) string {
@@ -125,9 +128,9 @@ func updateMongoSids(uri, dbName, dbCol string, execute bool) []float64 {
 }
 
 // transfer all records from old to new db, performing conversion of sid data type along the way.
-func updateSql(dbFileOld, dbFileNew string, oldSids []float64, execute bool) {
+func updateSql(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew string, oldSids []float64, execute bool) {
 	// get old records
-	oldSqlDb, err := sqldb.InitDB("sqlite3", dbFileOld)
+	oldSqlDb, err := sqldb.InitDB(dbTypeOld, dbFileOld)
 	if err != nil {
 		log.Println("could not init old sql db")
 		return
@@ -162,7 +165,7 @@ func updateSql(dbFileOld, dbFileNew string, oldSids []float64, execute bool) {
 	motorRecords := parseMotorRecords(rows)
 	tx.Commit()
 	// add records to new db
-	newSqlDb, err := sqldb.InitDB("mysql", dbFileNew)
+	newSqlDb, err := sqldb.InitDB(dbTypeNew, dbFileNew)
 	if err != nil {
 		log.Println("could not init new sql db")
 		return
