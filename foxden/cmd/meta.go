@@ -59,7 +59,7 @@ func metadata(site string) MetaDataRecord {
 }
 
 // helper function to get meta-data records
-func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[string]any, error) {
+func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[string]any, int, error) {
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -100,10 +100,30 @@ func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[
 		log.Println("response data", string(data))
 		exit("Unable to unmarshal the data", err)
 	}
-	//     if response.HttpCode == 200 {
-	//         records = response.Results.Records
-	//     }
-	return records, nil
+
+	// get total number of records
+	rec = services.ServiceRequest{
+		Client:       "foxden",
+		ServiceQuery: services.ServiceQuery{Query: query},
+	}
+
+	data, err = json.Marshal(rec)
+	rurl = fmt.Sprintf("%s/count", _srvConfig.Services.MetaDataURL)
+	resp, err = _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		exit("fail /count, unable to fetch data from meta-data service", err)
+	}
+	defer resp.Body.Close()
+	data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		exit("unable to read data from meta-data service", err)
+	}
+	var nrecords int
+	err = json.Unmarshal(data, &nrecords)
+	if err != nil {
+		exit("unable to unmarshal the data", err)
+	}
+	return records, nrecords, nil
 }
 
 func didMetaData() (string, string, string) {
@@ -256,7 +276,7 @@ func metaDeleteRecord(args []string, jsonOutput bool) {
 
 // helper funtion to list meta-data records
 func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, jsonOutput bool) {
-	records, err := getMeta(user, spec, skeys, sorder, idx, limit)
+	records, nrecords, err := getMeta(user, spec, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -288,7 +308,7 @@ func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, j
 		//         fmt.Printf("%+v", r)
 	}
 	fmt.Println("---")
-	fmt.Println("Total   :", len(records), "records")
+	fmt.Printf("Showing    : %d out of %d records, for more records use idx/limit options", len(records), nrecords)
 
 }
 
@@ -296,7 +316,7 @@ func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, j
 func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, jsonOutput bool) {
 	query := "did:" + did
 	log.Println("### query", query)
-	records, err := getMeta(user, query, skeys, sorder, idx, limit)
+	records, nrecords, err := getMeta(user, query, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -318,6 +338,8 @@ func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, js
 		}
 		fmt.Println(string(data))
 	}
+	fmt.Println("---")
+	fmt.Printf("Showing    : %d out of %d records, for more records use idx/limit options", len(records), nrecords)
 }
 
 func metaCommand() *cobra.Command {
