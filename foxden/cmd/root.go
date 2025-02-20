@@ -45,6 +45,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.AddCommand(s3Command())
+	rootCmd.AddCommand(dmCommand())
 	rootCmd.AddCommand(mlCommand())
 	rootCmd.AddCommand(doiCommand())
 	rootCmd.AddCommand(metaCommand())
