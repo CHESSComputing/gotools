@@ -308,8 +308,7 @@ func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, j
 		//         fmt.Printf("%+v", r)
 	}
 	fmt.Println("---")
-	fmt.Printf("Showing    : %d out of %d records, for more records use idx/limit options", len(records), nrecords)
-
+	fmt.Printf("Showing %d-%d: %d out of %d records, for more records use --idx/--limit options\n", idx, limit, len(records), nrecords)
 }
 
 // helper function to print meta data records in Json format
@@ -339,7 +338,7 @@ func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, js
 		fmt.Println(string(data))
 	}
 	fmt.Println("---")
-	fmt.Printf("Showing    : %d out of %d records, for more records use idx/limit options", len(records), nrecords)
+	fmt.Printf("Showing %d-%d: %d out of %d records, for more records use --idx/--limit options\n", idx, limit, len(records), nrecords)
 }
 
 func metaCommand() *cobra.Command {
