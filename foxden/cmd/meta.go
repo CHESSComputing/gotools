@@ -59,7 +59,7 @@ func metadata(site string) MetaDataRecord {
 }
 
 // helper function to get meta-data records
-func getMeta(user, query string, skeys []string, sorder int) ([]map[string]any, error) {
+func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[string]any, error) {
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -78,7 +78,7 @@ func getMeta(user, query string, skeys []string, sorder int) ([]map[string]any, 
 	}
 	rec := services.ServiceRequest{
 		Client:       "foxden",
-		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1, SortKeys: skeys, SortOrder: sorder},
+		ServiceQuery: services.ServiceQuery{Query: query, Idx: idx, Limit: limit, SortKeys: skeys, SortOrder: sorder},
 	}
 
 	data, err := json.Marshal(rec)
@@ -255,8 +255,8 @@ func metaDeleteRecord(args []string, jsonOutput bool) {
 }
 
 // helper funtion to list meta-data records
-func metaListRecord(user, spec string, skeys []string, sorder int, jsonOutput bool) {
-	records, err := getMeta(user, spec, skeys, sorder)
+func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, jsonOutput bool) {
+	records, err := getMeta(user, spec, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -293,10 +293,10 @@ func metaListRecord(user, spec string, skeys []string, sorder int, jsonOutput bo
 }
 
 // helper function to print meta data records in Json format
-func metaJsonRecord(user, did string, skeys []string, sorder int, jsonOutput bool) {
+func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, jsonOutput bool) {
 	query := "did:" + did
 	log.Println("### query", query)
-	records, err := getMeta(user, query, skeys, sorder)
+	records, err := getMeta(user, query, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -336,6 +336,8 @@ func metaCommand() *cobra.Command {
 			sortKeys, _ := cmd.Flags().GetString("sort-keys")
 			sortOrder, _ := cmd.Flags().GetInt("sort-order")
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			idx, _ := cmd.Flags().GetInt("idx")
+			limit, _ := cmd.Flags().GetInt("limit")
 			if jsonOutput {
 				// set _jsonOutputError to properly handle error output in JSON format
 				_jsonOutputError = true
@@ -354,16 +356,16 @@ func metaCommand() *cobra.Command {
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaListRecord(user, args[1], skeys, sortOrder, jsonOutput)
+					metaListRecord(user, args[1], skeys, sortOrder, idx, limit, jsonOutput)
 				} else {
-					metaListRecord(user, "", skeys, sortOrder, jsonOutput)
+					metaListRecord(user, "", skeys, sortOrder, idx, limit, jsonOutput)
 				}
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaJsonRecord(user, args[1], skeys, sortOrder, jsonOutput)
+					metaJsonRecord(user, args[1], skeys, sortOrder, idx, limit, jsonOutput)
 				} else {
-					metaJsonRecord(user, "", skeys, sortOrder, jsonOutput)
+					metaJsonRecord(user, "", skeys, sortOrder, idx, limit, jsonOutput)
 				}
 			} else if args[0] == "add" {
 				writeToken()
@@ -392,6 +394,8 @@ func metaCommand() *cobra.Command {
 	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.PersistentFlags().String("sort-keys", "date", "sort key(s), if multiple keys separate them by comma (default: date)")
 	cmd.PersistentFlags().Int("sort-order", -1, "sort order: 1 ascending, -1 desecnding (default)")
+	cmd.PersistentFlags().Int("idx", 0, "start index, default 0")
+	cmd.PersistentFlags().Int("limit", 100, "limit number of records to given value, default 100")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		metaUsage()
 		return nil
