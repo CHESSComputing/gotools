@@ -151,8 +151,10 @@ func metaUsage() {
 	fmt.Println("foxden meta add <file.json> {options}")
 	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json")
 	fmt.Println("\nExamples:")
-	fmt.Println("\n# list all meta data records:")
+	fmt.Println("\n# list meta data records:")
 	fmt.Println("foxden meta ls")
+	fmt.Println("\n# list meta data records for specific range:")
+	fmt.Println("foxden meta ls --idx=10 --limit=20")
 	fmt.Println("\n# list all meta data records using specific sorting key(s) and order:")
 	fmt.Println("foxden meta ls --sort-keys=date --sort-order=1")
 	fmt.Println("\n# list specific meta-data record:")
@@ -314,7 +316,9 @@ func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, j
 // helper function to print meta data records in Json format
 func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, jsonOutput bool) {
 	query := "did:" + did
-	log.Println("### query", query)
+	if verbose > 0 {
+		log.Println("### query", query)
+	}
 	records, nrecords, err := getMeta(user, query, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
@@ -338,7 +342,9 @@ func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, js
 		fmt.Println(string(data))
 	}
 	fmt.Println("---")
-	fmt.Printf("Showing %d-%d out of %d records, for more records use --idx/--limit options\n", idx, idx+limit, nrecords)
+	if verbose > 0 {
+		fmt.Printf("Showing %d-%d out of %d records, for more records use --idx/--limit options\n", idx, idx+limit, nrecords)
+	}
 }
 
 func metaCommand() *cobra.Command {
