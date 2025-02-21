@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -40,7 +41,8 @@ func main() {
 }
 
 func migrate(uri, dbName, dbCol, dbFileOld, dbFileNew, dbTypeOld, dbTypeNew string, execute bool) {
-	oldSids := updateMongoSids(uri, dbName, dbCol, execute)
+	// oldSids := updateMongoSids(uri, dbName, dbCol, execute)
+	oldSids := getOldSids(uri, dbName, dbCol)
 	log.Printf("migrating %v records", len(oldSids))
 	updateSql(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew, oldSids, execute)
 }
@@ -72,6 +74,9 @@ func getOldSids(uri, dbName, dbCol string) []float64 {
 	for _, rec := range records {
 		val, ok := rec["sid_old"]
 		if !ok {
+			fmt.Printf("missing old_sid: %+v\n", rec)
+			val, ok = rec["ScanId"]
+			fmt.Printf("ScanId value instead: %+v\n", val)
 			continue
 		}
 		sid := val.(float64)
@@ -98,15 +103,36 @@ func updateMongoSids(uri, dbName, dbCol string, execute bool) []float64 {
 	cur.All(ctx, &records)
 	log.Printf("got %v records from mongodb", len(records))
 	for _, rec := range records {
+		update := map[string]any{}
+		filter := map[string]any{}
 		val, ok := rec["sid"]
+		var sid float64
 		if !ok {
-			continue
+			// This record's keys aren't in snake_case,
+			// and ScanId is int64.
+			rename := map[string]string{}
+			update["$rename"] = map[string]string{}
+			for key := range rec {
+				if key == "ScanId" || key == "_id" {
+					// ScanId will be $set as "sid"
+					// not $renamed.
+					// Do not change _id in any way.
+					continue
+				}
+				rename[key] = convertKey(key)
+			}
+			update["$rename"] = rename
+			val = rec["ScanId"]
+			int_sid := val.(int64)
+			filter = map[string]any{"ScanId": int_sid}
+			sid = float64(int_sid)
+		} else {
+			sid = val.(float64)
+			filter = map[string]any{"sid": sid}
 		}
-		sid := val.(float64)
 		oldSids = append(oldSids, sid)
 		newSid := convertSid(sid)
-		update := map[string]any{"$set": map[string]any{"sid": newSid, "sid_old": sid}}
-		filter := map[string]any{"sid": sid}
+		update["$set"] = map[string]any{"sid": newSid, "sid_old": sid}
 		if execute {
 			// update mondogb
 			result, err := c.UpdateOne(ctx, filter, update)
@@ -261,4 +287,20 @@ func parseMotorRecord(rows *sql.Rows) MotorRecord {
 	motor_record.ScanId = convertSid(old_sid)
 	motor_record.Motors = motors
 	return motor_record
+}
+
+var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+
+func convertKey(key string) string {
+	if key == "ScanId" {
+		return "sid"
+	} else if key == "DatasetId" {
+		return "did"
+	} else if key == "Station" {
+		return "beamline"
+	}
+	snake := matchFirstCap.ReplaceAllString(key, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
 }
