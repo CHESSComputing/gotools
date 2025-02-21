@@ -63,6 +63,9 @@ func dmData(did string) {
 func dmFiles(did, ext string) {
 	// make HTTP call to DataManagement
 	pat := fmt.Sprintf("(?i).*%s$", ext)
+	if ext == "" || ext == "all" {
+		pat = "all"
+	}
 	rurl := fmt.Sprintf("%s/files?did=%s&pattern=%s", _srvConfig.DataManagementURL, did, pat)
 
 	// Create a new HTTP request to the target URL
