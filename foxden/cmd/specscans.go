@@ -57,7 +57,7 @@ func specdata(did string) SpecScansRecord {
 }
 
 // helper function to get SpecScans data records
-func getSpecScans(user, query string) ([]map[string]any, error) {
+func getSpecScans(user, query string, idx, limit int) ([]map[string]any, error) {
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -77,7 +77,7 @@ func getSpecScans(user, query string) ([]map[string]any, error) {
 	}
 	rec := services.ServiceRequest{
 		Client:       "foxden",
-		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1},
+		ServiceQuery: services.ServiceQuery{Query: query, Idx: idx, Limit: limit},
 	}
 
 	data, err := json.Marshal(rec)
@@ -112,8 +112,10 @@ func specUsage() {
 	fmt.Println("foxden spec <ls|view> [options]")
 	fmt.Println("foxden spec add <file.json>")
 	fmt.Println("\nExamples:")
-	fmt.Println("\n# list all spec data records:")
+	fmt.Println("\n# list all spec data records (will show default 100 records):")
 	fmt.Println("foxden spec ls")
+	fmt.Println("\n# list spec data for specific range:")
+	fmt.Println("foxden spec ls --idx=10 --limit=20")
 	fmt.Println("\n# list specific SpecScans data record:")
 	fmt.Println("foxden spec view <DID>")
 	fmt.Println("\n# add new SpecScans data record")
@@ -211,9 +213,9 @@ func parseSpec(spec string) string {
 }
 
 // helper function to list SpecScans data records
-func specListRecord(user, spec string, jsonOutput bool) {
+func specListRecord(user, spec string, idx, limit int, jsonOutput bool) {
 	query := parseSpec(spec)
-	records, err := getSpecScans(user, query)
+	records, err := getSpecScans(user, query, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -244,9 +246,9 @@ func specListRecord(user, spec string, jsonOutput bool) {
 }
 
 // helper function to print spec data records in Json format
-func specJsonRecord(user, spec string, jsonOutput bool) {
+func specJsonRecord(user, spec string, idx, limit int, jsonOutput bool) {
 	query := parseSpec(spec)
-	records, err := getSpecScans(user, query)
+	records, err := getSpecScans(user, query, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -279,6 +281,8 @@ func specCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
 			did, _ := cmd.Flags().GetString("did")
+			idx, _ := cmd.Flags().GetInt("idx")
+			limit, _ := cmd.Flags().GetInt("limit")
 			if jsonOutput {
 				// set _jsonOutputError to properly handle error output in JSON format
 				_jsonOutputError = true
@@ -288,18 +292,18 @@ func specCommand() *cobra.Command {
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
 				if did != "" {
-					specListRecord(user, did, jsonOutput)
+					specListRecord(user, did, idx, limit, jsonOutput)
 				} else if len(args) == 2 {
-					specListRecord(user, args[1], jsonOutput)
+					specListRecord(user, args[1], idx, limit, jsonOutput)
 				} else {
 					exit("not supported", errors.New("not supported options"))
 				}
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
 				if did != "" {
-					specJsonRecord(user, did, jsonOutput)
+					specJsonRecord(user, did, idx, limit, jsonOutput)
 				} else if len(args) == 2 {
-					specListRecord(user, args[1], jsonOutput)
+					specListRecord(user, args[1], idx, limit, jsonOutput)
 				} else {
 					exit("not supported", errors.New("not supported options"))
 				}
@@ -315,6 +319,8 @@ func specCommand() *cobra.Command {
 	}
 	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.PersistentFlags().String("did", "", "did to use")
+	cmd.PersistentFlags().Int("idx", 0, "start index, default 0")
+	cmd.PersistentFlags().Int("limit", 100, "limit number of records to given value, default 100")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		specUsage()
 		return nil
