@@ -42,9 +42,10 @@ func main() {
 
 func migrate(uri, dbName, dbCol, dbFileOld, dbFileNew, dbTypeOld, dbTypeNew string, execute bool) {
 	// oldSids := updateMongoSids(uri, dbName, dbCol, execute)
-	oldSids := getOldSids(uri, dbName, dbCol)
-	log.Printf("migrating %v records", len(oldSids))
-	updateSql(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew, oldSids, execute)
+	// oldSids := getOldSids(uri, dbName, dbCol)
+	// log.Printf("migrating %v records", len(oldSids))
+	// updateSql(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew, oldSids, execute)
+	updateSqlSchema(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew, execute)
 }
 
 func convertSid(sid float64) string {
@@ -168,7 +169,7 @@ func updateSql(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew string, oldSids []floa
 	placeholders := strings.Repeat("?,", len(oldSids))
 	placeholders = placeholders[:len(placeholders)-1]
 	query := fmt.Sprintf(`
-    SELECT S.sid, group_concat(M.motor_mne), group_concat(P.motor_position)
+    SELECT S.sid, M.motor_mne, P.motor_position
     FROM MotorPositions AS P
     JOIN MotorMnes AS M ON M.motor_id=P.motor_id
     JOIN ScanIds AS S ON S.scan_id=M.scan_id
@@ -178,13 +179,53 @@ func updateSql(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew string, oldSids []floa
         JOIN MotorMnes AS M ON M.motor_id=P.motor_id
         JOIN ScanIds AS S ON S.scan_id=M.scan_id
         WHERE S.sid IN (%s)
-    )
-    GROUP BY S.sid`, placeholders)
+    )`, placeholders)
 	args := make([]interface{}, len(oldSids))
 	for i, sid := range oldSids {
 		args[i] = sid
 	}
 	rows, err := tx.Query(query, args...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	motorRecords := parseMotorRecords(rows)
+	tx.Commit()
+	// add records to new db
+	newSqlDb, err := sqldb.InitDB(dbTypeNew, dbFileNew)
+	if err != nil {
+		log.Println("could not init new sql db")
+		return
+	}
+	for _, rec := range motorRecords {
+		if execute {
+			_, err := InsertMotors(rec, newSqlDb)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Printf("will add record with sid: %+v\n", rec.ScanId)
+		}
+	}
+}
+
+// transfer all records from old to new schema
+func updateSqlSchema(dbFileOld, dbFileNew, dbTypeOld, dbTypeNew string, execute bool) {
+	// get old records
+	oldSqlDb, err := sqldb.InitDB(dbTypeOld, dbFileOld)
+	if err != nil {
+		log.Println("could not init old sql db")
+		return
+	}
+	tx, err := oldSqlDb.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	query := `
+    SELECT S.sid, M.motor_mne, P.motor_position
+    FROM MotorPositions AS P
+    JOIN MotorMnes AS M ON M.motor_id=P.motor_id
+    JOIN ScanIds AS S ON S.scan_id=M.scan_id`
+	rows, err := tx.Query(query)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -235,17 +276,21 @@ func InsertMotors(r MotorRecord, db *sql.DB) (int64, error) {
 	}
 	var motor_id int64
 	for mne, pos := range r.Motors {
-		result, err = tx.Exec("INSERT INTO MotorMnes (scan_id, motor_mne) VALUES (?, ?)", scan_id, mne)
+		result, err = tx.Exec("INSERT INTO MotorMnes (motor_mne) VALUES (?)", mne)
 		if err != nil {
-			log.Printf("Could not insert record to MotorMnes table; error: %v", err)
-			continue
+			err = tx.QueryRow("SELECT motor_id FROM MotorMnes WHERE motor_mne=?", mne).Scan(&motor_id)
+			if err != nil {
+				log.Printf("Could not insert record to MotorMnes table; error: %v", err)
+				continue
+			}
+		} else {
+			motor_id, err = result.LastInsertId()
 		}
-		motor_id, err = result.LastInsertId()
 		if err != nil {
 			log.Printf("Could not get ID of new record in MotorMnes; error: %v", err)
 			continue
 		}
-		result, err = tx.Exec("INSERT INTO MotorPositions (motor_id, motor_position) VALUES (?, ?)", motor_id, pos)
+		result, err = tx.Exec("INSERT INTO MotorPositions (scan_id, motor_id, motor_position) VALUES (?, ?, ?)", scan_id, motor_id, pos)
 		if err != nil {
 			log.Printf("Could not insert record to MotorPositions table; error: %v", err)
 		}
@@ -255,38 +300,28 @@ func InsertMotors(r MotorRecord, db *sql.DB) (int64, error) {
 }
 
 func parseMotorRecords(rows *sql.Rows) []MotorRecord {
-	// Helper for parsing grouped results of sql query
+	// Helper for parsing non-grouped results of sql query
 	var motor_records []MotorRecord
-	// Parse the first record;
-	// need to do this outside the loop if there is only one row of results.
-	rows.Next()
-	motor_record := parseMotorRecord(rows)
-	motor_records = append(motor_records, motor_record)
+	record_map := make(map[string]map[string]float64) // map of scan ids: map of motor mne: position
+	var sid string
+	var motor_mne string
+	var motor_pos float64
 	for rows.Next() {
-		motor_record := parseMotorRecord(rows)
-		motor_records = append(motor_records, motor_record)
+		err := rows.Scan(&sid, &motor_mne, &motor_pos)
+		if err != nil {
+			log.Printf("Could not parse row of results: %v\n", err)
+			continue
+		}
+		_, ok := record_map[sid]
+		if !ok {
+			record_map[sid] = make(map[string]float64)
+		}
+		record_map[sid][motor_mne] = motor_pos
+	}
+	for sid := range record_map {
+		motor_records = append(motor_records, MotorRecord{ScanId: sid, Motors: record_map[sid]})
 	}
 	return motor_records
-}
-func parseMotorRecord(rows *sql.Rows) MotorRecord {
-	// Helper for parsing grouped results of sql query at the current cursor position only
-	motor_record := MotorRecord{}
-	var old_sid float64
-	_motor_mnes, _motor_positions := "", ""
-	err := rows.Scan(&old_sid, &_motor_mnes, &_motor_positions)
-	if err != nil {
-		log.Printf("Could not get a MotorRecord from a row of SQL results. error: %v", err)
-		return motor_record
-	}
-	motor_mnes := strings.Split(_motor_mnes, ",")
-	motor_positions := strings.Split(_motor_positions, ",")
-	motors := make(map[string]float64)
-	for i := 0; i < len(motor_mnes); i++ {
-		motors[motor_mnes[i]], _ = strconv.ParseFloat(motor_positions[i], 64)
-	}
-	motor_record.ScanId = convertSid(old_sid)
-	motor_record.Motors = motors
-	return motor_record
 }
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
