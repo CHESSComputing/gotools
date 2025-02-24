@@ -7,11 +7,13 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
@@ -194,9 +196,24 @@ func specAddRecord(args []string, jsonOutput bool) {
 	}
 }
 
+func parseSpec(spec string) string {
+	var query string
+	if strings.HasPrefix(spec, "/") {
+		// we got did string
+		query = "did:" + spec
+	} else if strings.HasPrefix(spec, "{") && strings.HasSuffix(spec, "}") {
+		// we got MongoDB spec
+		query = spec
+	} else {
+		query = "{}"
+	}
+	return query
+}
+
 // helper function to list SpecScans data records
 func specListRecord(user, spec string, jsonOutput bool) {
-	records, err := getSpecScans(user, spec)
+	query := parseSpec(spec)
+	records, err := getSpecScans(user, query)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -227,9 +244,8 @@ func specListRecord(user, spec string, jsonOutput bool) {
 }
 
 // helper function to print spec data records in Json format
-func specJsonRecord(user, query string, jsonOutput bool) {
-	//     query := fmt.Sprintf("{\"did\": \"%s\"}", did)
-	//     query := "did:" + did
+func specJsonRecord(user, spec string, jsonOutput bool) {
+	query := parseSpec(spec)
 	records, err := getSpecScans(user, query)
 	if err != nil {
 		fmt.Println("ERROR", err)
@@ -262,6 +278,7 @@ func specCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			did, _ := cmd.Flags().GetString("did")
 			if jsonOutput {
 				// set _jsonOutputError to properly handle error output in JSON format
 				_jsonOutputError = true
@@ -270,17 +287,21 @@ func specCommand() *cobra.Command {
 				specUsage()
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
-				if len(args) == 2 {
+				if did != "" {
+					specListRecord(user, did, jsonOutput)
+				} else if len(args) == 2 {
 					specListRecord(user, args[1], jsonOutput)
 				} else {
-					specListRecord(user, "", jsonOutput)
+					exit("not supported", errors.New("not supported options"))
 				}
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
-				if len(args) == 2 {
-					specJsonRecord(user, args[1], jsonOutput)
+				if did != "" {
+					specJsonRecord(user, did, jsonOutput)
+				} else if len(args) == 2 {
+					specListRecord(user, args[1], jsonOutput)
 				} else {
-					specJsonRecord(user, "", jsonOutput)
+					exit("not supported", errors.New("not supported options"))
 				}
 			} else if args[0] == "add" {
 				writeToken()
@@ -293,6 +314,7 @@ func specCommand() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().Bool("json", false, "json output")
+	cmd.PersistentFlags().String("did", "", "did to use")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		specUsage()
 		return nil
