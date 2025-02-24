@@ -296,7 +296,7 @@ func specCommand() *cobra.Command {
 				} else if len(args) == 2 {
 					specListRecord(user, args[1], idx, limit, jsonOutput)
 				} else {
-					exit("not supported", errors.New("not supported options"))
+					specListRecord(user, "", idx, limit, jsonOutput)
 				}
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
