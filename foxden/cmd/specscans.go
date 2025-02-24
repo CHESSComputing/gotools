@@ -241,7 +241,7 @@ func specListRecord(user, spec string, idx, limit int, jsonOutput bool) {
 		//         fmt.Printf("%+v", r)
 	}
 	fmt.Println("---")
-	fmt.Println("Total   :", len(records), "records")
+	fmt.Printf("Showing %d-%d records, for more records use --idx/--limit options\n", idx, idx+limit)
 
 }
 
