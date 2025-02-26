@@ -280,7 +280,6 @@ func specCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
-			did, _ := cmd.Flags().GetString("did")
 			idx, _ := cmd.Flags().GetInt("idx")
 			limit, _ := cmd.Flags().GetInt("limit")
 			if jsonOutput {
@@ -291,18 +290,14 @@ func specCommand() *cobra.Command {
 				specUsage()
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
-				if did != "" {
-					specListRecord(user, did, idx, limit, jsonOutput)
-				} else if len(args) == 2 {
+				if len(args) == 2 {
 					specListRecord(user, args[1], idx, limit, jsonOutput)
 				} else {
 					specListRecord(user, "", idx, limit, jsonOutput)
 				}
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
-				if did != "" {
-					specJsonRecord(user, did, idx, limit, jsonOutput)
-				} else if len(args) == 2 {
+				if len(args) == 2 {
 					specListRecord(user, args[1], idx, limit, jsonOutput)
 				} else {
 					exit("not supported", errors.New("not supported options"))
@@ -318,7 +313,6 @@ func specCommand() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().Bool("json", false, "json output")
-	cmd.PersistentFlags().String("did", "", "did to use")
 	cmd.PersistentFlags().Int("idx", 0, "start index, default 0")
 	cmd.PersistentFlags().Int("limit", 100, "limit number of records to given value, default 100")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
