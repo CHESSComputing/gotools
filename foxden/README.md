@@ -1,12 +1,12 @@
 # foxden CLI
 `foxden` Command Line Interface (CLI) provides an uniform interface to all
-[FOXDEN services](https://foxden.classe.cornell.edu:8344/docs). Its usage,
-commands and examples can be fetched as following:
+[FOXDEN services](https://github.com/CHESSComputing/FOXDEN/blob/main/docs/main.md).
+Its usage, commands and examples can be fetched as following:
 
 ```
 ./foxden -h
 foxden command line tool
-Complete documentation at https://foxden.classe.cornell.edu:8344/docs
+Complete documentation at https://github.com/CHESSComputing/FOXDEN/blob/main/docs/main.md
 
 Usage:
   foxden [command]
@@ -41,7 +41,7 @@ Each command has its own documentation section along with necessary examples, e.
 ```
 ./foxden meta --help
 foxden MetaData commands to access FOXDEN MetaData service
-Complete documentation at https://foxden.classe.cornell.edu:8344/docs
+Complete documentation at https://github.com/CHESSComputing/FOXDEN/blob/main/docs/main.md
 
 foxden meta <ls|rm|view> [options]
 foxden meta add <file.json> {options}
