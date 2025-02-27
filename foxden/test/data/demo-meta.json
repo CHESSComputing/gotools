@@ -1,0 +1,9 @@
+{
+    "facility": "test",
+    "beamline": ["3A", "3B"],
+    "btr": "test-btr",
+    "cycle": "test-cycle",
+    "sample_name": "test-sample",
+    "data_location_raw": "/tmp",
+    "beam_energy": 123.456
+}
