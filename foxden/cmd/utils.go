@@ -25,7 +25,7 @@ import (
 //go:embed static
 var StaticFs embed.FS
 
-var doc = "Complete documentation at https://github.com/CHESSComputing/FOXDEN/blob/main/docs/main.md
+var doc = "Complete documentation at https://github.com/CHESSComputing/FOXDEN/blob/main/docs/main.md"
 
 var _httpReadRequest, _httpWriteRequest, _httpDeleteRequest *services.HttpRequest
 
