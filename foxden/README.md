@@ -6,7 +6,7 @@ Its usage, commands and examples can be fetched as following:
 ```
 ./foxden -h
 foxden command line tool
-Complete documentation at https://github.com/CHESSComputing/FOXDEN/blob/main/docs/main.md
+Complete documentation at https://chesscomputing.github.io/FOXDEN/
 
 Usage:
   foxden [command]
@@ -41,7 +41,7 @@ Each command has its own documentation section along with necessary examples, e.
 ```
 ./foxden meta --help
 foxden MetaData commands to access FOXDEN MetaData service
-Complete documentation at https://github.com/CHESSComputing/FOXDEN/blob/main/docs/main.md
+Complete documentation at https://chesscomputing.github.io/FOXDEN/
 
 foxden meta <ls|rm|view> [options]
 foxden meta add <file.json> {options}
