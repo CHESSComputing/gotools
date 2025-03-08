@@ -1,10 +1,11 @@
 module github.com/CHESSComputing/gotools/transform
 
-go 1.24.0
+go 1.24.1
 
-require github.com/CHESSComputing/golib v0.7.2
+replace github.com/CHESSComputing/golib => ../../golib
 
 require (
+	github.com/CHESSComputing/golib v0.7.3 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
@@ -28,5 +29,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/CHESSComputing/golib => ../../golib
