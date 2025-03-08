@@ -1,6 +1,6 @@
 module github.com/CHESSComputing/gotools/foxden
 
-go 1.24.0
+go 1.24.1
 
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.2.0
