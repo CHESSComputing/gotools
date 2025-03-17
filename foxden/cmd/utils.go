@@ -81,7 +81,7 @@ func accessToken() (string, error) {
 		if os.Getenv("FOXDEN_TOKEN") != "" {
 			token = utils.ReadToken(os.Getenv("FOXDEN_TOKEN"))
 		} else {
-			err := generateToken(tfile, "")
+			err := generateToken(tfile, "", 0)
 			exit("Unable to generate access token", err)
 			token = utils.ReadToken(tfile)
 		}
@@ -104,7 +104,7 @@ func writeAccessToken() (string, error) {
 		if os.Getenv("FOXDEN_WRITE_TOKEN") != "" {
 			token = utils.ReadToken(os.Getenv("FOXDEN_WRITE_TOKEN"))
 		} else {
-			err := generateToken(tfile, "")
+			err := generateToken(tfile, "", 0)
 			exit("Unable to generate write token", err)
 			token = utils.ReadToken(tfile)
 		}
@@ -124,7 +124,7 @@ func deleteAccessToken() (string, error) {
 		if os.Getenv("FOXDEN_DELETE_TOKEN") != "" {
 			token = utils.ReadToken(os.Getenv("FOXDEN_DELETE_TOKEN"))
 		} else {
-			err := generateToken(tfile, "")
+			err := generateToken(tfile, "", 0)
 			exit("Unable to generate write token", err)
 			token = utils.ReadToken(tfile)
 		}

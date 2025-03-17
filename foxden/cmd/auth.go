@@ -74,7 +74,7 @@ func keyFile() string {
 	return tempFilePath(fmt.Sprintf("krb5cc_%s", u.Uid))
 }
 
-func requestToken(scope, kfile string) (string, error) {
+func requestToken(scope, kfile string, expires int) (string, error) {
 	if kfile == "" {
 		kfile = keyFile()
 	}
@@ -84,9 +84,10 @@ func requestToken(scope, kfile string) (string, error) {
 	var token string
 	user, ticket := getKerberosTicket(kfile)
 	rec := authz.Kerberos{
-		User:   user,
-		Scope:  scope,
-		Ticket: ticket,
+		User:    user,
+		Scope:   scope,
+		Ticket:  ticket,
+		Expires: int64(expires),
 	}
 	data, err := json.Marshal(rec)
 	if err != nil {
@@ -125,7 +126,7 @@ func requestToken(scope, kfile string) (string, error) {
 }
 
 // helper function to generate access token
-func generateToken(fname, keyFileName string) error {
+func generateToken(fname, keyFileName string, expires int) error {
 	if os.Getenv("FOXDEN_DEBUG") != "" {
 		fmt.Println("generate token from", fname)
 	}
@@ -174,7 +175,7 @@ func generateToken(fname, keyFileName string) error {
 		}
 	}
 
-	token, err := requestToken("read", kfile)
+	token, err := requestToken("read", kfile, expires)
 	if err != nil {
 		return err
 	}
@@ -297,6 +298,7 @@ func authCommand() *cobra.Command {
 			tkn, _ := cmd.Flags().GetString("token")
 			kfile, _ := cmd.Flags().GetString("kfile")
 			ofile, _ := cmd.Flags().GetString("ofile")
+			expires, _ := cmd.Flags().GetInt("expires")
 			if len(args) == 0 {
 				authUsage()
 			} else if args[0] == "view" {
@@ -323,11 +325,11 @@ func authCommand() *cobra.Command {
 					if ofile != "" {
 						fname = ofile
 					}
-					err := generateToken(fname, kfile)
+					err := generateToken(fname, kfile, expires)
 					exit("unable to generate user access token", err)
 					return
 				}
-				token, err = requestToken(tokenKind, kfile)
+				token, err = requestToken(tokenKind, kfile, expires)
 				if err != nil {
 					exit("unable to get valid token", err)
 				}
@@ -365,6 +367,7 @@ func authCommand() *cobra.Command {
 	cmd.PersistentFlags().String("kfile", "", "Kerberos file to use")
 	cmd.PersistentFlags().String("token", "", "token file or token string")
 	cmd.PersistentFlags().String("ofile", "", "output file to write to")
+	cmd.PersistentFlags().Int("expires", 3600, "token expiration in seconds (default 1h)")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		authUsage()
 		return nil
