@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
@@ -60,10 +61,10 @@ func s3List(args []string) {
 		os.Exit(1)
 	}
 	var bucketName string
-	rurl := fmt.Sprintf("%s/storage", _srvConfig.Services.DataManagementURL)
+	rurl := fmt.Sprintf("%s/storage", srvConfig.Config.Services.DataManagementURL)
 	if len(args) > 1 {
 		bucketName = args[1]
-		rurl = fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
+		rurl = fmt.Sprintf("%s/storage/%s", srvConfig.Config.Services.DataManagementURL, bucketName)
 	}
 
 	if verbose > 0 {
@@ -141,7 +142,7 @@ func s3Create(args []string) {
 	bucketName := args[1]
 	fmt.Printf("INFO: create bucket %s\n", bucketName)
 	var results StorageRecord
-	rurl := fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
+	rurl := fmt.Sprintf("%s/storage/%s", srvConfig.Config.Services.DataManagementURL, bucketName)
 	if verbose > 0 {
 		fmt.Println("HTTP POST", rurl)
 	}
@@ -203,7 +204,7 @@ func s3Upload(args []string) {
 	for _, f := range files {
 		fname := filepath.Join(fobj, f)
 		fmt.Printf("INFO: upload %s to bucket %s\n", fname, bucketName)
-		rurl := fmt.Sprintf("%s/storage/%s/%s", _srvConfig.Services.DataManagementURL, bucketName, f)
+		rurl := fmt.Sprintf("%s/storage/%s/%s", srvConfig.Config.Services.DataManagementURL, bucketName, f)
 		if verbose > 0 {
 			fmt.Println("HTTP POST", rurl)
 		}
@@ -282,7 +283,7 @@ func s3Delete(args []string) {
 	bucketName := args[1]
 	fmt.Printf("INFO: delete bucket %s\n", bucketName)
 	var results StorageRecord
-	rurl := fmt.Sprintf("%s/storage/%s", _srvConfig.Services.DataManagementURL, bucketName)
+	rurl := fmt.Sprintf("%s/storage/%s", srvConfig.Config.Services.DataManagementURL, bucketName)
 	if verbose > 0 {
 		fmt.Println("HTTP DELETE", rurl)
 	}

@@ -18,6 +18,7 @@ import (
 	"time"
 
 	authz "github.com/CHESSComputing/golib/authz"
+	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/CHESSComputing/golib/utils"
 )
@@ -145,7 +146,7 @@ func getUserToken() (string, string) {
 	if err != nil {
 		exit("unable to get access token", err)
 	}
-	claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+	claims, err := authz.TokenClaims(token, srvConfig.Config.Authz.ClientID)
 	if err != nil {
 		exit("unable to read token claims, please check FOXDEN_TOKEN env, and run 'foxden token view'", err)
 	}
@@ -165,7 +166,7 @@ func writeToken() (string, error) {
 		if token == "" {
 			exit("Please obtain write access token and put it into FOXDEN_WRITE_TOKEN env or file", nil)
 		}
-		_, err = authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+		_, err = authz.TokenClaims(token, srvConfig.Config.Authz.ClientID)
 		if err != nil {
 			exit("unable to use write token claims\nPlease check FOXDEN_WRITE_TOKEN env and set it up with token from 'foxden token create write' command", err)
 		}
@@ -181,7 +182,7 @@ func deleteToken() (string, error) {
 		if token == "" {
 			exit("Please obtain delete access token and put it into FOXDEN_DELETE_TOKEN env or file", nil)
 		}
-		_, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+		_, err := authz.TokenClaims(token, srvConfig.Config.Authz.ClientID)
 		if err != nil {
 			exit("unable to use delete token claims\nPlease check FOXDEN_DELETE_TOKEN env and set it up with token from 'foxden token create delete' command", err)
 		}

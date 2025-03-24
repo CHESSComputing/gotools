@@ -1,6 +1,13 @@
 {
   "parent_did": "/beamline=3a/btr=test-987-b/cycle=2024-3/sample_name=lup-20kev-1",
   "did": "/beamline=3a/btr=test-987-b/cycle=2024-3/sample_name=lup-20kev-1/test=child",
+  "input_files": [
+    {"name": "/tmp/file1.png"},
+    {"name": "/tmp/file2.png"}
+  ],
+  "output_files": [
+    {"name": "/tmp/file1.png"}
+  ],
   "processing": "processing string, e.g. glibc-123-python-123",
   "osinfo": {
       "name": "linux-cc7",
@@ -21,13 +28,6 @@
   "scripts": [
       {"name": "reader", "options": "-reader_options", "parent_script": null, "order_idx": 1},
       {"name": "chap", "options": "-chap_options", "parent_script": "myscript", "order_idx": 2}
-  ],
-  "input_files": [
-    {"name": "/tmp/file1.png"},
-    {"name": "/tmp/file2.png"}
-  ],
-  "output_files": [
-    {"name": "/tmp/file1.png"}
   ],
   "site": "Cornell",
   "buckets": [

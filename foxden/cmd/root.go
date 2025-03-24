@@ -32,17 +32,16 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-// client configuration
-var _srvConfig *srvConfig.SrvConfig
-
 func init() {
+	defaultConfig := fmt.Sprintf("%s/.foxden.yaml", os.Getenv("HOME"))
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", defaultConfig, "config file (default is $HOME/.foxden.yaml)")
+	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
+	os.Setenv("FOXDEN_CONFIG", cfgFile)
+	cobra.OnInitialize(initConfig)
+
 	_httpReadRequest = services.NewHttpRequest("read", 0)
 	_httpWriteRequest = services.NewHttpRequest("write", 0)
 	_httpDeleteRequest = services.NewHttpRequest("delete", 0)
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.foxden.yaml)")
-	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
-	cobra.OnInitialize(initConfig)
 
 	rootCmd.AddCommand(s3Command())
 	rootCmd.AddCommand(dmCommand())
@@ -67,7 +66,7 @@ func initConfig() {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
-	_srvConfig = &config
+	srvConfig.Config = &config
 	verbose := strings.ToLower(fmt.Sprintf("%v", os.Getenv("FOXDEN_VERBOSE")))
 	if verbose == "1" || verbose == "true" {
 		log.SetFlags(log.LstdFlags | log.Llongfile)

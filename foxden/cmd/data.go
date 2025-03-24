@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +33,7 @@ type DMRecord struct {
 // helper function to get dm data for given did
 func dmData(did string) {
 	// make HTTP call to DataManagement
-	rurl := fmt.Sprintf("%s/data?did=%s", _srvConfig.DataManagementURL, did)
+	rurl := fmt.Sprintf("%s/data?did=%s", srvConfig.Config.DataManagementURL, did)
 	// Create a new HTTP request to the target URL
 	resp, err := _httpReadRequest.Get(rurl)
 	if err != nil {
@@ -66,7 +67,7 @@ func dmFiles(did, ext string) {
 	if ext == "" || ext == "all" {
 		pat = "all"
 	}
-	rurl := fmt.Sprintf("%s/files?did=%s&pattern=%s", _srvConfig.DataManagementURL, did, pat)
+	rurl := fmt.Sprintf("%s/files?did=%s&pattern=%s", srvConfig.Config.DataManagementURL, did, pat)
 
 	// Create a new HTTP request to the target URL
 	resp, err := _httpReadRequest.Get(rurl)

@@ -7,6 +7,7 @@ package cmd
 import (
 	"fmt"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +18,7 @@ func configUsage() {
 
 func printConfig(args []string) {
 	fmt.Printf("Configuration file: %s\n", cfgFile)
-	fmt.Println(_srvConfig.String())
+	fmt.Println(srvConfig.Config.String())
 }
 
 func configCommand() *cobra.Command {

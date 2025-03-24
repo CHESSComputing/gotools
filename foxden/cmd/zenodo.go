@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/CHESSComputing/golib/zenodo"
 )
@@ -41,8 +42,8 @@ func initZenodoAccess(tkn string) {
 		ztoken = utils.ReadToken(tkn)
 	} else if os.Getenv("ZENODO_TOKEN") != "" {
 		ztoken = os.Getenv("ZENODO_TOKEN")
-	} else if _srvConfig.DOI.Zenodo.AccessToken != "" {
-		ztoken = _srvConfig.DOI.Zenodo.AccessToken
+	} else if srvConfig.Config.DOI.Zenodo.AccessToken != "" {
+		ztoken = srvConfig.Config.DOI.Zenodo.AccessToken
 	}
 
 	if ztoken == "" {
@@ -84,7 +85,7 @@ func getParams(args []string) (int64, string) {
 
 // helper function to list existing documents
 func zenodoDocs(did int64) {
-	rurl := fmt.Sprintf("%s/docs", _srvConfig.Services.PublicationURL)
+	rurl := fmt.Sprintf("%s/docs", srvConfig.Config.Services.PublicationURL)
 	if did != 0 {
 		rurl += fmt.Sprintf("/%d", did)
 	}
@@ -135,7 +136,7 @@ func loadRecord(fname string) (PublishRecord, error) {
 // helper function to create new document in Zenodo
 func zenodoCreate(fname string) {
 	// create new DOI resource
-	rurl := fmt.Sprintf("%s/create", _srvConfig.Services.PublicationURL)
+	rurl := fmt.Sprintf("%s/create", srvConfig.Config.Services.PublicationURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer([]byte{}))
 	exit("unable to make HTTP request to publication service", err)
 	// caputre response and extract document id (did)
@@ -160,7 +161,7 @@ func zenodoCreate(fname string) {
 
 // helper function to get bucket id for given did
 func getBucketId(did int64) string {
-	rurl := fmt.Sprintf("%s/docs/%d", _srvConfig.Services.PublicationURL, did)
+	rurl := fmt.Sprintf("%s/docs/%d", srvConfig.Config.Services.PublicationURL, did)
 	resp, err := _httpReadRequest.Get(rurl)
 	if err != nil {
 		fmt.Println("ERROR:", err)
@@ -200,7 +201,7 @@ func zenodoUpdate(did int64, fname string) {
 	if verbose > 0 {
 		fmt.Printf("### metadata: %s\n", string(data))
 	}
-	rurl := fmt.Sprintf("%s/update/%d", _srvConfig.Services.PublicationURL, did)
+	rurl := fmt.Sprintf("%s/update/%d", srvConfig.Config.Services.PublicationURL, did)
 	metaResp, err := _httpWriteRequest.Put(rurl, "application/json", bytes.NewBuffer(data))
 	defer metaResp.Body.Close()
 	if verbose > 0 {
@@ -217,7 +218,7 @@ func zenodoUpdate(did int64, fname string) {
 // helper function to publish zenodo document id
 func zenodoPublish(did int64) {
 	// publish the record
-	rurl := fmt.Sprintf("%s/publish/%d", _srvConfig.Services.PublicationURL, did)
+	rurl := fmt.Sprintf("%s/publish/%d", srvConfig.Config.Services.PublicationURL, did)
 	publishResp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer([]byte{}))
 	if err != nil || (publishResp.StatusCode < 200 || publishResp.StatusCode >= 400) {
 		fmt.Printf("ERROR: unable to publish record, response %+v, error %v\n", publishResp, err)
@@ -230,7 +231,7 @@ func zenodoPublish(did int64) {
 	}
 
 	// fetch our document
-	rurl = fmt.Sprintf("%s/docs/%d", _srvConfig.Services.PublicationURL, did)
+	rurl = fmt.Sprintf("%s/docs/%d", srvConfig.Config.Services.PublicationURL, did)
 	docsResp, err := _httpReadRequest.Get(rurl)
 	if err != nil || (docsResp.StatusCode < 200 || docsResp.StatusCode >= 400) {
 		fmt.Printf("ERROR: unable to fetch document, response %s, error %v\n", docsResp, err)
@@ -262,7 +263,7 @@ func addFile(bid, name, fname string) error {
 	}
 
 	// create new DOI resource
-	rurl := fmt.Sprintf("%s/add/%s/%s", _srvConfig.Services.PublicationURL, bid, name)
+	rurl := fmt.Sprintf("%s/add/%s/%s", srvConfig.Config.Services.PublicationURL, bid, name)
 	resp, err := _httpWriteRequest.Put(rurl, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return err
@@ -281,7 +282,7 @@ func addFile(bid, name, fname string) error {
 
 // helper function to view given doi document
 func zenodoView(did int64) {
-	rurl := fmt.Sprintf("%s/docs/%d", _srvConfig.Services.PublicationURL, did)
+	rurl := fmt.Sprintf("%s/docs/%d", srvConfig.Config.Services.PublicationURL, did)
 	resp, err := _httpReadRequest.Get(rurl)
 	exit("unable to place HTTP request", err)
 	defer resp.Body.Close()

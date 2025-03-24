@@ -20,6 +20,7 @@ import (
 	"time"
 
 	dbs "github.com/CHESSComputing/DataBookkeeping/dbs"
+	srvConfig "github.com/CHESSComputing/golib/config"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
@@ -85,7 +86,7 @@ func getData(rurl string) []MapRecord {
 
 // helper function to list dataset information
 func provListRecord(endpoint string, params UrlParams, jsonOutput bool) {
-	rurl := fmt.Sprintf("%s/%s", _srvConfig.Services.DataBookkeepingURL, buildUrl(endpoint, params))
+	rurl := fmt.Sprintf("%s/%s", srvConfig.Config.Services.DataBookkeepingURL, buildUrl(endpoint, params))
 	for _, rec := range getData(rurl) {
 		// convert seconds since epoch to human readable string
 		if v, ok := rec["create_at"]; ok {
@@ -195,7 +196,7 @@ func provAddParent(args []string) {
 	exit("", err)
 
 	// first, we need to check if requested parent did exists in MetaData
-	rurl := fmt.Sprintf("%s/record?did=%s", _srvConfig.Services.MetaDataURL, rec.Parent)
+	rurl := fmt.Sprintf("%s/record?did=%s", srvConfig.Config.Services.MetaDataURL, rec.Parent)
 	resp, err := _httpReadRequest.Get(rurl)
 	if resp.StatusCode != 200 {
 		log.Println("### rurl ", rurl, "status code ", resp.StatusCode)
@@ -204,7 +205,7 @@ func provAddParent(args []string) {
 		exit(msg, err)
 	}
 
-	rurl = fmt.Sprintf("%s/parent", _srvConfig.Services.DataBookkeepingURL)
+	rurl = fmt.Sprintf("%s/parent", srvConfig.Config.Services.DataBookkeepingURL)
 	resp, err = _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 
 	printResponse(resp, err)
@@ -217,7 +218,7 @@ func provAddFile(args []string) {
 	err = json.Unmarshal(data, &rec)
 	exit("", err)
 
-	rurl := fmt.Sprintf("%s/file", _srvConfig.Services.DataBookkeepingURL)
+	rurl := fmt.Sprintf("%s/file", srvConfig.Config.Services.DataBookkeepingURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 
 	printResponse(resp, err)
@@ -230,7 +231,7 @@ func provAddDataset(args []string) {
 	err = json.Unmarshal(data, &rec)
 	exit("unable to unmarshal provenance record", err)
 
-	rurl := fmt.Sprintf("%s/dataset", _srvConfig.Services.DataBookkeepingURL)
+	rurl := fmt.Sprintf("%s/dataset", srvConfig.Config.Services.DataBookkeepingURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 
 	printResponse(resp, err)

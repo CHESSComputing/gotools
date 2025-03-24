@@ -1,16 +1,32 @@
 {
-  "buckets": [
-    "siteABC"
-  ],
-  "files": [
-    "/a/b/c/file1.png",
-    "/a/b/c/file2.png",
-    "/a/b/c/file3.png"
-  ],
   "did": "/beamline=3a/btr=3731-b/cycle=2023-3",
+  "input_files": [
+    {"name": "/tmp/file1.png"},
+    {"name": "/tmp/file2.png"}
+  ],
+  "output_files": [
+    {"name": "/tmp/file1.png"}
+  ],
   "processing": "glibc",
-  "osinfo": {"name": "linux-cc7", "kernel": "1-2-3", "version": "cc7-123"},
-  "environment": {"name": "conda-123", "version": "version", "details": "details"},
-  "script": {"name": "myscript", "options": "-m -p"},
-  "site": "Cornell"
+  "osinfo": {
+      "name": "linux-cc7",
+      "kernel": "1-2-3",
+      "version": "cc7-123"
+  },
+  "environments": [
+      {"name": "conda-123", "version": "version", "details": "details",
+          "parent_environment": null, "os_name": "linux-cc7",
+          "packages": [
+              {"name": "numpy", "version": "123"},
+              {"name": "matplotlib", "version": "987"}
+          ]
+      }
+  ],
+  "scripts": [
+      {"name": "reader", "options": "-reader_options", "parent_script": null, "order_idx": 1}
+  ],
+  "site": "Cornell",
+  "buckets": [
+      {"name":"bucketABC", "uuid": "123", "meta_data": "bucket-meta-data"}
+  ]
 }

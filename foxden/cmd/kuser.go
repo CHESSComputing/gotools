@@ -16,6 +16,7 @@ import (
 	"syscall"
 	"time"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	"golang.org/x/crypto/ssh/terminal"
 	"gopkg.in/jcmturner/gokrb5.v7/client"
 	"gopkg.in/jcmturner/gokrb5.v7/config"
@@ -45,7 +46,7 @@ func userPassword() (string, string) {
 
 // https://github.com/jcmturner/gokrb5/issues/7
 func kuserFromCache(cacheFile string) (*credentials.Credentials, error) {
-	kfile := _srvConfig.Kerberos.Krb5Conf
+	kfile := srvConfig.Config.Kerberos.Krb5Conf
 	if kfile == "" {
 		kfile = "/etc/krb5.conf"
 	}

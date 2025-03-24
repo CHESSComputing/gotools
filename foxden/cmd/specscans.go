@@ -15,6 +15,7 @@ import (
 	"os"
 	"strings"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +39,7 @@ type SpecScansRecord struct {
 // helper function to fetch sites info from discovery service
 func specdata(did string) SpecScansRecord {
 	var results SpecScansRecord
-	rurl := fmt.Sprintf("%s/spec/%s", _srvConfig.Services.SpecScansURL, did)
+	rurl := fmt.Sprintf("%s/spec/%s", srvConfig.Config.Services.SpecScansURL, did)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -81,7 +82,7 @@ func getSpecScans(user, query string, idx, limit int) ([]map[string]any, error) 
 	}
 
 	data, err := json.Marshal(rec)
-	rurl := fmt.Sprintf("%s/search", _srvConfig.Services.SpecScansURL)
+	rurl := fmt.Sprintf("%s/search", srvConfig.Config.Services.SpecScansURL)
 	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		exit("unable to fetch data from SpecScans data service", err)
@@ -169,7 +170,7 @@ func specAddRecord(args []string, jsonOutput bool) {
 	exit(fmt.Sprintf("unable to unmarshal data, file %s", fname), err)
 
 	// add new SpecScans record
-	rurl := fmt.Sprintf("%s/add", _srvConfig.Services.SpecScansURL)
+	rurl := fmt.Sprintf("%s/add", srvConfig.Config.Services.SpecScansURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	exit("unable to fetch data from SpecScans data service", err)
 	defer resp.Body.Close()

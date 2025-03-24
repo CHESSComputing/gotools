@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
 	"github.com/spf13/cobra"
 )
@@ -41,7 +42,7 @@ func mlUsage() {
 
 // helper function to get ML data from MLHub
 func mlGet(endpoint string, args []string) {
-	rurl := fmt.Sprintf("%s/%s", _srvConfig.Services.MLHubURL, endpoint)
+	rurl := fmt.Sprintf("%s/%s", srvConfig.Config.Services.MLHubURL, endpoint)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -71,7 +72,7 @@ func mlModels(args []string) {
 func mlPredict(rec MLInput) {
 	// curl http://localhost:8350/predict -v -X POST -H "Authorization: bearer $token" -H "Accept: application/json" -H "Content-type: application/json" -d '{"input":[1,2,3], "model": "model", "type": "TensorFlow", "backend": "GoFake"}'
 
-	rurl := fmt.Sprintf("%s/predict", _srvConfig.Services.MLHubURL)
+	rurl := fmt.Sprintf("%s/predict", srvConfig.Config.Services.MLHubURL)
 	if verbose > 0 {
 		fmt.Println("HTTP POST", rurl)
 	}
@@ -148,7 +149,7 @@ func mlUpload(rec MLInput) {
 
 	fname := rec.File
 	fmt.Printf("INFO: upload %s\n", fname)
-	rurl := fmt.Sprintf("%s/upload", _srvConfig.Services.MLHubURL)
+	rurl := fmt.Sprintf("%s/upload", srvConfig.Config.Services.MLHubURL)
 	if verbose > 0 {
 		fmt.Println("HTTP POST", rurl)
 	}
@@ -216,7 +217,7 @@ func mlDelete(rec MLInput) {
 
 	fmt.Printf("INFO: delete %s\n", rec)
 
-	rurl := fmt.Sprintf("%s/delete", _srvConfig.Services.MLHubURL)
+	rurl := fmt.Sprintf("%s/delete", srvConfig.Config.Services.MLHubURL)
 	if verbose > 0 {
 		fmt.Println("HTTP DELETE", rurl)
 	}

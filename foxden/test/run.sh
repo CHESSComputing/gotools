@@ -1,6 +1,7 @@
 #!/bin/bash
 cdir=/Users/vk/Work/CHESS/FOXDEN
 dbname=foxden
+export FOXDEN_CONFIG=$HOME/.foxden.yaml
 if [ "`hostname -s`" == "foxden-dev" ]; then
     export FOXDEN_CONFIG=$HOME/.foxden-dev.yaml
     export FOXDEN_MONGODB_PORT=27017
@@ -17,8 +18,9 @@ idir=$cdir/gotools/foxden/test/data
 schema=ID3A
 mongoPort=${FOXDEN_MONGODB_PORT:-8230}
 
-echo "MongoDB port: $mongoPort"
-echo "MongoDB db  : $dbname"
+echo "MongoDB port : $mongoPort"
+echo "MongoDB db   : $dbname"
+echo "FOXDEN_CONFIG: $FOXDEN_CONFIG"
 
 echo
 echo "get write token"
@@ -136,25 +138,25 @@ echo
 echo "+++ view records /beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-2"
 ./foxden view /beamline=3a,4b/btr=3731-b/cycle=2023-3/sample_name=test-2
 
-echo
-echo "+++ test dataset id updates"
-echo "+++ adding empty dbs record with some did"
-did=`cat test/data/ID3A-dbs1-empty.json | grep did | awk '{print $2}' | sed -e "s,\",,g"`
-./foxden prov add test/data/ID3A-dbs1-empty.json
-echo "+++ list files of our did"
-./foxden prov ls files --did=$did
-echo "+++ update dbs record with new files"
-./foxden prov add test/data/ID3A-dbs1-empty-files.json
-echo "+++ list files of our did"
-./foxden prov ls files --did=$did
-echo "+++ update dbs record with processing info"
-./foxden prov add test/data/ID3A-dbs1-empty-proc.json
-echo "+++ list files of our did"
-./foxden prov ls files --did=$did
-echo "+++ list parents of our did"
-./foxden prov ls parents --did=$did
-echo "+++ list children of our did"
-./foxden prov ls child --did=$did
+# echo
+# echo "+++ test dataset id updates"
+# echo "+++ adding empty dbs record with some did"
+# did=`cat test/data/ID3A-dbs1-empty.json | grep did | awk '{print $2}' | sed -e "s,\",,g"`
+# ./foxden prov add test/data/ID3A-dbs1-empty.json
+# echo "+++ list files of our did"
+# ./foxden prov ls files --did=$did
+# echo "+++ update dbs record with new files"
+# ./foxden prov add test/data/ID3A-dbs1-empty-files.json
+# echo "+++ list files of our did"
+# ./foxden prov ls files --did=$did
+# echo "+++ update dbs record with processing info"
+# ./foxden prov add test/data/ID3A-dbs1-empty-proc.json
+# echo "+++ list files of our did"
+# ./foxden prov ls files --did=$did
+# echo "+++ list parents of our did"
+# ./foxden prov ls parents --did=$did
+# echo "+++ list children of our did"
+# ./foxden prov ls child --did=$did
 
 
 echo

@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
@@ -26,7 +27,7 @@ func metaRecords(user, query string, skeys []string, sorder int) ([]map[string]a
 		ServiceQuery: services.ServiceQuery{Query: query, Idx: 0, Limit: -1, SortKeys: skeys, SortOrder: sorder},
 	}
 	data, err := json.Marshal(rec)
-	rurl := fmt.Sprintf("%s/search", _srvConfig.Services.DiscoveryURL)
+	rurl := fmt.Sprintf("%s/search", srvConfig.Config.Services.DiscoveryURL)
 	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		exit("unable to fetch data from search-data service", err)
@@ -75,10 +76,10 @@ func searchUsage() {
 // helper function to get all known search (QL) keys across all FOXDEN services
 func getSearchKeys() []string {
 	urls := []string{
-		_srvConfig.Services.DataBookkeepingURL,
-		_srvConfig.Services.DataManagementURL,
-		_srvConfig.Services.MetaDataURL,
-		_srvConfig.Services.SpecScansURL,
+		srvConfig.Config.Services.DataBookkeepingURL,
+		srvConfig.Config.Services.DataManagementURL,
+		srvConfig.Config.Services.MetaDataURL,
+		srvConfig.Config.Services.SpecScansURL,
 	}
 	var skeys []string
 	for _, url := range urls {

@@ -11,6 +11,7 @@ import (
 	"os"
 
 	authz "github.com/CHESSComputing/golib/authz"
+	srvConfig "github.com/CHESSComputing/golib/config"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +44,7 @@ func viewMetaRecord(user, did string) {
 // helper function to look-up DBS records
 func viewDBSRecord(user, did string) {
 	// look-up dataset records
-	rurl := fmt.Sprintf("%s/datasets?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
+	rurl := fmt.Sprintf("%s/datasets?did=%s", srvConfig.Config.Services.DataBookkeepingURL, did)
 	resp, err := _httpReadRequest.Get(rurl)
 	if err != nil {
 		exit("unable to fetch data from search-data service", err)
@@ -57,7 +58,7 @@ func viewDBSRecord(user, did string) {
 	fmt.Println(string(data))
 
 	// look-up files records
-	rurl = fmt.Sprintf("%s/files?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
+	rurl = fmt.Sprintf("%s/files?did=%s", srvConfig.Config.Services.DataBookkeepingURL, did)
 	resp, err = _httpReadRequest.Get(rurl)
 	if err != nil {
 		exit("unable to fetch data from search-data service", err)
@@ -71,7 +72,7 @@ func viewDBSRecord(user, did string) {
 	fmt.Println(string(data))
 
 	// look-up parents info
-	rurl = fmt.Sprintf("%s/parents?did=%s", _srvConfig.Services.DataBookkeepingURL, did)
+	rurl = fmt.Sprintf("%s/parents?did=%s", srvConfig.Config.Services.DataBookkeepingURL, did)
 	resp, err = _httpReadRequest.Get(rurl)
 	if err != nil {
 		exit("unable to fetch data from search-data service", err)
@@ -96,7 +97,7 @@ func viewCommand() *cobra.Command {
 			if err != nil {
 				exit("unable to get access token", err)
 			}
-			claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+			claims, err := authz.TokenClaims(token, srvConfig.Config.Authz.ClientID)
 			if err != nil {
 				exit("unable to read token claims", err)
 			}

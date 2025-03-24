@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
 
 // helper function to determine which DOI provider to use
 func doiProvider() string {
-	return _srvConfig.DOI.Provider
+	return srvConfig.Config.DOI.Provider
 }
 
 // helper function to view document ID in DOI provider

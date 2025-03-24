@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	mcapi "github.com/materials-commons/gomcapi"
 	"github.com/materials-commons/hydra/pkg/mcdb/mcmodel"
 )
@@ -42,8 +43,8 @@ var mcClient *mcapi.Client
 func getMcProjectName() string {
 	name := os.Getenv("FOXDEN_DOI_PROJECT")
 	if name == "" {
-		if _srvConfig.DOI.MaterialsCommons.ProjectName != "" {
-			name = _srvConfig.DOI.MaterialsCommons.ProjectName
+		if srvConfig.Config.DOI.MaterialsCommons.ProjectName != "" {
+			name = srvConfig.Config.DOI.MaterialsCommons.ProjectName
 		} else {
 			name = "FOXDEN"
 		}
@@ -80,8 +81,8 @@ func getMcClient() {
 		return
 	}
 	args := &mcapi.ClientArgs{
-		BaseURL: _srvConfig.DOI.MaterialsCommons.Url,
-		APIKey:  _srvConfig.DOI.MaterialsCommons.AccessToken,
+		BaseURL: srvConfig.Config.DOI.MaterialsCommons.Url,
+		APIKey:  srvConfig.Config.DOI.MaterialsCommons.AccessToken,
 	}
 	mcClient = mcapi.NewClient(args)
 	return

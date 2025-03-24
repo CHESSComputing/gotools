@@ -18,6 +18,7 @@ import (
 	"time"
 
 	authz "github.com/CHESSComputing/golib/authz"
+	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
@@ -94,7 +95,7 @@ func requestToken(scope, kfile string, expires int) (string, error) {
 		return token, err
 	}
 	httpMgr := services.NewHttpRequest(scope, 1)
-	rurl := fmt.Sprintf("%s/oauth/authorize", _srvConfig.Services.AuthzURL)
+	rurl := fmt.Sprintf("%s/oauth/authorize", srvConfig.Config.Services.AuthzURL)
 	ctype := "applicatin/json"
 	buf := bytes.NewBuffer(data)
 	//     log.Println("### call", rurl)
@@ -140,7 +141,7 @@ func generateToken(fname, keyFileName string, expires int) error {
 		defer file.Close()
 		data, _ := io.ReadAll(file)
 		token := string(data)
-		claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+		claims, err := authz.TokenClaims(token, srvConfig.Config.Authz.ClientID)
 		rclaims := claims.RegisteredClaims
 		etime := rclaims.ExpiresAt
 		if etime.After(time.Now()) {
@@ -227,7 +228,7 @@ func inspectAllTokens(tkn string) {
 }
 
 func inspectToken(token string) {
-	claims, err := authz.TokenClaims(token, _srvConfig.Authz.ClientID)
+	claims, err := authz.TokenClaims(token, srvConfig.Config.Authz.ClientID)
 	rclaims := claims.RegisteredClaims
 	fmt.Println()
 	if err != nil {
@@ -248,14 +249,14 @@ func trustedUser() (string, error) {
 
 	// prepare trusted client data
 	t := utils.NewTrustedClient()
-	salt := authz.ReadSecret(_srvConfig.Encryption.Secret)
+	salt := authz.ReadSecret(srvConfig.Config.Encryption.Secret)
 	edata, err := t.Encrypt(salt)
 
 	// send encrypted data back to Authz server
 	httpMgr := services.NewHttpRequest(scope, 1)
 	ctype := "applicatin/octet-stream"
 	buf := bytes.NewBuffer(edata)
-	rurl := fmt.Sprintf("%s/oauth/trusted", _srvConfig.Services.AuthzURL)
+	rurl := fmt.Sprintf("%s/oauth/trusted", srvConfig.Config.Services.AuthzURL)
 	resp, err := httpMgr.Post(rurl, ctype, buf)
 	if err != nil {
 		return token, err

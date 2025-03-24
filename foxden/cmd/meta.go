@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
@@ -40,7 +41,7 @@ type MetaDataRecord struct {
 // helper function to fetch sites info from discovery service
 func metadata(site string) MetaDataRecord {
 	var results MetaDataRecord
-	rurl := fmt.Sprintf("%s/meta/%s", _srvConfig.Services.MetaDataURL, site)
+	rurl := fmt.Sprintf("%s/meta/%s", srvConfig.Config.Services.MetaDataURL, site)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -82,7 +83,7 @@ func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[
 	}
 
 	data, err := json.Marshal(rec)
-	rurl := fmt.Sprintf("%s/search", _srvConfig.Services.MetaDataURL)
+	rurl := fmt.Sprintf("%s/search", srvConfig.Config.Services.MetaDataURL)
 	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		exit("fail /search, unable to fetch data from meta-data service", err)
@@ -108,7 +109,7 @@ func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[
 	}
 
 	data, err = json.Marshal(rec)
-	rurl = fmt.Sprintf("%s/count", _srvConfig.Services.MetaDataURL)
+	rurl = fmt.Sprintf("%s/count", srvConfig.Config.Services.MetaDataURL)
 	resp, err = _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		exit("fail /count, unable to fetch data from meta-data service", err)
@@ -130,15 +131,15 @@ func didMetaData() (string, string, string) {
 	attrs := strings.Join(utils.DIDKeys(""), ",")
 	sep := "/"
 	div := "="
-	if _srvConfig != nil {
-		if _srvConfig.DID.Attributes != "" {
-			attrs = _srvConfig.DID.Attributes
+	if srvConfig.Config != nil {
+		if srvConfig.Config.DID.Attributes != "" {
+			attrs = srvConfig.Config.DID.Attributes
 		}
-		if _srvConfig.DID.Separator != "" {
-			sep = _srvConfig.DID.Separator
+		if srvConfig.Config.DID.Separator != "" {
+			sep = srvConfig.Config.DID.Separator
 		}
-		if _srvConfig.DID.Divider != "" {
-			div = _srvConfig.DID.Divider
+		if srvConfig.Config.DID.Divider != "" {
+			div = srvConfig.Config.DID.Divider
 		}
 	}
 	return attrs, sep, div
@@ -211,7 +212,7 @@ func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput 
 	mrec.Record = record
 	data, err = json.MarshalIndent(mrec, "", "  ")
 	exit("unable to marshal data", err)
-	rurl := fmt.Sprintf("%s", _srvConfig.Services.MetaDataURL)
+	rurl := fmt.Sprintf("%s", srvConfig.Config.Services.MetaDataURL)
 	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	msg := fmt.Sprintf("fail %s unable to fetch data from meta-data service", rurl)
 	exit(msg, err)
@@ -248,7 +249,7 @@ func metaDeleteRecord(args []string, jsonOutput bool) {
 	mid := args[1]
 	token, err := accessToken()
 	exit("", err)
-	rurl := fmt.Sprintf("%s/meta/%s", _srvConfig.Services.MetaDataURL, mid)
+	rurl := fmt.Sprintf("%s/meta/%s", srvConfig.Config.Services.MetaDataURL, mid)
 	req, err := http.NewRequest("DELETE", rurl, nil)
 	exit("", err)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
