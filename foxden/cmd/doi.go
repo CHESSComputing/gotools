@@ -1,150 +1,155 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"time"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
+	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
 	"github.com/spf13/cobra"
 )
 
-// helper function to determine which DOI provider to use
-func doiProvider() string {
-	return srvConfig.Config.DOI.Provider
+// DOIServiceResponse represents response structure of DOIService record
+type DOIRecord struct {
+	Doi            string
+	DoiUrl         string
+	Did            string
+	Published      int64
+	Public         bool
+	AccessMetadata bool
 }
 
-// helper function to view document ID in DOI provider
-func doiView(did int64) {
-	provider := doiProvider()
-	if provider == "Zenodo" {
-		zenodoView(did)
-	} else if provider == "MaterialsCommons" {
-		getMcClient()
-		mcView(did)
-	} else {
-		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
+// helper function to fetch DOI records
+func doiView(doi string, jsonOutput bool) {
+	form := url.Values{}
+	form.Set("doi", doi)
+
+	// Convert form form to encoded format
+	reqBody := bytes.NewBuffer([]byte(form.Encode()))
+	// Create GET request to FOXDEN DOIService
+	rurl := fmt.Sprintf("%s/search", srvConfig.Config.Services.DOIServiceURL)
+	req, err := http.NewRequest("POST", rurl, reqBody)
+	msg := fmt.Sprintf("fail %s unable to fetch data from FOXDEN DOIService", rurl)
+	exit(msg, err)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	exit("unable to do HTTP request", err)
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	var records []DOIRecord
+	err = json.Unmarshal(data, &records)
+	exit("unable to read data from DOIService", err)
+	if jsonOutput {
+		fmt.Println(string(utils.FormatJsonRecords(data)))
+		return
+	}
+	for _, rec := range records {
+		fmt.Println("---")
+		rtype := "Draft"
+		if rec.Public {
+			rtype = "Public"
+		}
+		fmt.Printf("doi : %s (%s)\n", rec.Doi, rtype)
+		fmt.Printf("did : %s\n", rec.Did)
+		fmt.Printf("url : %s\n", rec.DoiUrl)
+		fmt.Printf("date: %s\n", time.Unix(rec.Published, 0).Format(time.RFC3339))
 	}
 }
 
-// helper function to publish document ID in DOI provider
-func doiPublish(did int64) {
-	provider := doiProvider()
-	if provider == "Zenodo" {
-		zenodoPublish(did)
-	} else if provider == "MaterialsCommons" {
-		getMcClient()
-		mcPublish(did)
-	} else {
-		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
+// helper function to call FOXDEN publish form to publish DOI for a given set of parameters
+func doiPublish(did, provider, description string, draft, metadata, jsonOutput bool) {
+	// get FOXDEN metadata records for our did and extract schema from it
+	user, _ := getUserToken()
+	query := "did:" + did
+	records, _, err := getMeta(user, query, []string{}, 0, 0, 1)
+	exit(fmt.Sprintf("unable to meta-data record for did=%s", did), err)
+	if len(records) != 1 {
+		exit(fmt.Sprintf("multiple records found for did=%s", did), errors.New("multiple records"))
 	}
-}
-
-// helper function to update document ID with file in DOI provider
-func doiUpdate(did int64, fname string) {
-	provider := doiProvider()
-	if provider == "Zenodo" {
-		zenodoUpdate(did, fname)
-	} else if provider == "MaterialsCommons" {
-		getMcClient()
-		mcUpdate(did, fname)
+	rec := records[0]
+	var schema string
+	if val, ok := rec["schema"]; ok {
+		schema = val.(string)
 	} else {
-		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
+		exit(fmt.Sprintf("unable to identify schema for did=%s", did), errors.New("no schema"))
 	}
-}
-
-// helper function to add document ID and file in DOI provider
-func doiAdd(did int64, fname string) {
-	provider := doiProvider()
-	if provider == "Zenodo" {
-		zenodoAdd(did, fname)
-	} else if provider == "MaterialsCommons" {
-		getMcClient()
-		mcAdd(did, fname)
-	} else {
-		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
+	if description == "" {
+		if val, ok := rec["description"]; ok {
+			description = val.(string)
+		}
 	}
-}
 
-// helper function to create document in DOI provider via provided file
-func doiCreate(fname string) {
-	provider := doiProvider()
-	if provider == "Zenodo" {
-		zenodoCreate(fname)
-	} else if provider == "MaterialsCommons" {
-		getMcClient()
-		mcCreate(fname)
-	} else {
-		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
+	// Define form data
+	form := url.Values{}
+	form.Set("did", did)
+	form.Set("provider", provider)
+	form.Set("description", description)
+	form.Set("schema", schema)
+
+	// Checkbox values should be sent as "on" if checked, otherwise omitted
+	if draft {
+		form.Set("draft", "on")
 	}
-}
+	if metadata {
+		form.Set("metadata", "on")
+	}
 
-// helper function to list documents in DOI provider (optionally view specific document id)
-func doiDocs(did int64) {
-	provider := doiProvider()
-	if provider == "Zenodo" {
-		zenodoDocs(did)
-	} else if provider == "MaterialsCommons" {
-		getMcClient()
-		mcDocs(did)
+	// Convert form form to encoded format
+	reqBody := bytes.NewBuffer([]byte(form.Encode()))
+
+	// Create POST request
+	rurl := fmt.Sprintf("%s/publish", srvConfig.Config.Services.FrontendURL)
+	hmap := make(map[string][]string)
+	hmap["Accept"] = []string{"application/json"}
+	_httpWriteRequest.Headers = hmap
+	resp, err := _httpWriteRequest.Post(rurl, "application/x-www-form-urlencoded", reqBody)
+	msg := fmt.Sprintf("fail %s unable to fetch data from FOXDEN Frontend service", rurl)
+	exit(msg, err)
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	exit("unable to read data from meta-data service", err)
+
+	// Print response status
+	fmt.Printf("Response Status: %v\n", resp.Status)
+	if jsonOutput {
+		fmt.Println(string(utils.FormatJson(data)))
 	} else {
-		exit("Unsupported DOI provider", errors.New(fmt.Sprintf("unsupported provider %s", provider)))
+		var rec services.ServiceResponse
+		if err := json.Unmarshal(data, &rec); err == nil {
+			fmt.Println(rec.String())
+		} else {
+			fmt.Println(string(data))
+		}
 	}
 }
 
 // helper function to provide doi usage info
 func doiUsage() {
-	fmt.Println("foxden doi <ls|create|update|publish|view> [options]")
+	fmt.Println("foxden doi <ls|publish|view> [options]")
 	fmt.Println("options:")
-	fmt.Println("         <did> (document/project id)")
-	fmt.Println("         <datasetID> (dataset id within document/project)")
-	fmt.Println("         <file.json> file name")
-	fmt.Println("         --token=<token or token file name>")
+	fmt.Println("         <did> (dataset id)")
+	fmt.Println("         --provider=<provider> (DOI provider: Datacite, Zenodo, MaterialCommons")
+	fmt.Println("         --description=<description> (provide description about did)")
+	fmt.Println("         --public (make DOI public record)")
+	fmt.Println("         --hideMetadata (hide metadata from DOI publication)")
+	fmt.Println("         --json (output in json data-format)")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list documents from DOI provider:")
-	fmt.Println("foxden doi ls")
+	fmt.Println("foxden doi ls <doi>")
 	fmt.Println("\n# get details of document id:")
-	fmt.Println("foxden doi view <id>")
-	fmt.Println("\n# create new document (new document with some ID, e.g. 123456789, will be created)")
-	fmt.Println("foxden doi create")
-	fmt.Println("\n# create new document with user's token")
-	fmt.Println("foxden doi create --token=<token_string>")
-	fmt.Println("\n# create new document from given record:")
-	fmt.Println("foxden doi create </path/record.json>")
-	fmt.Println("\n# add file to document id:")
-	fmt.Println("foxden doi add <did> </path/regular/file>")
-	fmt.Println("\n# update document id with publish data record:")
-	fmt.Println("foxden doi update <did> /path/record.json")
-	fmt.Println("\n# publish document id:")
+	fmt.Println("foxden doi view <doi>")
+	fmt.Println("\n# publish metadata:")
 	fmt.Println("foxden doi publish <did>")
-	fmt.Println("\n# publish document id and dataset id:")
-	fmt.Println("foxden doi publish <did> <datasetID>")
 	fmt.Println()
-	record := `
-# example of Zenodo meta-data record
-https://raw.githubusercontent.com/CHESSComputing/gotools/refs/heads/main/foxden/test/data/doi.json
-
-# example of MaterialsCommons meta-data record
-https://raw.githubusercontent.com/CHESSComputing/gotools/refs/heads/main/foxden/test/data/materialscommons-doi.json
-`
-	fmt.Println(record)
-}
-
-func printDoiRecord(rec map[string]any) {
-	maxLen := 20
-	if val, ok := rec["id"]; ok {
-		key := utils.PaddedKey("id", maxLen)
-		vvv := val.(float64)
-		v := int64(vvv)
-		fmt.Printf("%s: %v\n", key, v)
-	}
-	if val, ok := rec["links"]; ok {
-		vvv := val.(map[string]any)
-		if v, ok := vvv["html"]; ok {
-			key := utils.PaddedKey("URL", maxLen)
-			fmt.Printf("%s: %v\n", key, v)
-		}
-	}
 }
 
 func doiCommand() *cobra.Command {
@@ -154,50 +159,41 @@ func doiCommand() *cobra.Command {
 		Long:  "foxden doi command to access FOXDEN Publication service\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			tkn, _ := cmd.Flags().GetString("ztoken")
-			initZenodoAccess(tkn)
+			//             tkn, _ := cmd.Flags().GetString("ztoken")
+			provider, _ := cmd.Flags().GetString("provider")
+			description, _ := cmd.Flags().GetString("description")
+			publicDoi, _ := cmd.Flags().GetBool("public")
+			hideMetadata, _ := cmd.Flags().GetBool("hideMetadata")
+			jsonOutput, _ := cmd.Flags().GetBool("json")
 			if len(args) == 0 {
 				doiUsage()
 			} else if args[0] == "ls" {
-				accessToken()
-				var did int64
+				var pat string
 				if len(args) == 2 {
-					did = getDID(args[1])
+					pat = args[1]
 				}
-				doiDocs(did)
-			} else if args[0] == "create" {
-				accessToken()
-				writeToken()
-				var fname string
-				if len(args) == 2 {
-					fname = args[1]
-				}
-				doiCreate(fname)
-			} else if args[0] == "add" {
-				accessToken()
-				writeToken()
-				did, fname := getParams(args[1:])
-				doiAdd(did, fname)
-			} else if args[0] == "update" {
-				accessToken()
-				writeToken()
-				did, fname := getParams(args[1:])
-				doiUpdate(did, fname)
+				doiView(pat, jsonOutput)
 			} else if args[0] == "publish" {
 				accessToken()
 				writeToken()
-				did := getDID(args[1])
-				doiPublish(did)
+				did := args[1]
+				draft := !publicDoi
+				publishMetadata := !hideMetadata
+				doiPublish(did, provider, description, draft, publishMetadata, jsonOutput)
 			} else if args[0] == "view" {
 				accessToken()
-				did := getDID(args[1])
-				doiView(did)
+				doi := args[1]
+				doiView(doi, jsonOutput)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v\n", args)
 			}
 		},
 	}
-	cmd.PersistentFlags().String("ztoken", "", "zenodo token file or token string")
+	cmd.PersistentFlags().String("provider", "Datacite", "DOI provider, default Datacite")
+	cmd.PersistentFlags().String("description", "", "dataset description for DOI publication")
+	cmd.PersistentFlags().Bool("public", false, "make public DOI")
+	cmd.PersistentFlags().Bool("hideMetadata", false, "do not publish metadata in DOI publication")
+	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		doiUsage()
 		return nil

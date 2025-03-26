@@ -30,6 +30,23 @@ func (r *PublishRecord) Validate() error {
 	return nil
 }
 
+func printDoiRecord(rec map[string]any) {
+	maxLen := 20
+	if val, ok := rec["id"]; ok {
+		key := utils.PaddedKey("id", maxLen)
+		vvv := val.(float64)
+		v := int64(vvv)
+		fmt.Printf("%s: %v\n", key, v)
+	}
+	if val, ok := rec["links"]; ok {
+		vvv := val.(map[string]any)
+		if v, ok := vvv["html"]; ok {
+			key := utils.PaddedKey("URL", maxLen)
+			fmt.Printf("%s: %v\n", key, v)
+		}
+	}
+}
+
 // helper function to initialize http request with user's zenodo access token
 func initZenodoAccess(tkn string) {
 	var ztoken string
