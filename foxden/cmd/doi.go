@@ -18,12 +18,14 @@ import (
 
 // DOIServiceResponse represents response structure of DOIService record
 type DOIRecord struct {
-	Doi            string
-	DoiUrl         string
-	Did            string
-	Published      int64
-	Public         bool
-	AccessMetadata bool
+	Doi            string `json:"doi"`
+	DoiUrl         string `json:"doi_url"`
+	Did            string `json:"did"`
+	Description    string `json:"description"`
+	Provider       string `json:"provider"`
+	Published      int64  `json:"published"`
+	Public         bool   `json:"public"`
+	AccessMetadata bool   `json:"access_metadata"`
 }
 
 // helper function to fetch DOI records
