@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
@@ -22,10 +21,10 @@ type DOIRecord struct {
 	DoiUrl         string `json:"doi_url"`
 	Did            string `json:"did"`
 	Description    string `json:"description"`
-	Provider       string `json:"provider"`
-	Published      int64  `json:"published"`
-	Public         bool   `json:"public"`
-	AccessMetadata bool   `json:"access_metadata"`
+	Provider       string `json:"doi_provider"`
+	Published      string `json:"doi_created_at"`
+	Public         bool   `json:"doi_public"`
+	AccessMetadata bool   `json:"doi_access_metadata"`
 }
 
 // helper function to fetch DOI records
@@ -63,7 +62,7 @@ func doiView(doi string, jsonOutput bool) {
 		fmt.Printf("doi : %s (%s)\n", rec.Doi, rtype)
 		fmt.Printf("did : %s\n", rec.Did)
 		fmt.Printf("url : %s\n", rec.DoiUrl)
-		fmt.Printf("date: %s\n", time.Unix(rec.Published, 0).Format(time.RFC3339))
+		fmt.Printf("date: %s\n", rec.Published)
 	}
 }
 
