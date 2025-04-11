@@ -54,6 +54,7 @@ func metaRecords(user, query string, skeys []string, sorder int) ([]map[string]a
 // helper function to provide usage of search option
 func searchUsage() {
 	fmt.Println("foxden search <spec>")
+	fmt.Println("       search keys are case-incensitive")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all known search keys:")
 	fmt.Println("foxden search keys")
@@ -63,7 +64,7 @@ func searchUsage() {
 	fmt.Println("foxden search {} --json")
 	fmt.Println("\n# search using query language,")
 	fmt.Println("# provide valid JSON use single quotes around it and double quotes for key:value pairs")
-	fmt.Println("foxden search '{\"PI\":\"name\"}'")
+	fmt.Println("foxden search '{\"pi\":\"name\"}'")
 	fmt.Println("\n# search using key:value pairs, e.g. pi:name where 'pi' is record key and 'name' would be PI user name")
 	fmt.Println("# keys can be in lower case, e.g. pi instead of PI used in meta-data record")
 	fmt.Println("foxden search pi:name")
@@ -117,6 +118,7 @@ func searchListRecord(user, spec string, skeys []string, sorder int, jsonOutput 
 		}
 		return
 	}
+	spec = utils.NormalizeSpec(spec)
 	records, err := metaRecords(user, spec, skeys, sorder)
 	if err != nil {
 		fmt.Println("ERROR", err)
