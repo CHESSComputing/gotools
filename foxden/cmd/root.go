@@ -68,6 +68,9 @@ func init() {
 }
 
 func initConfig() {
+	if os.Getenv("FOXDEN_VERBOSE") != "" {
+		fmt.Println("FOXDEN uses:", cfgFile)
+	}
 	config, err := srvConfig.ParseConfig(cfgFile)
 	if err != nil {
 		fmt.Println("ERROR", err)
