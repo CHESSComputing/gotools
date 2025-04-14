@@ -84,7 +84,7 @@ func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[
 
 	data, err := json.Marshal(rec)
 	rurl := fmt.Sprintf("%s/search", srvConfig.Config.Services.MetaDataURL)
-	if os.Getenv("FOXDEN_VERBOSE" != "" {
+	if os.Getenv("FOXDEN_VERBOSE") != "" {
 		fmt.Println("FOXDEN query:", rurl)
 	}
 	resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
