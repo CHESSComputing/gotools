@@ -34,8 +34,15 @@ func Execute() error {
 
 func init() {
 	defaultConfig := fmt.Sprintf("%s/.foxden.yaml", os.Getenv("HOME"))
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", defaultConfig, "config file (default is $HOME/.foxden.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.foxden.yaml)")
 	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
+	if cfgFile != "" {
+		// will use cfgFile
+	} else if os.Getenv("FOXDEN_CONFIG") != "" {
+		cfgFile = os.Getenv("FOXDEN_CONFIG")
+	} else {
+		cfgFile = defaultConfig
+	}
 	os.Setenv("FOXDEN_CONFIG", cfgFile)
 	cobra.OnInitialize(initConfig)
 
