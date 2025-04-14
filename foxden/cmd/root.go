@@ -43,10 +43,6 @@ func init() {
 	} else {
 		cfgFile = defaultConfig
 	}
-	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
-		msg := fmt.Sprintf("FOXDEN config: %s does not exist", cfgFile)
-		log.Fatal(msg)
-	}
 	os.Setenv("FOXDEN_CONFIG", cfgFile)
 	cobra.OnInitialize(initConfig)
 
@@ -72,6 +68,12 @@ func init() {
 }
 
 func initConfig() {
+	// check that our config file does not exist
+	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
+		msg := fmt.Sprintf("FOXDEN config: %s does not exist", cfgFile)
+		log.Fatal(msg)
+	}
+	// parse our config file
 	config, err := srvConfig.ParseConfig(cfgFile)
 	if err != nil {
 		fmt.Println("ERROR", err)
