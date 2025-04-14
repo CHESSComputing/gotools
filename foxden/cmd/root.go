@@ -68,16 +68,16 @@ func init() {
 }
 
 func initConfig() {
-	if os.Getenv("FOXDEN_VERBOSE") != "" {
-		fmt.Println("FOXDEN uses:", cfgFile)
-		fmt.Println("FOXDEN services: %+v", srvConfig.Config.Services)
-	}
 	config, err := srvConfig.ParseConfig(cfgFile)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
 	srvConfig.Config = &config
+	if os.Getenv("FOXDEN_VERBOSE") != "" {
+		fmt.Println("FOXDEN uses:", cfgFile)
+		fmt.Println("FOXDEN services: %+v", srvConfig.Config.Services)
+	}
 	verbose := strings.ToLower(fmt.Sprintf("%v", os.Getenv("FOXDEN_VERBOSE")))
 	if verbose == "1" || verbose == "true" {
 		log.SetFlags(log.LstdFlags | log.Llongfile)
