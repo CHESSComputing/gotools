@@ -43,6 +43,10 @@ func init() {
 	} else {
 		cfgFile = defaultConfig
 	}
+	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
+		msg := fmt.Sprintf("FOXDEN config: %s does not exist", cfgFile)
+		log.Fatal(msg)
+	}
 	os.Setenv("FOXDEN_CONFIG", cfgFile)
 	cobra.OnInitialize(initConfig)
 
@@ -76,7 +80,7 @@ func initConfig() {
 	srvConfig.Config = &config
 	if os.Getenv("FOXDEN_VERBOSE") != "" {
 		fmt.Println("FOXDEN uses:", cfgFile)
-		fmt.Println("FOXDEN services: %+v", srvConfig.Config.Services)
+		fmt.Printf("FOXDEN services: %+v\n", srvConfig.Config.Services)
 	}
 	verbose := strings.ToLower(fmt.Sprintf("%v", os.Getenv("FOXDEN_VERBOSE")))
 	if verbose == "1" || verbose == "true" {
