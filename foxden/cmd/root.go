@@ -34,6 +34,7 @@ func Execute() error {
 
 func init() {
 	defaultConfig := fmt.Sprintf("%s/.foxden.yaml", os.Getenv("HOME"))
+	chessUserConfig := "/nfs/chess/user/chess_chapaas/.foxden.yaml"
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.foxden.yaml)")
 	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
 	if cfgFile != "" {
@@ -44,9 +45,9 @@ func init() {
 	} else if _, err := os.Stat(defaultConfig); err == nil {
 		// use config located in user's home area
 		cfgFile = defaultConfig
-	} else if _, err := os.Stat(defaultConfig); err == nil {
+	} else if _, err := os.Stat(chessUserConfig); err == nil {
 		// use CHESS based user's config
-		cfgFile = "/nfs/chess/user/chess_chapaas/.foxden.yaml"
+		cfgFile = chessUserConfig
 	}
 	os.Setenv("FOXDEN_CONFIG", cfgFile)
 	cobra.OnInitialize(initConfig)
@@ -75,7 +76,8 @@ func init() {
 func initConfig() {
 	// check that our config file does not exist
 	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
-		msg := fmt.Sprintf("FOXDEN config: %s does not exist", cfgFile)
+		msg := fmt.Sprintf("FOXDEN config: '%s' does not exist.\n", cfgFile)
+		msg += "Please either use --config=<config> option or define FOXDEN_CONFIG environment with your configuration file"
 		log.Fatal(msg)
 	}
 	// parse our config file
