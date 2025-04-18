@@ -37,11 +37,16 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.foxden.yaml)")
 	rootCmd.PersistentFlags().IntVar(&verbose, "verbose", 0, "verbosity level)")
 	if cfgFile != "" {
-		// will use cfgFile
+		// will use cfgFile provided via --config option
 	} else if os.Getenv("FOXDEN_CONFIG") != "" {
+		// use config defined in FOXDEN_CONFIG environment
 		cfgFile = os.Getenv("FOXDEN_CONFIG")
-	} else {
+	} else if _, err := os.Stat(defaultConfig); err == nil {
+		// use config located in user's home area
 		cfgFile = defaultConfig
+	} else if _, err := os.Stat(defaultConfig); err == nil {
+		// use CHESS based user's config
+		cfgFile = "/nfs/chess/user/chess_chapaas/.foxden.yaml"
 	}
 	os.Setenv("FOXDEN_CONFIG", cfgFile)
 	cobra.OnInitialize(initConfig)
