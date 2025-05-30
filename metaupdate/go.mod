@@ -1,12 +1,10 @@
 module github.com/CHESSComputing/gotools/metaupdate
 
-go 1.24.1
-
-replace github.com/CHESSComputing/golib => ../../golib
+go 1.24.3
 
 require (
-	github.com/CHESSComputing/golib v0.7.3
-	go.mongodb.org/mongo-driver v1.17.1
+	github.com/CHESSComputing/golib v0.7.4
+	go.mongodb.org/mongo-driver v1.17.3
 )
 
 require (
@@ -40,3 +38,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/CHESSComputing/golib => ../../golib
