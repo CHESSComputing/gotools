@@ -3,7 +3,7 @@ module github.com/CHESSComputing/gotools/metaupdate
 go 1.24.3
 
 require (
-	github.com/CHESSComputing/golib v0.7.6
+	github.com/CHESSComputing/golib v0.7.7
 	go.mongodb.org/mongo-driver v1.17.3
 )
 
