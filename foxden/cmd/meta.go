@@ -153,6 +153,7 @@ func metaUsage() {
 	attrs, sep, div := didMetaData()
 	fmt.Println("foxden meta <ls|rm|view> [options]")
 	fmt.Println("foxden meta add <file.json> {options}")
+	fmt.Println("foxden meta amend <file.json> {options}")
 	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list meta data records:")
@@ -167,16 +168,18 @@ func metaUsage() {
 	fmt.Println("foxden meta rm 123xyz")
 	fmt.Println("\n# add meta-data record with given schema, file and did attributes which create a did value:")
 	fmt.Printf("foxden meta add <file.json> --schema=<schema> --did-attrs=%s --did-sep=%s --did-div=%s\n", attrs, sep, div)
-	fmt.Println("\n# the same as above since it is default values")
-	fmt.Println("foxden meta add <file.json> --schema=<schema>")
-	fmt.Println("\n# the same as above but provide json output")
-	fmt.Println("foxden meta add <file.json> --schema=<schema> --json")
+	fmt.Println("\n# the same as above since it is default values, schema is part of the record")
+	fmt.Println("foxden meta add <file.json>")
+	fmt.Println("\n# the same as above but provide json output, schema is part of the record")
+	fmt.Println("foxden meta add <file.json> --json")
+	fmt.Println("\n# amend record in Metadata record, schema is part of the record")
+	fmt.Println("foxden meta amend <file.json>")
 	fmt.Println("\n# show example of meta-data record")
 	fmt.Println("foxden meta info")
 }
 
 // helper function to add meta data record
-func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput bool) {
+func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput bool, update bool) {
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -211,12 +214,27 @@ func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput 
 
 	// we need to create /meta/file/upload call using URL form
 	var mrec services.MetaRecord
-	mrec.Schema = schemaName
+	if schemaName == "" {
+		// extract record from the record
+		if val, ok := record["schema"]; ok {
+			schemaName = val.(string)
+		}
+	} else {
+		mrec.Schema = schemaName
+	}
+	if schemaName == "" {
+		exit("schema is not provided", errors.New("No schema"))
+	}
 	mrec.Record = record
 	data, err = json.MarshalIndent(mrec, "", "  ")
 	exit("unable to marshal data", err)
 	rurl := fmt.Sprintf("%s", srvConfig.Config.Services.MetaDataURL)
-	resp, err := _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	var resp *http.Response
+	if update {
+		resp, err = _httpWriteRequest.Put(rurl, "application/json", bytes.NewBuffer(data))
+	} else {
+		resp, err = _httpWriteRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+	}
 	msg := fmt.Sprintf("fail %s unable to fetch data from meta-data service", rurl)
 	exit(msg, err)
 	defer resp.Body.Close()
@@ -407,7 +425,17 @@ func metaCommand() *cobra.Command {
 					metaUsage()
 					exit("please provide <file.json>", errors.New("no input file"))
 				}
-				metaAddRecord(schema, fname, attrs, sep, div, jsonOutput)
+				metaAddRecord(schema, fname, attrs, sep, div, jsonOutput, false)
+			} else if args[0] == "amend" {
+				writeToken()
+				var fname string
+				if len(args) == 2 {
+					fname = args[1]
+				} else {
+					metaUsage()
+					exit("please provide <file.json>", errors.New("no input file"))
+				}
+				metaAddRecord(schema, fname, attrs, sep, div, jsonOutput, true)
 			} else if args[0] == "info" {
 				recordInfo("metadata.json")
 			} else if args[0] == "rm" {
