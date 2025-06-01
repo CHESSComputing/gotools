@@ -152,8 +152,7 @@ func didMetaData() (string, string, string) {
 func metaUsage() {
 	attrs, sep, div := didMetaData()
 	fmt.Println("foxden meta <ls|rm|view> [options]")
-	fmt.Println("foxden meta add <file.json> {options}")
-	fmt.Println("foxden meta amend <file.json> {options}")
+	fmt.Println("foxden meta <add|amend> <file.json> {options}")
 	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list meta data records:")
