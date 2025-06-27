@@ -267,7 +267,7 @@ func metaDeleteRecord(args []string, jsonOutput bool) {
 		os.Exit(1)
 	}
 	mid := args[1]
-	token, err := accessToken()
+	token, err := deleteAccessToken()
 	exit("", err)
 	rurl := fmt.Sprintf("%s/meta/%s", srvConfig.Config.Services.MetaDataURL, mid)
 	req, err := http.NewRequest("DELETE", rurl, nil)
@@ -438,7 +438,7 @@ func metaCommand() *cobra.Command {
 			} else if args[0] == "info" {
 				recordInfo("metadata.json")
 			} else if args[0] == "rm" {
-				writeToken()
+				deleteToken()
 				metaDeleteRecord(args, jsonOutput)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
