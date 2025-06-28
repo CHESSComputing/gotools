@@ -150,8 +150,7 @@ func getUserToken() (string, string) {
 	if err != nil {
 		exit("unable to read token claims, please check FOXDEN_TOKEN env, and run 'foxden token view'", err)
 	}
-	rclaims := claims.RegisteredClaims
-	user := rclaims.Subject
+	user := claims.CustomClaims.User
 	return user, token
 }
 

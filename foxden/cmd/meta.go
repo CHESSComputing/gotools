@@ -164,7 +164,7 @@ func metaUsage() {
 	fmt.Println("\n# list specific meta-data record:")
 	fmt.Println("foxden meta view <DID>")
 	fmt.Println("\n# remove meta-data record:")
-	fmt.Println("foxden meta rm 123xyz")
+	fmt.Println("foxden meta rm <DID>")
 	fmt.Println("\n# add meta-data record with given schema, file and did attributes which create a did value:")
 	fmt.Printf("foxden meta add <file.json> --schema=<schema> --did-attrs=%s --did-sep=%s --did-div=%s\n", attrs, sep, div)
 	fmt.Println("\n# the same as above since it is default values, schema is part of the record")
@@ -261,15 +261,14 @@ func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput 
 }
 
 // helper function to delete meta-data record
-func metaDeleteRecord(args []string, jsonOutput bool) {
-	if len(args) != 2 {
+func metaDeleteRecord(user, did string, jsonOutput bool) {
+	if did == "" {
 		metaUsage()
 		os.Exit(1)
 	}
-	mid := args[1]
 	token, err := deleteAccessToken()
 	exit("", err)
-	rurl := fmt.Sprintf("%s/meta/%s", srvConfig.Config.Services.MetaDataURL, mid)
+	rurl := fmt.Sprintf("%s/record?did=%s&user=%s", srvConfig.Config.Services.MetaDataURL, did, user)
 	req, err := http.NewRequest("DELETE", rurl, nil)
 	exit("", err)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -290,9 +289,9 @@ func metaDeleteRecord(args []string, jsonOutput bool) {
 		return
 	}
 	if response.Status == "ok" {
-		fmt.Printf("SUCCESS: record %s was successfully removed\n", mid)
+		fmt.Printf("SUCCESS: record %s was successfully removed\n", did)
 	} else {
-		fmt.Printf("WARNING: record %s failed to be removed\n", mid)
+		fmt.Printf("WARNING: record %s failed to be removed\n", did)
 	}
 
 }
@@ -439,7 +438,16 @@ func metaCommand() *cobra.Command {
 				recordInfo("metadata.json")
 			} else if args[0] == "rm" {
 				deleteToken()
-				metaDeleteRecord(args, jsonOutput)
+				user, _ := getUserToken()
+				if user == "" {
+					exit("unable to get user name from token value", errors.New("unknown user"))
+				}
+				if len(args) != 2 {
+					metaUsage()
+					exit("please provide did", errors.New("no did"))
+				}
+				did := args[1]
+				metaDeleteRecord(user, did, jsonOutput)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
 			}
