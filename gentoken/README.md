@@ -112,9 +112,11 @@ You can decode the JWT at [jwt.io](https://jwt.io/)
 ---
 
 ## Integration with FOXDEN
-The FOXDEN relies on client credentials for token verification.
+The FOXDEN relies on server credentials for token verification. To generate
+token with server side client credentials please use the following example:
 
 ```
+# please replace -secret value with ClientId: part of FOXDEN Authz configuration
 ./gentoken \
   -alg=HS256 \
   -secret=my-client-id-123 \
@@ -127,6 +129,18 @@ The FOXDEN relies on client credentials for token verification.
     "application":"gentoken"
   }'
 ```
+
+Here you need to replace `-secret=...` value with one used by your
+`~/.foxden.yaml` configuration file in `Authz->ClientId` section, e.g.
+look out the following part of your configuration file:
+```
+...
+Authz:
+   ClientId: my-client-id-123
+...
+```
+and use the same clientid in your secret for `gentoken` option above.
+
 
 ## Notes
 
