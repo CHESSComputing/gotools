@@ -141,6 +141,7 @@ Authz:
 ```
 and use the same clientid in your secret for `gentoken` option above.
 
+---
 
 ## Notes
 
