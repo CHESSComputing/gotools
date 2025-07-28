@@ -19,7 +19,7 @@ supports both **HS256 (HMAC)** and **RS256 (RSA)** signing algorithms.
 1. Clone the repo and build:
 
 ```
-git clone https://github.com/CHESSComputing/gotools/tree/main/gentoken
+git clone https://github.com/CHESSComputing/gotools/gentoken.git
 cd gentoken
 make
 ```
