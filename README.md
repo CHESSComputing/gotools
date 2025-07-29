@@ -63,7 +63,7 @@ versatile for data formatting and transformation tasks.
 
 ----
 
-These tools collectively enhance the functionality of the Foxden platform by
+These tools collectively enhance the functionality of the Foxden infrastructure by
 providing utilities for data manipulation, security, network diagnostics,
 schema validation, data transofrmation, and integration. Each tool
 is designed to be simple and efficient, focusing on specific tasks within the
