@@ -17,36 +17,38 @@ import (
 
 func main() {
 	// Standard JWT fields
-	alg := flag.String("alg", "HS256", "Signing algorithm: HS256 or RS256")
-	iss := flag.String("iss", "", "Issuer")
-	sub := flag.String("sub", "", "Subject")
-	aud := flag.String("aud", "", "Comma-separated audience list")
-	expMins := flag.Int("exp", 60, "Expiration time in minutes")
+	var alg, iss, sub, aud, claimsJSON, secret, privateKeyPath string
+	flag.StringVar(&alg, "alg", "HS256", "Signing algorithm: HS256 or RS256")
+	flag.StringVar(&iss, "iss", "", "Issuer")
+	flag.StringVar(&sub, "sub", "", "Subject")
+	flag.StringVar(&aud, "aud", "", "Comma-separated audience list")
+	var expMins int
+	flag.IntVar(&expMins, "exp", 60, "Expiration time in minutes")
 	now := time.Now().Unix()
 
 	// Custom claims
-	claimsJSON := flag.String("claims", "", "Custom claims JSON (e.g. '{\"user\":\"test\",\"scope\":\"read\"}')")
+	flag.StringVar(&claimsJSON, "claims", "", "Custom claims JSON (e.g. '{\"user\":\"test\",\"scope\":\"read\"}')")
 
 	// Secrets/Keys
-	secret := flag.String("secret", "", "Secret key for HS256")
-	privateKeyPath := flag.String("privatekey", "", "Path to RSA private key file for RS256")
+	flag.StringVar(&secret, "secret", "", "Secret key for HS256")
+	flag.StringVar(&privateKeyPath, "privatekey", "", "Path to RSA private key file for RS256")
 
 	flag.Parse()
 
 	// Base claims
 	claims := jwt.MapClaims{
 		"iat": now,
-		"exp": now + int64(*expMins*60),
+		"exp": now + int64(expMins*60),
 	}
 
-	if *iss != "" {
-		claims["iss"] = *iss
+	if iss != "" {
+		claims["iss"] = iss
 	}
-	if *sub != "" {
-		claims["sub"] = *sub
+	if sub != "" {
+		claims["sub"] = sub
 	}
-	if *aud != "" {
-		audList := strings.Split(*aud, ",")
+	if aud != "" {
+		audList := strings.Split(aud, ",")
 		if len(audList) == 1 {
 			claims["aud"] = audList[0]
 		} else {
@@ -55,9 +57,9 @@ func main() {
 	}
 
 	// Inject custom claims under `custom_claims`
-	if *claimsJSON != "" {
+	if claimsJSON != "" {
 		var custom map[string]any
-		if err := json.Unmarshal([]byte(*claimsJSON), &custom); err != nil {
+		if err := json.Unmarshal([]byte(claimsJSON), &custom); err != nil {
 			exitWithError("Invalid JSON for custom claims: " + err.Error())
 		}
 		claims["custom_claims"] = custom
@@ -67,21 +69,21 @@ func main() {
 	var token string
 	var err error
 
-	switch *alg {
+	switch alg {
 	case "HS256":
-		if *secret == "" {
+		if secret == "" {
 			exitWithError("HS256 requires -secret")
 		}
-		token, err = generateHS256Token(claims, *secret)
+		token, err = generateHS256Token(claims, secret)
 
 	case "RS256":
-		if *privateKeyPath == "" {
+		if privateKeyPath == "" {
 			exitWithError("RS256 requires -privatekey")
 		}
-		token, err = generateRS256Token(claims, *privateKeyPath)
+		token, err = generateRS256Token(claims, privateKeyPath)
 
 	default:
-		exitWithError("Unsupported algorithm: " + *alg)
+		exitWithError("Unsupported algorithm: " + alg)
 	}
 
 	if err != nil {
@@ -134,4 +136,3 @@ func exitWithError(msg string) {
 	fmt.Fprintln(os.Stderr, "Error:", msg)
 	os.Exit(1)
 }
-
