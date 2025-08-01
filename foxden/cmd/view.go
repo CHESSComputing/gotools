@@ -54,33 +54,40 @@ func getRecords(user, did string, parents, children bool) ([]map[string]any, []m
 	// get provenance records
 	provRecords := getProvRecords(did, "provenance")
 	if parents {
-		for _, r := range getParents(did) {
+		for _, r := range getRecursiveRecords(did, "parents", "parent_id", nil) {
 			provRecords = append(provRecords, r)
 		}
 	}
 	if children {
-		for _, r := range getChildren(did) {
+		for _, r := range getRecursiveRecords(did, "children", "child_id", nil) {
 			provRecords = append(provRecords, r)
 		}
 	}
 	return records, provRecords
 }
 
-func getParents(did string) []map[string]any {
-	records := getProvRecords(did, "parents")
-	// TODO: get recursive look-up of all parents
-	/*
-		for _, r := range records {
-			if val, ok := r["parent_did"]; ok {
+func getRecursiveRecords(did string, api, key string, seen map[string]bool) []map[string]any {
+	if seen == nil {
+		seen = make(map[string]bool)
+	}
+	if seen[did] {
+		return nil
+	}
+	seen[did] = true
+
+	var allParents []map[string]any
+	records := getProvRecords(did, api)
+	for _, r := range records {
+		allParents = append(allParents, r)
+		if val, ok := r[key]; ok {
+			pdid, ok := val.(string)
+			if ok {
+				subParents := getRecursiveRecords(pdid, api, key, seen)
+				allParents = append(allParents, subParents...)
 			}
 		}
-	*/
-	return records
-}
-func getChildren(did string) []map[string]any {
-	records := getProvRecords(did, "children")
-	// TODO: get recursive look-up of all parents
-	return records
+	}
+	return allParents
 }
 
 func getProvRecords(did, api string) []map[string]any {
