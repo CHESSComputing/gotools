@@ -16,7 +16,13 @@ import (
 
 // helper function to provide usage of view option
 func viewUsage() {
-	fmt.Println("foxden view <DID>")
+	fmt.Println("foxden view <DID> [options]")
+	fmt.Println("options: --parents --children --json")
+	fmt.Println("\nExamples:")
+	fmt.Println("\n# view details of specific did record:")
+	fmt.Println("foxden view /beamline=test/btr=test-123-a/cycle=2023-3/sample_name=sample")
+	fmt.Println("\n# view details of specific did record including parents and children:")
+	fmt.Println("foxden view /beamline=test/btr=test-123-a/cycle=2023-3/sample_name=sample --parents --children")
 }
 
 func viewRecord(user, did string, parents, children, jsonOutput bool) {
@@ -64,10 +70,10 @@ func getParents(did string) []map[string]any {
 	records := getProvRecords(did, "parents")
 	// TODO: get recursive look-up of all parents
 	/*
-	for _, r := range records {
-		if val, ok := r["parent_did"]; ok {
+		for _, r := range records {
+			if val, ok := r["parent_did"]; ok {
+			}
 		}
-	}
 	*/
 	return records
 }
