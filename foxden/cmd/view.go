@@ -10,7 +10,6 @@ import (
 	"io"
 	"os"
 
-	authz "github.com/CHESSComputing/golib/authz"
 	srvConfig "github.com/CHESSComputing/golib/config"
 	"github.com/spf13/cobra"
 )
@@ -20,8 +19,105 @@ func viewUsage() {
 	fmt.Println("foxden view <DID>")
 }
 
+func viewRecord(user, did string, parents, children, jsonOutput bool) {
+	records, provRecords := getRecords(user, did, parents, children)
+	metadata, err1 := json.MarshalIndent(records, "", "  ")
+	provdata, err2 := json.MarshalIndent(provRecords, "", "  ")
+	if err1 != nil {
+		exit("unable to serialize metadata records", err1)
+	}
+	if err2 != nil {
+		exit("unable to serialize metadata records", err2)
+	}
+	fmt.Println("\n### Metadata records\n")
+	print(string(metadata))
+	fmt.Println("\n\n### Provenance records\n")
+	print(string(provdata))
+}
+
+func getRecords(user, did string, parents, children bool) ([]map[string]any, []map[string]any) {
+	// get meta-data records
+	query := "did:" + did
+	var skeys []string
+	sorder := 0
+	records, err := metaRecords(user, query, skeys, sorder)
+	if err != nil {
+		exit("unable to marshal data", err)
+	}
+
+	// get provenance records
+	provRecords := getProvRecords(did, "provenance")
+	if parents {
+		for _, r := range getParents(did) {
+			provRecords = append(provRecords, r)
+		}
+	}
+	if children {
+		for _, r := range getChildren(did) {
+			provRecords = append(provRecords, r)
+		}
+	}
+	return records, provRecords
+}
+
+func getParents(did string) []map[string]any {
+	records := getProvRecords(did, "parents")
+	// TODO: get recursive look-up of all parents
+	/*
+	for _, r := range records {
+		if val, ok := r["parent_did"]; ok {
+		}
+	}
+	*/
+	return records
+}
+func getChildren(did string) []map[string]any {
+	records := getProvRecords(did, "children")
+	// TODO: get recursive look-up of all parents
+	return records
+}
+
+func getProvRecords(did, api string) []map[string]any {
+	rurl := fmt.Sprintf("%s/%s?did=%s", srvConfig.Config.Services.DataBookkeepingURL, api, did)
+	resp, err := _httpReadRequest.Get(rurl)
+	if err != nil {
+		exit(fmt.Sprintf("unable to fetch data from provenance service API %s", api), err)
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		exit("unable to read data from provenance service", err)
+	}
+	var provRecords []map[string]any
+	err = json.Unmarshal(data, &provRecords)
+	if err != nil {
+		exit("unable to read data from provenance service", err)
+	}
+	return provRecords
+}
+
+func printJsonRecords(records []map[string]any, jsonOutput bool) {
+	if jsonOutput {
+		if data, err := json.MarshalIndent(records, "", " "); err == nil {
+			fmt.Println(string(data))
+		} else {
+			fmt.Println("ERROR", err)
+			os.Exit(1)
+		}
+		return
+	}
+	for _, r := range records {
+		fmt.Println("---")
+		data, err := json.MarshalIndent(r, "", "  ")
+		if err != nil {
+			exit("unable to marshal data", err)
+		}
+		fmt.Println(string(data))
+	}
+}
+
 // helper function to print view data records in Json format
-func viewMetaRecord(user, did string) {
+func viewMetaRecord(user, did string, jsonOutput bool) {
 	query := "did:" + did
 	var skeys []string
 	sorder := 0
@@ -29,6 +125,15 @@ func viewMetaRecord(user, did string) {
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
+	}
+	if jsonOutput {
+		if data, err := json.MarshalIndent(records, "", " "); err == nil {
+			fmt.Println(string(data))
+		} else {
+			fmt.Println("ERROR", err)
+			os.Exit(1)
+		}
+		return
 	}
 	for _, r := range records {
 		fmt.Println("---")
@@ -42,7 +147,7 @@ func viewMetaRecord(user, did string) {
 }
 
 // helper function to look-up DBS records
-func viewDBSRecord(user, did string) {
+func viewDBSRecord(user, did string, parents, children, jsonOutput bool) {
 	// look-up dataset records
 	rurl := fmt.Sprintf("%s/datasets?did=%s", srvConfig.Config.Services.DataBookkeepingURL, did)
 	resp, err := _httpReadRequest.Get(rurl)
@@ -93,24 +198,21 @@ func viewCommand() *cobra.Command {
 		Long:  "foxden view data-record commands via FOXDEN services\n" + doc,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			token, err := accessToken()
-			if err != nil {
-				exit("unable to get access token", err)
-			}
-			claims, err := authz.TokenClaims(token, srvConfig.Config.Authz.ClientID)
-			if err != nil {
-				exit("unable to read token claims", err)
-			}
-			rclaims := claims.RegisteredClaims
-			user := rclaims.Subject
+			jsonOutput, _ := cmd.Flags().GetBool("json")
+			parents, _ := cmd.Flags().GetBool("parents")
+			children, _ := cmd.Flags().GetBool("children")
 			if len(args) == 0 {
 				viewUsage()
 			} else {
-				viewMetaRecord(user, args[0])
-				viewDBSRecord(user, args[0])
+				user, _ := getUserToken()
+				did := args[0]
+				viewRecord(user, did, parents, children, jsonOutput)
 			}
 		},
 	}
+	cmd.PersistentFlags().Bool("parents", false, "recurse look-up of all parents")
+	cmd.PersistentFlags().Bool("children", false, "recurse look-up of all children")
+	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		viewUsage()
 		return nil
