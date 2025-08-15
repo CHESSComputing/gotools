@@ -178,7 +178,7 @@ func metaUsage() {
 }
 
 // helper function to add meta data record
-func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput bool, update bool) {
+func metaAddRecord(user, schemaName, fname string, attrs, sep, div string, jsonOutput bool, update bool) {
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -218,12 +218,16 @@ func metaAddRecord(schemaName, fname string, attrs, sep, div string, jsonOutput 
 		if val, ok := record["schema"]; ok {
 			schemaName = val.(string)
 		}
-	} else {
-		mrec.Schema = schemaName
 	}
+	mrec.Schema = schemaName
 	if schemaName == "" {
 		exit("schema is not provided", errors.New("No schema"))
 	}
+	// add user info to metadata record
+	if _, ok := record["user"]; !ok {
+		record["user"] = user
+	}
+
 	mrec.Record = record
 	data, err = json.MarshalIndent(mrec, "", "  ")
 	exit("unable to marshal data", err)
@@ -415,7 +419,7 @@ func metaCommand() *cobra.Command {
 					metaJsonRecord(user, "", skeys, sortOrder, idx, limit, jsonOutput)
 				}
 			} else if args[0] == "add" {
-				writeToken()
+				token, _ := writeToken()
 				var fname string
 				if len(args) == 2 {
 					fname = args[1]
@@ -423,9 +427,10 @@ func metaCommand() *cobra.Command {
 					metaUsage()
 					exit("please provide <file.json>", errors.New("no input file"))
 				}
-				metaAddRecord(schema, fname, attrs, sep, div, jsonOutput, false)
+				user := getUserFromToken(token)
+				metaAddRecord(user, schema, fname, attrs, sep, div, jsonOutput, false)
 			} else if args[0] == "amend" {
-				writeToken()
+				token, _ := writeToken()
 				var fname string
 				if len(args) == 2 {
 					fname = args[1]
@@ -433,7 +438,8 @@ func metaCommand() *cobra.Command {
 					metaUsage()
 					exit("please provide <file.json>", errors.New("no input file"))
 				}
-				metaAddRecord(schema, fname, attrs, sep, div, jsonOutput, true)
+				user := getUserFromToken(token)
+				metaAddRecord(user, schema, fname, attrs, sep, div, jsonOutput, true)
 			} else if args[0] == "info" {
 				recordInfo("metadata.json")
 			} else if args[0] == "rm" {
