@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
 	services "github.com/CHESSComputing/golib/services"
@@ -67,7 +68,7 @@ func doiView(doi string, jsonOutput bool) {
 }
 
 // helper function to call FOXDEN publish form to publish DOI for a given set of parameters
-func doiPublish(did, provider, description string, draft, metadata, jsonOutput bool) {
+func doiPublish(did, provider, description, parents string, draft, metadata, jsonOutput bool) {
 	// get FOXDEN metadata records for our did and extract schema from it
 	user, _ := getUserToken()
 	query := "did:" + did
@@ -92,7 +93,7 @@ func doiPublish(did, provider, description string, draft, metadata, jsonOutput b
 	// Define form data
 	form := url.Values{}
 	form.Set("did", did)
-	form.Set("provider", provider)
+	form.Set("doiprovider", provider)
 	form.Set("description", description)
 	form.Set("schema", schema)
 
@@ -101,7 +102,13 @@ func doiPublish(did, provider, description string, draft, metadata, jsonOutput b
 		form.Set("draft", "on")
 	}
 	if metadata {
-		form.Set("metadata", "on")
+		form.Set("publishmetadata", "on")
+	}
+	// add parents if they are provided
+	if parents != "" {
+		for _, p := range strings.Split(parents, ",") {
+			form.Add("doi_parents_dids", strings.Trim(p, " "))
+		}
 	}
 
 	// Convert form form to encoded format
@@ -140,6 +147,7 @@ func doiUsage() {
 	fmt.Println("         <did> (dataset id)")
 	fmt.Println("         --provider=<provider> (DOI provider: Datacite, Zenodo, MaterialCommons")
 	fmt.Println("         --description=<description> (provide description about did)")
+	fmt.Println("         --parents=<parent1,parent2,...> (command separeted list of parents dids)")
 	fmt.Println("         --public (make DOI public record)")
 	fmt.Println("         --hideMetadata (hide metadata from DOI publication)")
 	fmt.Println("         --json (output in json data-format)")
@@ -150,6 +158,8 @@ func doiUsage() {
 	fmt.Println("foxden doi view <doi>")
 	fmt.Println("\n# publish metadata:")
 	fmt.Println("foxden doi publish <did>")
+	fmt.Println("\n# publish metadata with specific provider, description and list of parents")
+	fmt.Println("foxden doi publish <did> --provider=MaterialCommons --descriptio='best analysis dataset' --parents=did1,did2")
 	fmt.Println()
 }
 
@@ -163,6 +173,7 @@ func doiCommand() *cobra.Command {
 			//             tkn, _ := cmd.Flags().GetString("ztoken")
 			provider, _ := cmd.Flags().GetString("provider")
 			description, _ := cmd.Flags().GetString("description")
+			parents, _ := cmd.Flags().GetString("parents")
 			publicDoi, _ := cmd.Flags().GetBool("public")
 			hideMetadata, _ := cmd.Flags().GetBool("hideMetadata")
 			jsonOutput, _ := cmd.Flags().GetBool("json")
@@ -180,7 +191,7 @@ func doiCommand() *cobra.Command {
 				did := args[1]
 				draft := !publicDoi
 				publishMetadata := !hideMetadata
-				doiPublish(did, provider, description, draft, publishMetadata, jsonOutput)
+				doiPublish(did, provider, description, parents, draft, publishMetadata, jsonOutput)
 			} else if args[0] == "view" {
 				accessToken()
 				doi := args[1]
@@ -192,6 +203,7 @@ func doiCommand() *cobra.Command {
 	}
 	cmd.PersistentFlags().String("provider", "Datacite", "DOI provider, default Datacite")
 	cmd.PersistentFlags().String("description", "", "dataset description for DOI publication")
+	cmd.PersistentFlags().String("parents", "parents", "Add comma separated list of parents with your publication")
 	cmd.PersistentFlags().Bool("public", false, "make public DOI")
 	cmd.PersistentFlags().Bool("hideMetadata", false, "do not publish metadata in DOI publication")
 	cmd.PersistentFlags().Bool("json", false, "json output")
