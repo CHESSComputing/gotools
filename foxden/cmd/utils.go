@@ -154,6 +154,16 @@ func getUserToken() (string, string) {
 	return user, token
 }
 
+// helper function to get user from the token
+func getUserFromToken(token string) string {
+	claims, err := authz.TokenClaims(token, srvConfig.Config.Authz.ClientID)
+	if err != nil {
+		exit("unable to read token claims, please check FOXDEN_TOKEN env, and run 'foxden token view'", err)
+	}
+	user := claims.CustomClaims.User
+	return user
+}
+
 // helper function to obtain write access token
 func writeToken() (string, error) {
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
