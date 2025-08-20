@@ -261,9 +261,10 @@ func mcAdd(did int64, fname string) {
 // helper function to publish dataset ID within Material Commons project
 func mcPublish(did int64) {
 	pid := getMcProjectId()
-	_, err := mcClient.PublishDataset(pid, int(did))
+	draft := true
+	_, err := mcClient.PublishDataset(pid, int(did), draft)
 	exit("unable to publish dataset", err)
-	ds, err := mcClient.MintDOIForDataset(pid, int(did))
+	ds, err := mcClient.MintDOIForDataset(pid, int(did), draft)
 	exit("unable to mint DOI for dataset", err)
 	fmt.Printf("Dataset has been published...\n")
 	fmt.Printf("ID       : %+v\n", ds.ID)
