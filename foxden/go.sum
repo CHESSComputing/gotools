@@ -8,6 +8,8 @@ github.com/BurntSushi/toml v1.4.0 h1:kuoIxZQy2WRRk1pttg9asf+WVv6tWQuBNVmK8+nqPr0
 github.com/BurntSushi/toml v1.4.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/CHESSComputing/DataBookkeeping v0.2.3 h1:VFuf6ZQA+8MxRWjXinEKfh1Py8Q7l6zQKsitaJ6MmWQ=
 github.com/CHESSComputing/DataBookkeeping v0.2.3/go.mod h1:XRBqvSasDhiq3NFoQra3Xtu5bjjzdLgyFJNdo0pep0w=
+github.com/CHESSComputing/golib v0.8.2 h1:1NMasAkx5CjtxZs+1NFBWQdcfzQMQGOiTuHkdJRl3eA=
+github.com/CHESSComputing/golib v0.8.2/go.mod h1:w8GUYGiPuXgI3r+VQyfxpywLxud3zsMVpbiLzH9zF64=
 github.com/alexbrainman/sspi v0.0.0-20231016080023-1a75b4708caa h1:LHTHcTQiSGT7VVbI0o4wBRNQIgn917usHWOd6VAffYI=
 github.com/alexbrainman/sspi v0.0.0-20231016080023-1a75b4708caa/go.mod h1:cEWa1LVoE5KvSD9ONXsZrj0z6KqySlCCNKHlLzbqAt4=
 github.com/bytedance/sonic v1.13.3 h1:MS8gmaH16Gtirygw7jV91pDCN33NyMrPbN7qiYhEsF0=
