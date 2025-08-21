@@ -130,14 +130,18 @@ func mcListDatasets(projID int) {
 		fmt.Printf("DOI        : %+v\n", r.DOI)
 		fmt.Printf("CreatedAt  : %+v\n", r.CreatedAt)
 		fmt.Printf("Files      :\n")
-		for _, f := range r.Files {
-			fmt.Printf("ID       : %+v\n", f.CreatedAt)
-			fmt.Printf("Name     : %+v\n", f.CreatedAt)
-			fmt.Printf("Path     : %+v\n", f.CreatedAt)
-			fmt.Printf("Size     : %+v\n", f.CreatedAt)
-			fmt.Printf("MimeType : %+v\n", f.CreatedAt)
-			fmt.Printf("CreatedAt: %+v\n", f.CreatedAt)
-		}
+		/*
+			in older verison of mcClient dataset had Files object
+
+			for _, f := range r.Files {
+				fmt.Printf("ID       : %+v\n", f.CreatedAt)
+				fmt.Printf("Name     : %+v\n", f.CreatedAt)
+				fmt.Printf("Path     : %+v\n", f.CreatedAt)
+				fmt.Printf("Size     : %+v\n", f.CreatedAt)
+				fmt.Printf("MimeType : %+v\n", f.CreatedAt)
+				fmt.Printf("CreatedAt: %+v\n", f.CreatedAt)
+			}
+		*/
 		fmt.Println("---")
 	}
 	fmt.Printf("Total      : %d records\n", len(records))
