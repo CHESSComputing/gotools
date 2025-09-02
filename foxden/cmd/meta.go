@@ -64,13 +64,11 @@ func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
-		if _httpReadRequest.Token == "" {
-			if token, err := trustedUser(); err == nil {
-				_httpReadRequest.Token = token
-				defer func() {
-					_httpReadRequest.Token = ""
-				}()
-			}
+		if token, err := trustedUser(); err == nil {
+			_httpReadRequest.Token = token
+			defer func() {
+				_httpReadRequest.Token = ""
+			}()
 		}
 	}
 	var records []map[string]any
@@ -182,13 +180,11 @@ func metaAddRecord(user, schemaName, fname string, attrs, sep, div string, jsonO
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
-		if _httpWriteRequest.Token == "" {
-			if token, err := trustedUser(); err == nil {
-				_httpWriteRequest.Token = token
-				defer func() {
-					_httpWriteRequest.Token = ""
-				}()
-			}
+		if token, err := trustedUser(); err == nil {
+			_httpWriteRequest.Token = token
+			defer func() {
+				_httpWriteRequest.Token = ""
+			}()
 		}
 	}
 
