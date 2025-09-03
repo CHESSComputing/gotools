@@ -5,6 +5,7 @@ package cmd
 // Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
 //
 import (
+	"bytes"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -207,16 +208,52 @@ func getTrustedUser() string {
 		exit("unable to obtain system info for trusted user", err)
 	}
 
-	for _, tuser := range srvConfig.Config.TrustedUsers {
-		for _, ip := range ips {
-			for _, mac := range macs {
-				if tuser.User == user && tuser.IP == ip && tuser.MAC == mac {
-					return tuser.User
+	// to check system info we can either use TrustedUsers of server configuration
+	// or, rely on FOXDEN Authz /trusted_client end-point
+	if len(srvConfig.Config.TrustedUsers) == 0 {
+		// use Authx /trusted_client end-point
+		rec := make(map[string]any)
+		rec["user"] = user
+		rec["ips"] = ips
+		rec["macs"] = macs
+		data, err := json.Marshal(rec)
+		if err != nil {
+			exit("Unable to marshal system infor record", err)
+		}
+		rurl := fmt.Sprintf("%s/trusted_client", srvConfig.Config.AuthzURL)
+		resp, err := _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
+		if err != nil {
+			exit(fmt.Sprintf("fail to check trusted user info in FOXDEN Authz server, data=%v", string(data)), err)
+		}
+		defer resp.Body.Close()
+		data, err = io.ReadAll(resp.Body)
+		if err != nil {
+			exit(fmt.Sprintf("Unable to read response body %v", data), err)
+		}
+		var response services.ServiceResponse
+		err = json.Unmarshal(data, &response)
+		if err != nil {
+			exit("Unable to unmarshal response body", err)
+		}
+		if response.SrvCode == 0 && response.Status == "ok" {
+			trustedUser = user
+		}
+	} else {
+		// rely on TrustedUsers configuration settings
+		for _, tuser := range srvConfig.Config.TrustedUsers {
+			for _, ip := range ips {
+				for _, mac := range macs {
+					if tuser.User == user && tuser.IP == ip && tuser.MAC == mac {
+						trustedUser = tuser.User
+						break
+					}
 				}
 			}
 		}
 	}
-	exit("Unable to find trusted user credentials in FOXDEN configuration", errors.New("auth failure"))
+	if trustedUser == "" {
+		exit("No trusted user info found in FOXDEN", errors.New("auth failure"))
+	}
 	return trustedUser
 }
 
