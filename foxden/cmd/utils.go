@@ -157,61 +157,63 @@ func getUserToken() (string, string) {
 	return user, token
 }
 
-// GetSystemInfo returns the current user name, first non-loopback IP, and MAC address.
-func GetSystemInfo() (string, string, string, error) {
+// GetSystemInfo returns the current user name, all non-loopback IPs, and all MAC addresses.
+func GetSystemInfo() (string, []string, []string, error) {
 	// Get current user
 	u, err := user.Current()
 	if err != nil {
-		return "", "", "", fmt.Errorf("failed to get user: %w", err)
+		return "", nil, nil, fmt.Errorf("failed to get user: %w", err)
 	}
 	username := u.Username
 
-	// Get non-loopback IP
-	var ipAddr string
+	// Collect all non-loopback IPv4 addresses
+	var ips []string
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return username, "", "", fmt.Errorf("failed to get IP addresses: %w", err)
+		return username, nil, nil, fmt.Errorf("failed to get IP addresses: %w", err)
 	}
 	for _, addr := range addrs {
 		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
-			ipAddr = ipnet.IP.String()
-			break
+			ips = append(ips, ipnet.IP.String())
 		}
 	}
-	if ipAddr == "" {
-		ipAddr = "N/A"
+	if len(ips) == 0 {
+		ips = []string{"N/A"}
 	}
 
-	// Get MAC address
-	var macAddr string
+	// Collect all MAC addresses from active interfaces
+	var macs []string
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		return username, ipAddr, "", fmt.Errorf("failed to get network interfaces: %w", err)
+		return username, ips, nil, fmt.Errorf("failed to get network interfaces: %w", err)
 	}
 	for _, iface := range ifaces {
 		if iface.Flags&net.FlagUp != 0 && len(iface.HardwareAddr) > 0 {
-			macAddr = iface.HardwareAddr.String()
-			break
+			macs = append(macs, iface.HardwareAddr.String())
 		}
 	}
-	if macAddr == "" {
-		macAddr = "N/A"
+	if len(macs) == 0 {
+		macs = []string{"N/A"}
 	}
 
-	return username, ipAddr, macAddr, nil
+	return username, ips, macs, nil
 }
 
 // helper function to get trusted user name
 func getTrustedUser() string {
 	var trustedUser string
-	user, ip, mac, err := GetSystemInfo()
+	user, ips, macs, err := GetSystemInfo()
 	if err != nil {
 		exit("unable to obtain system info for trusted user", err)
 	}
 
 	for _, tuser := range srvConfig.Config.TrustedUsers {
-		if tuser.User == user && tuser.IP == ip && tuser.MAC == mac {
-			return tuser.User
+		for _, ip := range ips {
+			for _, mac := range macs {
+				if tuser.User == user && tuser.IP == ip && tuser.MAC == mac {
+					return tuser.User
+				}
+			}
 		}
 	}
 	exit("Unable to find trusted user credentials in FOXDEN configuration", errors.New("auth failure"))
