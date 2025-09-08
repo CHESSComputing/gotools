@@ -59,7 +59,7 @@ func main() {
 		InputFiles: inputFiles, OutputFiles: outputFiles,
 		Environments: envs, Scripts: scripts, OsInfo: osInfo,
 	}
-	data, err := json.MarshalIndent(prov, "", " ")
+	data, err := json.MarshalIndent(prov, "", "   ")
 	if err != nil {
 		fmt.Println("ERROR: unable to generate provenance record", err)
 		os.Exit(1)
