@@ -242,10 +242,21 @@ func inspectToken(token string) {
 	}
 	fmt.Println("AccessToken  : ", token)
 	fmt.Println("Issuer       : ", rclaims.Issuer)
-	fmt.Println("Subject      : ", rclaims.Subject)
-	fmt.Println("Audience     : ", rclaims.Audience)
+	fmt.Println("User         : ", claims.CustomClaims.User)
+	fmt.Println("Token Scope  : ", claims.CustomClaims.Scope)
+	fmt.Println("Kind         : ", claims.CustomClaims.Kind)
+	if len(claims.CustomClaims.Btrs) != 0 {
+		fmt.Println("BTRs         : ", claims.CustomClaims.Btrs)
+	}
+	if len(claims.CustomClaims.Roles) != 0 {
+		fmt.Println("Roles        : ", claims.CustomClaims.Roles)
+	}
+	fmt.Println("Groups       : ", claims.CustomClaims.Groups)
+	fmt.Println("Scopes       : ", claims.CustomClaims.Scopes)
 	fmt.Println("ExpiresAt    : ", rclaims.ExpiresAt)
-	fmt.Println("Custom Claims: ", claims.CustomClaims.String())
+	// fmt.Println("Subject      : ", rclaims.Subject)
+	// fmt.Println("Audience     : ", rclaims.Audience)
+	// fmt.Println("Custom Claims: ", claims.CustomClaims.String())
 }
 
 // helper function to get token as trusted user
