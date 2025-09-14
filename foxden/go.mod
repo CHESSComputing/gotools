@@ -3,12 +3,12 @@ module github.com/CHESSComputing/gotools/foxden
 go 1.25.1
 
 require (
-	github.com/CHESSComputing/DataBookkeeping v0.2.3
-	github.com/CHESSComputing/golib v0.9.0
+	github.com/CHESSComputing/DataBookkeeping v0.2.4
+	github.com/CHESSComputing/golib v0.9.1
 	github.com/materials-commons/gomcapi v0.0.7
 	github.com/materials-commons/hydra v1.0.1
 	github.com/spf13/cobra v1.10.1
-	golang.org/x/crypto v0.41.0
+	golang.org/x/crypto v0.42.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
 )
 
@@ -29,7 +29,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.11 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.26.0 // indirect
+	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/go-resty/resty/v2 v2.14.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
@@ -70,11 +70,11 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // indirect
-	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/term v0.34.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/term v0.35.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
