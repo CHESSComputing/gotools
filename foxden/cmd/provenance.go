@@ -280,6 +280,8 @@ func provUsage() {
 	// fmt.Println("foxden prov add-file <file.json> --json")
 	fmt.Println("\n# show example of provenance record")
 	fmt.Println("foxden prov info")
+	fmt.Println("\n# generate provenance record")
+	fmt.Println("foxden prov generate --inputDir /ipath --inputFilePattern \"*.jpg\" --outputDir /opath --did /a/b/c")
 }
 
 func provCommand() *cobra.Command {
@@ -299,6 +301,10 @@ func provCommand() *cobra.Command {
 			bucket, _ := cmd.Flags().GetString("bucket")
 			processing, _ := cmd.Flags().GetString("processing")
 			osname, _ := cmd.Flags().GetString("osname")
+			inputDir, _ := cmd.Flags().GetString("inputDir")
+			inputFilePattern, _ := cmd.Flags().GetString("inputFilePattern")
+			outputDir, _ := cmd.Flags().GetString("outputDir")
+			outputFilePattern, _ := cmd.Flags().GetString("outputFilePattern")
 			params := UrlParams{
 				Did:         did,
 				File:        file,
@@ -326,6 +332,14 @@ func provCommand() *cobra.Command {
 				}
 			} else if args[0] == "info" {
 				recordInfo("provenance.json")
+			} else if args[0] == "generate" {
+				p := ProvenanceParameters{
+					Did:      did,
+					App:      "YOUR_APPLICATION",
+					InputDir: inputDir, InputFilePattern: inputFilePattern,
+					OutputDir: outputDir, OutputFilePattern: outputFilePattern,
+				}
+				generateProvenanceRecord(p)
 			} else if args[0] == "add" {
 				accessToken()
 				writeToken()
@@ -352,6 +366,10 @@ func provCommand() *cobra.Command {
 	cmd.PersistentFlags().String("bucket", "", "bucket to use")
 	cmd.PersistentFlags().String("processing", "", "processing to use")
 	cmd.PersistentFlags().String("osname", "", "osname to use")
+	cmd.PersistentFlags().String("inputDir", "", "input directory to use")
+	cmd.PersistentFlags().String("inputFilePattern", "", "file pattern to look in input directory")
+	cmd.PersistentFlags().String("outputDir", "", "output directory to use")
+	cmd.PersistentFlags().String("outputFilePattern", "", "file pattern to look in output directory")
 	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		provUsage()

@@ -65,6 +65,9 @@ func authUsage() string {
 	out += fmt.Sprintf("\n")
 	out += fmt.Sprintf("# view existing token stored in %s\n", envTokens)
 	out += fmt.Sprintf("foxden token view\n")
+	out += fmt.Sprintf("\n")
+	out += fmt.Sprintf("# generate test token\n")
+	out += fmt.Sprintf("foxden token test\n")
 	return out
 }
 
@@ -321,6 +324,17 @@ func authCommand() *cobra.Command {
 				authUsage()
 			} else if args[0] == "view" {
 				inspectAllTokens(tkn)
+			} else if args[0] == "test" {
+				customClaims := make(map[string]any)
+				customClaims["user"] = "test"
+				customClaims["scope"] = "read"
+				customClaims["userid"] = 123
+				p := TokenParameters{
+					Iss: "FOXDEN-Issuer", Sub: "FOXDEN-Sub", Aud: "FOXDEN-Aud", Secret: "FOXDEN-salt",
+					CustomClaims:      customClaims,
+					ExpirationMinutes: 60,
+				}
+				generateTestToken(p)
 			} else if args[0] == "create" {
 				attr := "read"
 				if len(args) > 1 {

@@ -173,6 +173,8 @@ func metaUsage() {
 	fmt.Println("foxden meta amend <file.json>")
 	fmt.Println("\n# show example of meta-data record")
 	fmt.Println("foxden meta info")
+	fmt.Println("\n# generate meta-data record for given FOXDEN schema")
+	fmt.Println("foxden meta generate --schema=ID4B")
 }
 
 // helper function to add meta data record
@@ -438,6 +440,9 @@ func metaCommand() *cobra.Command {
 				metaAddRecord(user, schema, fname, attrs, sep, div, jsonOutput, true)
 			} else if args[0] == "info" {
 				recordInfo("metadata.json")
+			} else if args[0] == "generate" {
+				p := MetadataParameters{Schema: schema}
+				generateMetadataRecord(p)
 			} else if args[0] == "rm" {
 				deleteToken()
 				user, _ := getUserToken()

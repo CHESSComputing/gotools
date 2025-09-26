@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -22,6 +23,14 @@ func main() {
 	flag.StringVar(&app, "app", "", "user application name")
 	var configFile string
 	flag.StringVar(&configFile, "configFile", "", "configuration file")
+	var inputDir string
+	flag.StringVar(&inputDir, "inputDir", "", "input directory to scan")
+	var inputFilePattern string
+	flag.StringVar(&inputFilePattern, "inputFilePattern", "", "input directory file pattern to find")
+	var outputDir string
+	flag.StringVar(&outputDir, "outputDir", "", "output directory to scan")
+	var outputFilePattern string
+	flag.StringVar(&outputFilePattern, "outputFilePattern", "", "output directory file pattern to find")
 	var inputFile string
 	flag.StringVar(&inputFile, "inputFile", "", "file with list of input files")
 	var outputFile string
@@ -33,16 +42,24 @@ func main() {
 
 	var inputFiles, outputFiles []dbs.FileRecord
 	if content, err := readFileContent(inputFile); err == nil {
-		for _, r := range strings.Split(content, "\n") {
+		for r := range strings.SplitSeq(content, "\n") {
 			rec := dbs.FileRecord{Name: r}
 			inputFiles = append(inputFiles, rec)
 		}
 	}
 	if content, err := readFileContent(outputFile); err == nil {
-		for _, r := range strings.Split(content, "\n") {
+		for r := range strings.SplitSeq(content, "\n") {
 			rec := dbs.FileRecord{Name: r}
 			outputFiles = append(outputFiles, rec)
 		}
+	}
+	for _, f := range FileList(inputDir, inputFilePattern) {
+		rec := dbs.FileRecord{Name: f}
+		inputFiles = append(inputFiles, rec)
+	}
+	for _, f := range FileList(outputDir, outputFilePattern) {
+		rec := dbs.FileRecord{Name: f}
+		outputFiles = append(outputFiles, rec)
 	}
 
 	var envs []dbs.EnvironmentRecord
@@ -66,6 +83,33 @@ func main() {
 	}
 	fmt.Println(string(data))
 
+}
+
+// FileList walks through the directory tree starting at dir
+// and returns a slice of full paths of files matching the pattern pat.
+func FileList(dir string, pat string) []string {
+	var files []string
+
+	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			// skip files/directories we cannot access
+			return nil
+		}
+
+		if !info.IsDir() {
+			match, err := filepath.Match(pat, info.Name())
+			if err != nil {
+				// skip invalid patterns
+				return nil
+			}
+			if match {
+				files = append(files, path)
+			}
+		}
+		return nil
+	})
+
+	return files
 }
 
 // readFileContent reads the content of the given file.

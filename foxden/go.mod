@@ -5,6 +5,7 @@ go 1.25.1
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.2.6
 	github.com/CHESSComputing/golib v0.9.3
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/materials-commons/gomcapi v0.0.7
 	github.com/materials-commons/hydra v1.0.1
 	github.com/spf13/cobra v1.10.1
@@ -80,6 +81,7 @@ require (
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/rpc.v1 v1.1.0 // indirect
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/gorm v1.25.12 // indirect
 )
