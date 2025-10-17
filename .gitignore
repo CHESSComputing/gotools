@@ -19,3 +19,21 @@
 
 # Go workspace file
 go.work
+
+# builds
+dev/
+dset/dset
+enc/enc
+foxden-benchmark/foxden-benchmark
+foxden/foxden
+genprovenance/genprovenance
+gentoken/gentoken
+hostinfo/hostinfo
+metaupdate/metaupdate
+migrate/migrate
+migratescans/migratescans
+transform/transform
+validator/validator
+
+# tar balls
+tools_*.tar.gz
