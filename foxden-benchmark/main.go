@@ -45,9 +45,9 @@ func main() {
 	flag.StringVar(&filePath, "file", "", "base JSON file to use (required)")
 	flag.IntVar(&total, "n", 100, "total number of injections")
 	flag.IntVar(&concurrency, "c", 10, "concurrency level")
-	flag.StringVar(&foxdenTool, "foxdenTool", "", "path to foxden binary")
-	flag.StringVar(&foxdenSrv, "foxdenSrv", "meta", "foxden service (meta, prov, sync, etc.)")
-	flag.StringVar(&foxdenCmd, "foxdenCmd", "add", "foxden command for service (add, ls, view, delete, etc.)")
+	flag.StringVar(&foxdenTool, "foxden", "", "path to foxden binary")
+	flag.StringVar(&foxdenSrv, "foxden-srv", "meta", "foxden service (meta, prov, sync, etc.)")
+	flag.StringVar(&foxdenCmd, "foxden-cmd", "add", "foxden command for service (add, ls, view, delete, etc.)")
 	flag.BoolVar(&quiet, "quiet", false, "suppress per-invocation prints")
 	flag.IntVar(&timeoutSec, "timeout", 60, "per-invocation timeout seconds (0 = no timeout)")
 	var version bool
@@ -129,8 +129,11 @@ func main() {
 				defer cancel()
 			}
 			cmd := exec.CommandContext(ctx, foxdenTool, foxdenSrv, foxdenCmd, "-")
-			if foxdenCmd != "add" || foxdenCmd != "amend" {
+			if foxdenCmd != "add" && foxdenCmd != "amend" {
 				cmd = exec.CommandContext(ctx, foxdenTool, foxdenSrv, foxdenCmd)
+			}
+			if i == 1 {
+				fmt.Println("execute:", cmd)
 			}
 			cmd.Stdin = bytes.NewReader(body)
 
@@ -157,7 +160,9 @@ func main() {
 				}
 			} else {
 				atomic.AddInt64(&failCount, 1)
-				fmt.Fprintf(os.Stderr, "[%d] FAIL did=%s code=%d time=%.2fms\n", idx, newDid, exitCode, ms)
+				if !quiet {
+					fmt.Fprintf(os.Stderr, "[%d] FAIL did=%s code=%d time=%.2fms\n", idx, newDid, exitCode, ms)
+				}
 			}
 
 			resultsMu.Lock()

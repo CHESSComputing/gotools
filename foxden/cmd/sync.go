@@ -29,9 +29,8 @@ func syncUsage() {
 // this function makes the following assumptions
 // the source URI presents records from /records end-point and support ndjson data-format
 // the spec is a query in JSON format to fetch records
-func syncRecords(src, dst, spec string, poolSize, batchSize int) {
-	log.Println("not implemented yet")
-
+func syncRecords(src, dst, spec string, poolSize, batchSize int, elapsedTime bool) {
+	defer TrackTime("Sync records", elapsedTime)()
 	// fetch data from src uri
 	data, err := json.Marshal(spec)
 	rurl := fmt.Sprintf("%s/records", src)
@@ -121,13 +120,14 @@ func syncCommand() *cobra.Command {
 			spec, _ := cmd.Flags().GetString("spec")
 			src, _ := cmd.Flags().GetString("src")
 			dst, _ := cmd.Flags().GetString("dst")
-			poolSize, _ := cmd.Flags().GetInt("poolSize")
-			batchSize, _ := cmd.Flags().GetInt("batchSize")
+			poolSize, _ := cmd.Flags().GetInt("pool-size")
+			batchSize, _ := cmd.Flags().GetInt("batch-size")
+			elapsedTime, _ := cmd.Flags().GetBool("elapsed-time")
 			writeToken()
 			if len(args) == 0 {
 				syncUsage()
 			} else if args[1] == "meta" || args[1] == "prov" {
-				syncRecords(src, dst, spec, poolSize, batchSize)
+				syncRecords(src, dst, spec, poolSize, batchSize, elapsedTime)
 			} else {
 				syncUsage()
 			}
@@ -136,8 +136,9 @@ func syncCommand() *cobra.Command {
 	cmd.PersistentFlags().String("spec", "", "query spec (JSON)")
 	cmd.PersistentFlags().String("src", "", "specify src uri")
 	cmd.PersistentFlags().String("dst", "", "specify dst uri")
-	cmd.PersistentFlags().Int("poolSize", 5, "pool size, default: 5")
-	cmd.PersistentFlags().Int("batchSize", 10, "batch size, default: 10")
+	cmd.PersistentFlags().Int("pool-size", 5, "pool size, default: 5")
+	cmd.PersistentFlags().Int("batch-size", 10, "batch size, default: 10")
+	cmd.PersistentFlags().Bool("elapsed-time", false, "print out elapsed time")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		syncUsage()
 		return nil

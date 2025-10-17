@@ -178,7 +178,8 @@ func metaUsage() {
 }
 
 // helper function to add meta data record
-func metaAddRecord(user, schemaName, fname string, attrs, sep, div string, jsonOutput bool, update bool) {
+func metaAddRecord(user, schemaName string, data []byte, attrs, sep, div string, jsonOutput bool, update bool, elapsedTime bool) {
+	defer TrackTime("AddMetadata", elapsedTime)()
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -190,17 +191,9 @@ func metaAddRecord(user, schemaName, fname string, attrs, sep, div string, jsonO
 		}
 	}
 
-	// check if given fname is a file
-	_, err := os.Stat(fname)
-	exit(fmt.Sprintf("unable to check file stat, file %s", fname), err)
-	file, err := os.Open(fname)
-	exit(fmt.Sprintf("unable to open file %s", fname), err)
-	defer file.Close()
-	data, err := io.ReadAll(file)
-	exit(fmt.Sprintf("unable to read file %s", fname), err)
 	var record map[string]any
-	err = json.Unmarshal(data, &record)
-	exit(fmt.Sprintf("unable to unmarshal data, file %s", fname), err)
+	err := json.Unmarshal(data, &record)
+	exit("unable to unmarshal data", err)
 
 	// add proper did
 	did, ok := record["did"]
@@ -263,7 +256,8 @@ func metaAddRecord(user, schemaName, fname string, attrs, sep, div string, jsonO
 }
 
 // helper function to delete meta-data record
-func metaDeleteRecord(user, did string, jsonOutput bool) {
+func metaDeleteRecord(user, did string, jsonOutput bool, elapsedTime bool) {
+	defer TrackTime("Delete Metadata", elapsedTime)()
 	if did == "" {
 		metaUsage()
 		os.Exit(1)
@@ -299,7 +293,8 @@ func metaDeleteRecord(user, did string, jsonOutput bool) {
 }
 
 // helper funtion to list meta-data records
-func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, jsonOutput bool) {
+func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, jsonOutput, elapsedTime bool) {
+	defer TrackTime("list record", elapsedTime)()
 	records, nrecords, err := getMeta(user, spec, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
@@ -336,7 +331,8 @@ func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, j
 }
 
 // helper function to print meta data records in Json format
-func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, jsonOutput bool) {
+func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, jsonOutput, elapsedTime bool) {
+	defer TrackTime("json record", elapsedTime)()
 	query := "did:" + did
 	if verbose > 0 {
 		log.Println("### query", query)
@@ -385,6 +381,7 @@ func metaCommand() *cobra.Command {
 			sortKeys, _ := cmd.Flags().GetString("sort-keys")
 			sortOrder, _ := cmd.Flags().GetInt("sort-order")
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			elapsedTime, _ := cmd.Flags().GetBool("elapsed-time")
 			idx, _ := cmd.Flags().GetInt("idx")
 			limit, _ := cmd.Flags().GetInt("limit")
 			if jsonOutput {
@@ -405,16 +402,16 @@ func metaCommand() *cobra.Command {
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaListRecord(user, args[1], skeys, sortOrder, idx, limit, jsonOutput)
+					metaListRecord(user, args[1], skeys, sortOrder, idx, limit, jsonOutput, elapsedTime)
 				} else {
-					metaListRecord(user, "", skeys, sortOrder, idx, limit, jsonOutput)
+					metaListRecord(user, "", skeys, sortOrder, idx, limit, jsonOutput, elapsedTime)
 				}
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
-					metaJsonRecord(user, args[1], skeys, sortOrder, idx, limit, jsonOutput)
+					metaJsonRecord(user, args[1], skeys, sortOrder, idx, limit, jsonOutput, elapsedTime)
 				} else {
-					metaJsonRecord(user, "", skeys, sortOrder, idx, limit, jsonOutput)
+					metaJsonRecord(user, "", skeys, sortOrder, idx, limit, jsonOutput, elapsedTime)
 				}
 			} else if args[0] == "add" {
 				token, _ := writeToken()
@@ -426,7 +423,9 @@ func metaCommand() *cobra.Command {
 					exit("please provide <file.json>", errors.New("no input file"))
 				}
 				user := getUserFromToken(token)
-				metaAddRecord(user, schema, fname, attrs, sep, div, jsonOutput, false)
+				data, err := readJsonData(fname)
+				exit("unable to read data from input file", err)
+				metaAddRecord(user, schema, data, attrs, sep, div, jsonOutput, false, elapsedTime)
 			} else if args[0] == "amend" {
 				token, _ := writeToken()
 				var fname string
@@ -437,7 +436,9 @@ func metaCommand() *cobra.Command {
 					exit("please provide <file.json>", errors.New("no input file"))
 				}
 				user := getUserFromToken(token)
-				metaAddRecord(user, schema, fname, attrs, sep, div, jsonOutput, true)
+				data, err := readJsonData(fname)
+				exit("unable to read data from input file", err)
+				metaAddRecord(user, schema, data, attrs, sep, div, jsonOutput, true, elapsedTime)
 			} else if args[0] == "info" {
 				recordInfo("metadata.json")
 			} else if args[0] == "generate" {
@@ -454,7 +455,7 @@ func metaCommand() *cobra.Command {
 					exit("please provide did", errors.New("no did"))
 				}
 				did := args[1]
-				metaDeleteRecord(user, did, jsonOutput)
+				metaDeleteRecord(user, did, jsonOutput, elapsedTime)
 			} else {
 				fmt.Printf("WARNING: unsupported option(s) %+v", args)
 			}
@@ -465,6 +466,7 @@ func metaCommand() *cobra.Command {
 	cmd.PersistentFlags().String("did-sep", sep, "did separator")
 	cmd.PersistentFlags().String("did-div", div, "did key-value divider")
 	cmd.PersistentFlags().Bool("json", false, "json output")
+	cmd.PersistentFlags().Bool("elapsed-time", false, "print out elapsed time")
 	cmd.PersistentFlags().String("sort-keys", "date", "sort key(s), if multiple keys separate them by comma (default: date)")
 	cmd.PersistentFlags().Int("sort-order", -1, "sort order: 1 ascending, -1 desecnding (default)")
 	cmd.PersistentFlags().Int("idx", 0, "start index, default 0")

@@ -13,7 +13,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -139,16 +138,7 @@ type ResponseRecord struct {
 func readInput(args []string) ([]byte, error) {
 	// check if given args contains a file
 	lastArg := args[len(args)-1]
-	_, err := os.Stat(lastArg)
-	exit("", err)
-	file, err := os.Open(lastArg)
-	exit("", err)
-	defer file.Close()
-	data, err := io.ReadAll(file)
-	if err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
-	}
+	data, err := readJsonData(lastArg)
 	return data, err
 }
 
@@ -225,7 +215,8 @@ func provAddFile(args []string) {
 }
 
 // helper function to add dataset information
-func provAddDataset(args []string) {
+func provAddDataset(args []string, elapsedTime bool) {
+	defer TrackTime("AddProvenance", elapsedTime)()
 	data, err := readInput(args)
 	var rec dbs.DatasetRecord
 	err = json.Unmarshal(data, &rec)
@@ -292,6 +283,7 @@ func provCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			elapsedTime, _ := cmd.Flags().GetBool("elapsed-time")
 			file, _ := cmd.Flags().GetString("file")
 			did, _ := cmd.Flags().GetString("did")
 			script, _ := cmd.Flags().GetString("script")
@@ -343,7 +335,7 @@ func provCommand() *cobra.Command {
 			} else if args[0] == "add" {
 				accessToken()
 				writeToken()
-				provAddDataset(args)
+				provAddDataset(args, elapsedTime)
 				//             } else if args[0] == "add-file" {
 				//                 accessToken()
 				//                 writeToken()
@@ -371,6 +363,7 @@ func provCommand() *cobra.Command {
 	cmd.PersistentFlags().String("outputDir", "", "output directory to use")
 	cmd.PersistentFlags().String("outputFilePattern", "", "file pattern to look in output directory")
 	cmd.PersistentFlags().Bool("json", false, "json output")
+	cmd.PersistentFlags().Bool("elapsed-time", false, "print out elapsed time")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		provUsage()
 		return nil

@@ -377,3 +377,40 @@ func recordInfo(fname string) {
 	// Print the content
 	fmt.Println(string(data))
 }
+
+// TrackTime provides elapsed time of function execution, e.g.
+// add the following into any function you want to trace
+// defer TrackTime("MyFunction", verbose)()
+func TrackTime(name string, verboseTime bool) func() {
+	start := time.Now()
+	return func() {
+		if verboseTime {
+			fmt.Printf("%s took %v\n", name, time.Since(start))
+		}
+	}
+}
+
+// readJsonData reads input from a file or stdin if fname == "-"
+func readJsonData(fname string) ([]byte, error) {
+	var r io.Reader
+	if fname == "-" {
+		r = os.Stdin
+	} else {
+		_, err := os.Stat(fname)
+		if err != nil {
+			return nil, fmt.Errorf("cannot stat %q: %w", fname, err)
+		}
+		f, err := os.Open(fname)
+		if err != nil {
+			return nil, fmt.Errorf("cannot open %q: %w", fname, err)
+		}
+		defer f.Close()
+		r = f
+	}
+
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("error reading input: %w", err)
+	}
+	return data, nil
+}
