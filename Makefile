@@ -1,6 +1,8 @@
 flags=-ldflags="-s -w"
 TAG := $(shell git tag | sed -e "s,v,," | sort -r | head -n 1)
 
+TOOLS := enc foxden validator migrate transform hostinfo gentoken foxden-benchmark migrate migratescans genprovenance
+
 all: build
 
 golib:
@@ -9,107 +11,84 @@ golib:
 gorelease:
 	goreleaser release --snapshot --clean
 
+# --------------------------------------------------------------------
+# Helper: build all tools for given OS and ARCH
+# --------------------------------------------------------------------
+define build_tools
+	@for tool in $(TOOLS); do \
+		echo "==> Building $$tool for $(1)/$(2)"; \
+		( cd $$tool && CGO_ENABLED=0 GOOS=$(1) GOARCH=$(2) make ); \
+	done
+endef
+
+# --------------------------------------------------------------------
+# Helper: package built binaries into archive
+# Only moves built binaries (not directories)
+# --------------------------------------------------------------------
+define package_tools
+    mkdir -p tools
+    EXT=
+    if [ "$(1)" = "windows" ]; then EXT=".exe"; fi; \
+    for tool in $(TOOLS); do \
+        BIN="$$tool/$$tool$$EXT"; \
+        if [ -f $$BIN ]; then \
+            cp $$BIN tools/; \
+        else \
+            echo "Warning: missing $$BIN"; \
+        fi; \
+    done; \
+    if [ "$(1)" = "windows" ]; then \
+        zip -r tools_$(1)_$(2).zip tools; \
+    else \
+        tar cfz tools_$(1)_$(2).tar.gz tools; \
+    fi; \
+    rm -rf tools
+endef
+
+# --------------------------------------------------------------------
+# Native build
+# --------------------------------------------------------------------
 build:
-	cd enc; CGO_ENABLED=0 go build; cd -
-	cd foxden; CGO_ENABLED=0 make; cd -
-	cd validator; CGO_ENABLED=0 go build; cd -
-	cd migrate; CGO_ENABLED=0 go build; cd -
-	cd transform; CGO_ENABLED=0 go build; cd -
-	cd hostinfo; CGO_ENABLED=0 go build; cd -
-	cd gentoken; CGO_ENABLED=0 go build; cd -
+	@for tool in $(TOOLS); do \
+		echo "==> Building $$tool"; \
+		( cd $$tool && CGO_ENABLED=0 make ); \
+	done
 
-build_all: build_darwin_amd64 build_darwin_arm64 build_linux_amd64 build_linux_arm64 build_linux_power8 build_windows_amd64 build_windows_arm64 changes
-
+# --------------------------------------------------------------------
+# Cross builds
+# --------------------------------------------------------------------
 build_darwin_amd64:
-	cd enc; CGO_ENABLED=0 GOOS=darwin go build; cd -
-	cd foxden; CGO_ENABLED=0 GOOS=darwin make; cd -
-	cd validator; CGO_ENABLED=0 GOOS=darwin go build; cd -
-	cd migrate; CGO_ENABLED=0 GOOS=darwin go build; cd -
-	cd transform; CGO_ENABLED=0 GOOS=darwin go build; cd -
-	cd hostinfo; CGO_ENABLED=0 GOOS=darwin go build; cd -
-	cd gentoken; CGO_ENABLED=0 GOOS=darwin go build; cd -
-	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo/hostinfo gentoken/gentoken tools
-	tar cfz tools_darwin_amd64.tar.gz tools
-	rm -rf tools
+	$(call build_tools,darwin,amd64)
+	$(call package_tools,darwin,amd64)
 
 build_darwin_arm64:
-	cd enc; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd foxden; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin make; cd -
-	cd validator; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd migrate; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd transform; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd hostinfo; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd gentoken; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo/hostinfo gentoken/gentoken tools
-	tar cfz tools_darwin_arm64.tar.gz tools
-	rm -rf tools
+	$(call build_tools,darwin,arm64)
+	$(call package_tools,darwin,arm64)
 
 build_linux_amd64:
-	cd enc; CGO_ENABLED=0 GOOS=linux go build; cd -
-	cd foxden; CGO_ENABLED=0 GOOS=linux make; cd -
-	cd validator; CGO_ENABLED=0 GOOS=linux go build; cd -
-	cd migrate; CGO_ENABLED=0 GOOS=linux go build; cd -
-	cd transform; CGO_ENABLED=0 GOOS=linux go build; cd -
-	cd hostinfo; CGO_ENABLED=0 GOOS=linux go build; cd -
-	cd gentoken; CGO_ENABLED=0 GOOS=linux go build; cd -
-	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo/hostinfo gentoken/gentoken tools
-	tar cfz tools_linux_amd64.tar.gz tools
-	rm -rf tools
-
-build_linux_power8:
-	cd enc; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
-	cd foxden; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux make; cd -
-	cd validator; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
-	cd migrate; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
-	cd transform; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
-	cd hostinfo; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
-	cd gentoken; CGO_ENABLED=0 GOARCH=ppc64le GOOS=linux go build; cd -
-	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo/hostinfo gentoken/gentoken tools
-	tar cfz tools_linux_power8.tar.gz tools
-	rm -rf tools
+	$(call build_tools,linux,amd64)
+	$(call package_tools,linux,amd64)
 
 build_linux_arm64:
-	cd enc; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd foxden; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin make; cd -
-	cd validator; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd migrate; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd transform; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd hostinfo; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	cd gentoken; CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build; cd -
-	mkdir tools
-	mv enc/enc foxden/foxden validator/validator migrate/migrate transform/transform hostinfo/hostinfo gentoken/gentoken tools
-	tar cfz tools_linux_arm64.tar.gz tools
-	rm -rf tools
+	$(call build_tools,linux,arm64)
+	$(call package_tools,linux,arm64)
+
+build_linux_power8:
+	$(call build_tools,linux,ppc64le)
+	$(call package_tools,linux,power8)
 
 build_windows_amd64:
-	cd enc; CGO_ENABLED=0 GOOS=windows go build; cd -
-	cd foxden; CGO_ENABLED=0 GOOS=windows make; cd -
-	cd validator; CGO_ENABLED=0 GOOS=windows go build; cd -
-	cd migrate; CGO_ENABLED=0 GOOS=windows go build; cd -
-	cd transform; CGO_ENABLED=0 GOOS=windows go build; cd -
-	cd hostinfo; CGO_ENABLED=0 GOOS=windows go build; cd -
-	cd gentoken; CGO_ENABLED=0 GOOS=windows go build; cd -
-	mkdir tools
-	mv enc/enc.exe foxden/foxden.exe validator/validator.exe migrate/migrate.exe transform/transform.exe hostinfo/hostinfo.exe gentoken/gentoken.exe tools
-	zip -r tools_windows_amd64.zip tools
-	rm -rf tools
+	$(call build_tools,windows,amd64)
+	$(call package_tools,windows,amd64)
 
 build_windows_arm64:
-	cd enc; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
-	cd foxden; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows make; cd -
-	cd validator; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
-	cd migrate; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
-	cd transform; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
-	cd hostinfo; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
-	cd gentoken; CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build; cd -
-	mkdir tools
-	mv enc/enc.exe foxden/foxden.exe validator/validator.exe migrate/migrate.exe transform/transform.exe hostinfo/hostinfo.exe gentoken/gentoken.exe tools
-	zip -r tools_windows_arm64.zip tools
-	rm -rf tools
+	$(call build_tools,windows,arm64)
+	$(call package_tools,windows,arm64)
+
+# --------------------------------------------------------------------
+# Aggregate targets
+# --------------------------------------------------------------------
+build_all: build_darwin_amd64 build_darwin_arm64 build_linux_amd64 build_linux_arm64 build_linux_power8 build_windows_amd64 build_windows_arm64 changes
 
 changes:
 	./changes.sh
@@ -117,5 +96,5 @@ changes:
 
 test:
 	echo "No tests so far"
-# here is an example for execution of individual test
-# go test -v -run TestFilesDB
+# Example: go test -v -run TestFilesDB
+
