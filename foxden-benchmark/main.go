@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"runtime"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -22,6 +23,12 @@ type result struct {
 	ExitCode  int
 	Did       string
 	Index     int
+}
+
+func printVersion() {
+	goVersion := runtime.Version()
+	tstamp := time.Now()
+	fmt.Printf("git={{VERSION}} commit={{COMMIT}} go=%s date=%s\n", goVersion, tstamp)
 }
 
 func main() {
@@ -43,7 +50,13 @@ func main() {
 	flag.StringVar(&foxdenCmd, "foxdenCmd", "add", "foxden command for service (add, ls, view, delete, etc.)")
 	flag.BoolVar(&quiet, "quiet", false, "suppress per-invocation prints")
 	flag.IntVar(&timeoutSec, "timeout", 60, "per-invocation timeout seconds (0 = no timeout)")
+	var version bool
+	flag.BoolVar(&version, "version", false, "Show version")
 	flag.Parse()
+	if version {
+		printVersion()
+		return
+	}
 
 	if filePath == "" {
 		fmt.Fprintf(os.Stderr, "Usage: %s -file meta.json [-n total] [-c concurrency] [-foxden ./foxden]\n", os.Args[0])
