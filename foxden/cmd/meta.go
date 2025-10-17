@@ -151,7 +151,7 @@ func metaUsage() {
 	attrs, sep, div := didMetaData()
 	fmt.Println("foxden meta <ls|rm|view> [options]")
 	fmt.Println("foxden meta <add|amend> <file.json> {options}")
-	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json")
+	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json --elapsed-time")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list meta data records:")
 	fmt.Println("foxden meta ls")
@@ -179,7 +179,7 @@ func metaUsage() {
 
 // helper function to add meta data record
 func metaAddRecord(user, schemaName string, data []byte, attrs, sep, div string, jsonOutput bool, update bool, elapsedTime bool) {
-	defer TrackTime("AddMetadata", elapsedTime)()
+	defer TrackTime(elapsedTime)()
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -257,7 +257,7 @@ func metaAddRecord(user, schemaName string, data []byte, attrs, sep, div string,
 
 // helper function to delete meta-data record
 func metaDeleteRecord(user, did string, jsonOutput bool, elapsedTime bool) {
-	defer TrackTime("Delete Metadata", elapsedTime)()
+	defer TrackTime(elapsedTime)()
 	if did == "" {
 		metaUsage()
 		os.Exit(1)
@@ -294,7 +294,7 @@ func metaDeleteRecord(user, did string, jsonOutput bool, elapsedTime bool) {
 
 // helper funtion to list meta-data records
 func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, jsonOutput, elapsedTime bool) {
-	defer TrackTime("list record", elapsedTime)()
+	defer TrackTime(elapsedTime)()
 	records, nrecords, err := getMeta(user, spec, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
@@ -332,7 +332,7 @@ func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, j
 
 // helper function to print meta data records in Json format
 func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, jsonOutput, elapsedTime bool) {
-	defer TrackTime("json record", elapsedTime)()
+	defer TrackTime(elapsedTime)()
 	query := "did:" + did
 	if verbose > 0 {
 		log.Println("### query", query)

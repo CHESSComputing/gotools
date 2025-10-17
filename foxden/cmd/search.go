@@ -55,6 +55,7 @@ func metaRecords(user, query string, skeys []string, sorder int) ([]map[string]a
 func searchUsage() {
 	fmt.Println("foxden search <spec>")
 	fmt.Println("       search keys are case-incensitive")
+	fmt.Println("options: --sort-key --sort-order --json --elapsed-time")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list all known search keys:")
 	fmt.Println("foxden search keys")
@@ -109,7 +110,8 @@ func getSearchKeys() []string {
 }
 
 // helper function to list search-data records
-func searchListRecord(user, spec string, skeys []string, sorder int, jsonOutput bool) {
+func searchListRecord(user, spec string, skeys []string, sorder int, jsonOutput, elapsedTime bool) {
+	defer TrackTime(elapsedTime)()
 	if spec == "keys" {
 		skeys := getSearchKeys()
 		fmt.Println("FOXDEN search keys:")
@@ -189,6 +191,7 @@ func searchCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			elapsedTime, _ := cmd.Flags().GetBool("elapsed-time")
 			sortKeys, _ := cmd.Flags().GetString("sort-keys")
 			sortOrder, _ := cmd.Flags().GetInt("sort-order")
 			if jsonOutput {
@@ -208,11 +211,12 @@ func searchCommand() *cobra.Command {
 			if len(args) == 0 {
 				searchUsage()
 			} else {
-				searchListRecord(user, args[0], skeys, sortOrder, jsonOutput)
+				searchListRecord(user, args[0], skeys, sortOrder, jsonOutput, elapsedTime)
 			}
 		},
 	}
 	cmd.PersistentFlags().Bool("json", false, "json output")
+	cmd.PersistentFlags().Bool("elapsed-time", false, "print out elapsed time")
 	cmd.PersistentFlags().String("sort-keys", "date", "sort key(s), if multiple keys separate them by comma (default: date)")
 	cmd.PersistentFlags().Int("sort-order", -1, "sort order: 1 ascending, -1 desecnding (default)")
 	cmd.SetUsageFunc(func(*cobra.Command) error {

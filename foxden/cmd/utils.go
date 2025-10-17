@@ -381,11 +381,11 @@ func recordInfo(fname string) {
 // TrackTime provides elapsed time of function execution, e.g.
 // add the following into any function you want to trace
 // defer TrackTime("MyFunction", verbose)()
-func TrackTime(name string, verboseTime bool) func() {
+func TrackTime(verboseTime bool) func() {
 	start := time.Now()
 	return func() {
 		if verboseTime {
-			fmt.Printf("%s took %v\n", name, time.Since(start))
+			fmt.Printf("Elapsed time: %v\n", time.Since(start))
 		}
 	}
 }

@@ -19,7 +19,7 @@ import (
 // helper function to provide usage of sync option
 func syncUsage() {
 	fmt.Println("foxden sync <service: meta or provenance> [options]")
-	fmt.Println("options: --src=<src> --dst=<dst> --spec=<spec> --poolSize=<poolSize> --batchSize=<batchSize>")
+	fmt.Println("options: --src=<src> --dst=<dst> --spec=<spec> --pool-size=<poolSize> --batch-size=<batchSize> --elapsed-time")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# sync meta-data records:")
 	fmt.Println("foxden sync meta --src=http://localhost:8300 --dst=https://foxden.... --spec={}")
@@ -30,7 +30,7 @@ func syncUsage() {
 // the source URI presents records from /records end-point and support ndjson data-format
 // the spec is a query in JSON format to fetch records
 func syncRecords(src, dst, spec string, poolSize, batchSize int, elapsedTime bool) {
-	defer TrackTime("Sync records", elapsedTime)()
+	defer TrackTime(elapsedTime)()
 	// fetch data from src uri
 	data, err := json.Marshal(spec)
 	rurl := fmt.Sprintf("%s/records", src)

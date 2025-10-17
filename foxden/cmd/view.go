@@ -17,7 +17,7 @@ import (
 // helper function to provide usage of view option
 func viewUsage() {
 	fmt.Println("foxden view <DID> [options]")
-	fmt.Println("options: --parents --children --json")
+	fmt.Println("options: --parents --children --json --elapsed-time")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# view details of specific did record:")
 	fmt.Println("foxden view /beamline=test/btr=test-123-a/cycle=2023-3/sample_name=sample")
@@ -25,7 +25,8 @@ func viewUsage() {
 	fmt.Println("foxden view /beamline=test/btr=test-123-a/cycle=2023-3/sample_name=sample --parents --children")
 }
 
-func viewRecord(user, did string, parents, children, jsonOutput bool) {
+func viewRecord(user, did string, parents, children, jsonOutput, elapsedTime bool) {
+	defer TrackTime(elapsedTime)()
 	records, provRecords := getRecords(user, did, parents, children)
 	metadata, err1 := json.MarshalIndent(records, "", "  ")
 	provdata, err2 := json.MarshalIndent(provRecords, "", "  ")
@@ -212,6 +213,7 @@ func viewCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			elapsedTime, _ := cmd.Flags().GetBool("elapsed-time")
 			parents, _ := cmd.Flags().GetBool("parents")
 			children, _ := cmd.Flags().GetBool("children")
 			if len(args) == 0 {
@@ -219,13 +221,14 @@ func viewCommand() *cobra.Command {
 			} else {
 				user, _ := getUserToken()
 				did := args[0]
-				viewRecord(user, did, parents, children, jsonOutput)
+				viewRecord(user, did, parents, children, jsonOutput, elapsedTime)
 			}
 		},
 	}
 	cmd.PersistentFlags().Bool("parents", false, "recurse look-up of all parents")
 	cmd.PersistentFlags().Bool("children", false, "recurse look-up of all children")
 	cmd.PersistentFlags().Bool("json", false, "json output")
+	cmd.PersistentFlags().Bool("elapsed-time", false, "print out elapsed time")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		viewUsage()
 		return nil

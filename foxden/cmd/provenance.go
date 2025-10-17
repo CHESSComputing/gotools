@@ -216,7 +216,7 @@ func provAddFile(args []string) {
 
 // helper function to add dataset information
 func provAddDataset(args []string, elapsedTime bool) {
-	defer TrackTime("AddProvenance", elapsedTime)()
+	defer TrackTime(elapsedTime)()
 	data, err := readInput(args)
 	var rec dbs.DatasetRecord
 	err = json.Unmarshal(data, &rec)
@@ -240,7 +240,7 @@ func provUsage() {
 	fmt.Println("         --site=<site name>, --bucket=<bucket name>")
 	fmt.Println("         --environment=<environment name>, --package=<package name>")
 	fmt.Println("         --processing=<processing name>, --osname=<os name>")
-	fmt.Println("         --json")
+	fmt.Println("         --json --elapsed-time")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# find provenance information for given DID using")
 	fmt.Println("foxden prov ls provenance --did=<DID>")
