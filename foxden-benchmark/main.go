@@ -39,6 +39,7 @@ func main() {
 		foxdenTool  string
 		foxdenSrv   string
 		foxdenCmd   string
+		foxdenCfg   string
 		quiet       bool
 		timeoutSec  int
 	)
@@ -48,6 +49,7 @@ func main() {
 	flag.StringVar(&foxdenTool, "foxden", "", "path to foxden binary")
 	flag.StringVar(&foxdenSrv, "foxden-srv", "meta", "foxden service (meta, prov, sync, etc.)")
 	flag.StringVar(&foxdenCmd, "foxden-cmd", "add", "foxden command for service (add, ls, view, delete, etc.)")
+	flag.StringVar(&foxdenCfg, "foxden-cfg", "", "foxden configuration file to use")
 	flag.BoolVar(&quiet, "quiet", false, "suppress per-invocation prints")
 	flag.IntVar(&timeoutSec, "timeout", 60, "per-invocation timeout seconds (0 = no timeout)")
 	var version bool
@@ -128,10 +130,15 @@ func main() {
 				ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeoutSec)*time.Second)
 				defer cancel()
 			}
-			cmd := exec.CommandContext(ctx, foxdenTool, foxdenSrv, foxdenCmd, "-")
-			if foxdenCmd != "add" && foxdenCmd != "amend" {
-				cmd = exec.CommandContext(ctx, foxdenTool, foxdenSrv, foxdenCmd)
+			opts := []string{foxdenSrv, foxdenCmd}
+			if foxdenCfg != "" {
+				opts = append(opts, "--config")
+				opts = append(opts, foxdenCfg)
 			}
+			if foxdenCmd == "add" || foxdenCmd == "amend" {
+				opts = append(opts, "-")
+			}
+			cmd := exec.CommandContext(ctx, foxdenTool, opts...)
 			if i == 1 {
 				fmt.Println("execute:", cmd)
 			}
