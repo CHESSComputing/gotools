@@ -40,12 +40,14 @@ func main() {
 		foxdenSrv   string
 		foxdenCmd   string
 		foxdenCfg   string
+		dryRun      bool
 		quiet       bool
 		timeoutSec  int
 	)
 	flag.StringVar(&filePath, "file", "", "base JSON file to use (required)")
 	flag.IntVar(&total, "n", 100, "total number of injections")
 	flag.IntVar(&concurrency, "c", 10, "concurrency level")
+	flag.BoolVar(&dryRun, "dry-run", false, "run in dry-run mode")
 	flag.StringVar(&foxdenTool, "foxden", "", "path to foxden binary")
 	flag.StringVar(&foxdenSrv, "foxden-srv", "meta", "foxden service (meta, prov, sync, etc.)")
 	flag.StringVar(&foxdenCmd, "foxden-cmd", "add", "foxden command for service (add, ls, view, delete, etc.)")
@@ -143,6 +145,13 @@ func main() {
 				fmt.Println("execute:", cmd)
 			}
 			cmd.Stdin = bytes.NewReader(body)
+
+			if dryRun {
+				resultsMu.Lock()
+				results = append(results, result{ElapsedMs: 0, ExitCode: 0, Did: newDid, Index: idx})
+				resultsMu.Unlock()
+				return
+			}
 
 			start := time.Now()
 			err := cmd.Run()
