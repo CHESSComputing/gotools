@@ -114,19 +114,15 @@ func globusCommand() *cobra.Command {
 				globus.Verbose = verbose
 			}
 			scopes := []string{"urn:globus:auth:scope:transfer.api.globus.org:all"}
-			token, err := globus.Token(scopes)
-			if err != nil {
-				log.Println("ERROR", err)
-			}
 			if len(args) == 0 {
 				globusUsage()
 			} else if args[0] == "ls" {
+				token, err := globus.Token(scopes)
+				if err != nil {
+					log.Fatalf("ERROR: unable to get globus token with scopes=%v, error=%v", scopes, err)
+				}
 				if len(args) == 2 {
 					eid := strings.Split(args[1], ":")[0]
-					token, err = globus.Token(scopes)
-					if err != nil {
-						log.Println("ERROR", err)
-					}
 					globusListRecord(token, eid, jsonOutput)
 				} else {
 					globusListRecord(token, "", jsonOutput)
@@ -135,6 +131,10 @@ func globusCommand() *cobra.Command {
 				pat := ""
 				if len(args) == 2 {
 					pat = args[1]
+				}
+				token, err := globus.Token(scopes)
+				if err != nil {
+					log.Fatalf("ERROR: unable to get globus token with scopes=%v, error=%v", scopes, err)
 				}
 				globusSearch(token, pat, jsonOutput)
 			} else if args[0] == "link" {
