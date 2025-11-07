@@ -94,7 +94,7 @@ func globusSearch(token, pat string, jsonOutput bool) {
 func globusLink(pat, path string) {
 	gurl, err := globus.ChessGlobusLink(pat, path)
 	exit("ChessGlobusLink", err)
-	fmt.Println("Globus link:", gurl)
+	fmt.Println(gurl)
 }
 
 func globusCommand() *cobra.Command {
