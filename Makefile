@@ -1,7 +1,7 @@
 flags=-ldflags="-s -w"
 TAG := $(shell git tag | sed -e "s,v,," | sort -r | head -n 1)
 
-TOOLS := enc foxden validator migrate transform hostinfo gentoken foxden-benchmark migrate migratescans genprovenance
+TOOLS := enc foxden validator migrate transform hostinfo gentoken foxden-benchmark migrate migratescans genprovenance schema-converter
 
 all: build
 
