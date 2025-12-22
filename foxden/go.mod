@@ -1,15 +1,15 @@
 module github.com/CHESSComputing/gotools/foxden
 
-go 1.25.3
+go 1.25.5
 
 require (
 	github.com/CHESSComputing/DataBookkeeping v0.2.9
-	github.com/CHESSComputing/golib v0.9.6
+	github.com/CHESSComputing/golib v0.9.7
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/materials-commons/gomcapi v0.0.7
 	github.com/materials-commons/hydra v1.0.1
-	github.com/spf13/cobra v1.10.1
-	golang.org/x/crypto v0.43.0
+	github.com/spf13/cobra v1.10.2
+	golang.org/x/crypto v0.46.0
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0
 )
 
@@ -75,14 +75,14 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.20.0 // indirect
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // indirect
-	golang.org/x/mod v0.28.0 // indirect
-	golang.org/x/net v0.45.0 // indirect
+	golang.org/x/mod v0.30.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.37.0 // indirect
-	golang.org/x/term v0.36.0 // indirect
-	golang.org/x/text v0.30.0 // indirect
-	golang.org/x/tools v0.37.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/term v0.38.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/tools v0.39.0 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect

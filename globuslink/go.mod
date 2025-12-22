@@ -1,8 +1,8 @@
 module github.com/CHESSComputing/gotools/globuslink
 
-go 1.25.3
+go 1.25.5
 
-require github.com/CHESSComputing/golib v0.9.6
+require github.com/CHESSComputing/golib v0.9.7
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
@@ -20,3 +20,5 @@ require (
 	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/CHESSComputing/golib => ../../golib
