@@ -60,7 +60,7 @@ func metadata(site string) MetaDataRecord {
 }
 
 // helper function to get meta-data records
-func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[string]any, int, error) {
+func getMeta(murl, user, query string, skeys []string, sorder, idx, limit int) ([]map[string]any, int, error) {
 	// check if we got request from trusted client
 	if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
 		// get trusted token and assign it to http write request
@@ -81,7 +81,7 @@ func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[
 	}
 
 	data, err := json.Marshal(rec)
-	rurl := fmt.Sprintf("%s/search", srvConfig.Config.Services.MetaDataURL)
+	rurl := fmt.Sprintf("%s/search", murl)
 	if os.Getenv("FOXDEN_VERBOSE") != "" {
 		fmt.Println("FOXDEN query:", rurl)
 	}
@@ -110,7 +110,7 @@ func getMeta(user, query string, skeys []string, sorder, idx, limit int) ([]map[
 	}
 
 	data, err = json.Marshal(rec)
-	rurl = fmt.Sprintf("%s/count", srvConfig.Config.Services.MetaDataURL)
+	rurl = fmt.Sprintf("%s/count", murl)
 	resp, err = _httpReadRequest.Post(rurl, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		exit("fail /count, unable to fetch data from meta-data service", err)
@@ -295,7 +295,8 @@ func metaDeleteRecord(user, did string, jsonOutput bool, elapsedTime bool) {
 // helper funtion to list meta-data records
 func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, jsonOutput, elapsedTime bool) {
 	defer TrackTime(elapsedTime)()
-	records, nrecords, err := getMeta(user, spec, skeys, sorder, idx, limit)
+	rurl := srvConfig.Config.MetaDataURL
+	records, nrecords, err := getMeta(rurl, user, spec, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -337,7 +338,8 @@ func metaJsonRecord(user, did string, skeys []string, sorder, idx, limit int, js
 	if verbose > 0 {
 		log.Println("### query", query)
 	}
-	records, nrecords, err := getMeta(user, query, skeys, sorder, idx, limit)
+	rurl := srvConfig.Config.MetaDataURL
+	records, nrecords, err := getMeta(rurl, user, query, skeys, sorder, idx, limit)
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)

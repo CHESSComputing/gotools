@@ -72,7 +72,8 @@ func doiPublish(did, provider, description, parents string, draft, metadata, jso
 	// get FOXDEN metadata records for our did and extract schema from it
 	user, _ := getUserToken()
 	query := "did:" + did
-	records, _, err := getMeta(user, query, []string{}, 0, 0, 1)
+	rurl := fmt.Sprintf("%s", srvConfig.Config.Services.MetaDataURL)
+	records, _, err := getMeta(rurl, user, query, []string{}, 0, 0, 1)
 	exit(fmt.Sprintf("unable to meta-data record for did=%s", did), err)
 	if len(records) != 1 {
 		exit(fmt.Sprintf("multiple records found for did=%s", did), errors.New("multiple records"))
@@ -115,7 +116,7 @@ func doiPublish(did, provider, description, parents string, draft, metadata, jso
 	reqBody := bytes.NewBuffer([]byte(form.Encode()))
 
 	// Create POST request
-	rurl := fmt.Sprintf("%s/publish", srvConfig.Config.Services.FrontendURL)
+	rurl = fmt.Sprintf("%s/publish", srvConfig.Config.Services.FrontendURL)
 	hmap := make(map[string][]string)
 	hmap["Accept"] = []string{"application/json"}
 	_httpWriteRequest.Headers = hmap
