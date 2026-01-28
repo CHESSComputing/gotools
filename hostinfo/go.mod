@@ -2,7 +2,7 @@ module github.com/CHESSComputing/gotools/hostinfo
 
 go 1.25.6
 
-require github.com/CHESSComputing/golib v0.9.8
+require github.com/CHESSComputing/golib v0.9.9
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
