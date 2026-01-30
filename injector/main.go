@@ -20,6 +20,7 @@ import (
    Config & Flags
 ========================= */
 
+// Config represents configuration options for injector
 type Config struct {
 	Path         string
 	Pattern      string
@@ -138,6 +139,7 @@ func validateToken(token string) error {
    Injection
 ========================= */
 
+// InjectResult represents structure of injection results
 type InjectResult struct {
 	Status int
 	Body   string
@@ -145,14 +147,17 @@ type InjectResult struct {
 	Error  string
 }
 
+// String function provide string representation of InjectResult
 func (r *InjectResult) String() string {
 	return fmt.Sprintf("status:%d error=%v", r.Status, r.Error)
 }
 
+// FoxdenResponse represents foxden response error struct
 type FoxdenResponse struct {
 	Error string
 }
 
+// MetadataRecord represents foxden metadata record
 type MetadataRecord struct {
 	Schema string
 	Record map[string]any
@@ -226,7 +231,7 @@ func injectJSON(ctx context.Context,
 		file.Write([]byte(res.String()))
 	}
 
-	if deleteFile {
+	if deleteFile && resp.StatusCode == 200 {
 		err := os.Remove(file)
 		res.Error = fmt.Sprintf("%s, delete file error=%v", res.Error, err)
 	}
