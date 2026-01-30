@@ -21,15 +21,17 @@ import (
 ========================= */
 
 type Config struct {
-	Path    string
-	Pattern string
-	Token   string
-	Schema  string
-	Inject  bool
-	URL     string
-	Workers int
-	Output  string
-	Timeout time.Duration
+	Path         string
+	Pattern      string
+	Token        string
+	Schema       string
+	Inject       bool
+	WriteResults bool
+	DeleteFile   bool
+	URL          string
+	Workers      int
+	Output       string
+	Timeout      time.Duration
 }
 
 func parseFlags() *Config {
@@ -38,6 +40,8 @@ func parseFlags() *Config {
 	flag.StringVar(&cfg.Path, "path", "", "root directory to crawl")
 	flag.StringVar(&cfg.Pattern, "file", "", "file glob pattern (e.g. meta*.json)")
 	flag.BoolVar(&cfg.Inject, "inject", false, "enable HTTP injection")
+	flag.BoolVar(&cfg.WriteResults, "write-results", false, "write injection results")
+	flag.BoolVar(&cfg.DeleteFile, "delete-file", false, "delete input JSON file after injection")
 	flag.StringVar(&cfg.Token, "token", "", "FOXDEN write token")
 	flag.StringVar(&cfg.Schema, "schema", "", "FOXDEN schema name")
 	flag.StringVar(&cfg.URL, "url", "", "HTTP POST endpoint")
@@ -141,6 +145,10 @@ type InjectResult struct {
 	Error  string
 }
 
+func (r *InjectResult) String() string {
+	return fmt.Sprintf("status:%d error=%v", r.Status, r.Error)
+}
+
 type FoxdenResponse struct {
 	Error string
 }
@@ -152,7 +160,7 @@ type MetadataRecord struct {
 
 func injectJSON(ctx context.Context,
 	client *http.Client,
-	url, file, schema, token string) (*InjectResult, error) {
+	url, file, schema, token string, writeResults, deleteFile bool) (*InjectResult, error) {
 
 	data, err := os.ReadFile(file)
 	if err != nil {
@@ -201,12 +209,29 @@ func injectJSON(ctx context.Context,
 		errStr = err.Error()
 	}
 
-	return &InjectResult{
+	res := &InjectResult{
 		Status: resp.StatusCode,
 		Body:   string(body),
 		File:   file,
 		Error:  errStr,
-	}, nil
+	}
+
+	if writeResults {
+		fname := fmt.Sprintf("%s.status", file)
+		file, err := os.Create(fname)
+		if err != nil {
+			res.Error = fmt.Sprintf("%s, status file %s write error=%v", res.Error, fname, err)
+		}
+		defer file.Close()
+		file.Write([]byte(res.String()))
+	}
+
+	if deleteFile {
+		err := os.Remove(file)
+		res.Error = fmt.Sprintf("%s, delete file error=%v", res.Error, err)
+	}
+
+	return res, nil
 }
 
 /* =========================
@@ -227,7 +252,7 @@ func worker(jobs <-chan string, results chan<- *InjectResult, wg *sync.WaitGroup
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
-		res, err := injectJSON(ctx, client, cfg.URL, file, cfg.Schema, cfg.Token)
+		res, err := injectJSON(ctx, client, cfg.URL, file, cfg.Schema, cfg.Token, cfg.WriteResults, cfg.DeleteFile)
 		cancel()
 
 		if err != nil {
