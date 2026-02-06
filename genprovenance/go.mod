@@ -2,10 +2,10 @@ module github.com/CHESSComputing/gotools/genprovenance
 
 go 1.25.6
 
-require github.com/CHESSComputing/DataBookkeeping v0.3.1
+require github.com/CHESSComputing/DataBookkeeping v0.3.2
 
 require (
-	github.com/CHESSComputing/golib v1.0.0 // indirect
+	github.com/CHESSComputing/golib v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
