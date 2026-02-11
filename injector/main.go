@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -26,28 +27,29 @@ type Config struct {
 	Pattern      string
 	Token        string
 	Schema       string
-	Inject       bool
+	DryRun       bool
 	WriteResults bool
 	DeleteFile   bool
 	URL          string
 	Workers      int
-	Output       string
+	LogFile      string
 	Timeout      time.Duration
 }
 
+// helper function to parse input flags
 func parseFlags() *Config {
 	cfg := &Config{}
 
 	flag.StringVar(&cfg.Path, "path", "", "root directory to crawl")
-	flag.StringVar(&cfg.Pattern, "file", "", "file glob pattern (e.g. meta*.json)")
-	flag.BoolVar(&cfg.Inject, "inject", false, "enable HTTP injection")
+	flag.StringVar(&cfg.Pattern, "pattern", "*.json", "file glob pattern")
+	flag.BoolVar(&cfg.DryRun, "dry-run", false, "run workflow without injection")
 	flag.BoolVar(&cfg.WriteResults, "write-results", false, "write injection results")
 	flag.BoolVar(&cfg.DeleteFile, "delete-file", false, "delete input JSON file after injection")
 	flag.StringVar(&cfg.Token, "token", "", "FOXDEN write token")
 	flag.StringVar(&cfg.Schema, "schema", "", "FOXDEN schema name")
-	flag.StringVar(&cfg.URL, "url", "", "HTTP POST endpoint")
+	flag.StringVar(&cfg.URL, "url", "", "FOXDEN Metadata URL")
 	flag.IntVar(&cfg.Workers, "workers", 4, "number of concurrent workers")
-	flag.StringVar(&cfg.Output, "output", "", "log file")
+	flag.StringVar(&cfg.LogFile, "log", "", "log file name")
 	flag.DurationVar(&cfg.Timeout, "timeout", 10*time.Second, "HTTP timeout")
 
 	flag.Parse()
@@ -56,7 +58,8 @@ func parseFlags() *Config {
 		flag.Usage()
 		os.Exit(1)
 	}
-	if cfg.Inject && cfg.URL == "" {
+	if cfg.URL == "" {
+		fmt.Println("INFO: please specify FOXDEN Metadata URL")
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -68,6 +71,7 @@ func parseFlags() *Config {
    File Discovery
 ========================= */
 
+// helper function to find files in given root location using specified file pattern
 func findFiles(root, pattern string) ([]string, error) {
 	var files []string
 
@@ -89,6 +93,7 @@ func findFiles(root, pattern string) ([]string, error) {
    Token functions
 ========================= */
 
+// helper function to get token either from env or from file path
 func getToken(token string) (string, error) {
 	// 1. Fallback to env
 	if token == "" {
@@ -119,6 +124,7 @@ func getToken(token string) (string, error) {
 	return token, nil
 }
 
+// helper function to validate token
 func validateToken(token string) error {
 	if token == "" {
 		return fmt.Errorf("token is empty")
@@ -149,7 +155,10 @@ type InjectResult struct {
 
 // String function provide string representation of InjectResult
 func (r *InjectResult) String() string {
-	return fmt.Sprintf("status:%d error=%v", r.Status, r.Error)
+	if r.Error != "" {
+		return fmt.Sprintf("status:%d file:%s error:%v", r.Status, r.File, r.Error)
+	}
+	return fmt.Sprintf("status:%d file:%s", r.Status, r.File)
 }
 
 // FoxdenResponse represents foxden response error struct
@@ -163,6 +172,17 @@ type MetadataRecord struct {
 	Record map[string]any
 }
 
+// helper function to return timestamp of given file name
+func fileModTime(path string) int64 {
+	info, err := os.Stat(path)
+	if err != nil {
+		log.Printf("ERROR: unable to obtain timestamp of file %s, error %v", path, err)
+		return time.Time{}.Unix()
+	}
+	return info.ModTime().Unix()
+}
+
+// helper function to inject JSON metadata record
 func injectJSON(ctx context.Context,
 	client *http.Client,
 	url, file, schema, token string, writeResults, deleteFile bool) (*InjectResult, error) {
@@ -176,6 +196,11 @@ func injectJSON(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
+
+	// update creation timestamp to be file timestamp
+	rec["date"] = fileModTime(file)
+
+	// update metadata record schema
 	if schema == "" {
 		if val, ok := rec["schema"]; ok {
 			schema = fmt.Sprintf("%v", val)
@@ -233,7 +258,13 @@ func injectJSON(ctx context.Context,
 
 	if deleteFile && resp.StatusCode == 200 {
 		err := os.Remove(file)
-		res.Error = fmt.Sprintf("%s, delete file error=%v", res.Error, err)
+		if err != nil {
+			if res.Error == "" {
+				res.Error = fmt.Sprintf("delete file error=%v", err)
+			} else {
+				res.Error = fmt.Sprintf("%s, delete file error=%v", res.Error, err)
+			}
+		}
 	}
 
 	return res, nil
@@ -243,11 +274,12 @@ func injectJSON(ctx context.Context,
    Workers & Crawler
 ========================= */
 
+// helper function to handler worker job
 func worker(jobs <-chan string, results chan<- *InjectResult, wg *sync.WaitGroup, cfg *Config, client *http.Client) {
 	defer wg.Done()
 
 	for file := range jobs {
-		if !cfg.Inject {
+		if cfg.DryRun {
 			results <- &InjectResult{
 				Status: 0,
 				Body:   "dry-run, no injection step is performed",
@@ -273,6 +305,7 @@ func worker(jobs <-chan string, results chan<- *InjectResult, wg *sync.WaitGroup
 	}
 }
 
+// helper function to crawl over set of files and perform injection of record into FOXDEN
 func crawlAndInject(cfg *Config, files []string) error {
 	jobs := make(chan string, cfg.Workers*2)
 	results := make(chan *InjectResult, cfg.Workers)
@@ -301,8 +334,8 @@ func crawlAndInject(cfg *Config, files []string) error {
 
 	var logFile *os.File
 	var err error
-	if cfg.Output != "" {
-		logFile, err = os.OpenFile(cfg.Output, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if cfg.LogFile != "" {
+		logFile, err = os.OpenFile(cfg.LogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
@@ -310,7 +343,7 @@ func crawlAndInject(cfg *Config, files []string) error {
 	}
 
 	for res := range results {
-		line := fmt.Sprintf("%d\t%s\t%s\n", res.Status, res.File, res.Error)
+		line := res.String() + "\n"
 		if logFile != nil {
 			logFile.WriteString(line)
 		} else {
