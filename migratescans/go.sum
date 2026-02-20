@@ -1,7 +1,7 @@
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
-github.com/CHESSComputing/golib v1.0.6 h1:3PuafKtqv3FKmaWeppWD0qtjR2Da+okIfbuRTJL04+k=
-github.com/CHESSComputing/golib v1.0.6/go.mod h1:ac/sFH3wUwfr+7U07yOZKcail0lCQeZElZC0jweUAec=
+github.com/CHESSComputing/golib v1.0.8 h1:9TaVX1BrWeSzogSaY1pJl3eAcR31ReIP1BDbZAOu5FM=
+github.com/CHESSComputing/golib v1.0.8/go.mod h1:ac/sFH3wUwfr+7U07yOZKcail0lCQeZElZC0jweUAec=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
