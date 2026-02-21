@@ -2,7 +2,7 @@ module github.com/CHESSComputing/gotools/globuslink
 
 go 1.25.0
 
-require github.com/CHESSComputing/golib v1.0.9
+require github.com/CHESSComputing/golib v1.1.0
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
