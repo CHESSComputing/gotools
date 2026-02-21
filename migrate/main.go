@@ -16,7 +16,7 @@ import (
 	mongo "github.com/CHESSComputing/golib/mongo"
 	services "github.com/CHESSComputing/golib/services"
 	utils "github.com/CHESSComputing/golib/utils"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func main() {
@@ -202,7 +202,7 @@ func migrate(readUri, readDBName, readCollection, writeUri, writeDBName, writeCo
 			delete(rec, k)
 		}
 		rec["did"] = did
-		opts := options.Update().SetUpsert(true)
+		opts := options.UpdateOne().SetUpsert(true)
 		filter := map[string]any{
 			"beamline":    rec["Beamline"],
 			"btr":         rec["BTR"],

@@ -6,7 +6,7 @@ import (
 	"log"
 
 	mongo "github.com/CHESSComputing/golib/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // Update Scan Ids. Values should represent a timestamp in ns, not sec.
