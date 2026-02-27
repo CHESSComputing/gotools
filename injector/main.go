@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -40,7 +41,7 @@ type Config struct {
 func parseFlags() *Config {
 	cfg := &Config{}
 
-	flag.StringVar(&cfg.Path, "path", "", "root directory to crawl")
+	flag.StringVar(&cfg.Path, "path", "", "root directory to crawl or file name with list of files")
 	flag.StringVar(&cfg.Pattern, "pattern", "*.json", "file glob pattern")
 	flag.BoolVar(&cfg.DryRun, "dry-run", false, "run workflow without injection")
 	flag.BoolVar(&cfg.WriteResults, "write-results", false, "write injection results")
@@ -354,6 +355,47 @@ func crawlAndInject(cfg *Config, files []string) error {
 	return nil
 }
 
+// helper functions
+
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
+}
+
+// readLines returns a slice of lines from a file (one entry per line).
+func readLines(filename string) ([]string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+
+	// Increase buffer size in case lines are long
+	const maxCapacity = 1024 * 1024 // 1MB
+	buf := make([]byte, 0, 64*1024)
+	scanner.Buffer(buf, maxCapacity)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue // skip empty lines (remove if you want them)
+		}
+		lines = append(lines, line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return lines, nil
+}
+
 /* =========================
    Main
 ========================= */
@@ -367,9 +409,23 @@ func main() {
 	}
 	cfg.Token = token
 
-	files, err := findFiles(cfg.Path, cfg.Pattern)
-	if err != nil {
-		panic(err)
+	var files []string
+	if fileExists(cfg.Path) {
+		entries, err := readLines(cfg.Path)
+		if err != nil {
+			panic(err)
+		}
+		for _, e := range entries {
+			if fileExists(e) {
+				files = append(files, e)
+			}
+
+		}
+	} else {
+		files, err = findFiles(cfg.Path, cfg.Pattern)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if len(files) == 0 {
