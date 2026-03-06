@@ -328,8 +328,8 @@ func worker(jobs <-chan string, results chan<- *InjectResult, wg *sync.WaitGroup
 
 		if err != nil {
 			results <- &InjectResult{
-				Status: 0,
-				Body:   err.Error(),
+				Status: res.Status,
+				Body:   fmt.Errorf("injectJSON %s: %w", res.Error, err).Error(),
 				File:   file,
 			}
 			continue
