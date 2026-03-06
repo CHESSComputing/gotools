@@ -188,14 +188,23 @@ func injectJSON(ctx context.Context,
 	client *http.Client,
 	url, file, schema, token string, writeResults, deleteFile bool) (*InjectResult, error) {
 
+	res := &InjectResult{
+		Status: 0,
+		Body:   "",
+		File:   file,
+		Error:  "",
+	}
+
 	data, err := os.ReadFile(file)
 	if err != nil {
-		return nil, err
+		res.Error = fmt.Errorf("unable to read file %s, error %w", file, err).Error()
+		return res, err
 	}
 	var rec map[string]any
 	err = json.Unmarshal(data, &rec)
 	if err != nil {
-		return nil, err
+		res.Error = fmt.Errorf("unable to unmarshal data, error %w", err).Error()
+		return res, err
 	}
 
 	// update creation timestamp to be file timestamp
@@ -208,24 +217,29 @@ func injectJSON(ctx context.Context,
 		}
 	}
 	if schema == "" {
-		return nil, errors.New("metadata record without schema name")
+		err = errors.New("metadata record without schema name")
+		res.Error = err.Error()
+		return res, err
 	}
 	mrec := MetadataRecord{Schema: schema, Record: rec}
 	data, err = json.Marshal(mrec)
 	if err != nil {
-		return nil, err
+		res.Error = fmt.Errorf("unable to marshal data, error %w", err).Error()
+		return res, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(data))
 	if err != nil {
-		return nil, err
+		res.Error = fmt.Errorf("unable to create HTTP request, error %w", err).Error()
+		return res, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		res.Error = fmt.Errorf("unable to make HTTP request, error %w", err).Error()
+		return res, err
 	}
 	defer resp.Body.Close()
 
@@ -240,11 +254,11 @@ func injectJSON(ctx context.Context,
 		errStr = err.Error()
 	}
 	// check response status StatusCode
-	if resp.StatusCode != 200 {
+	if errStr == "" && resp.StatusCode != 200 {
 		errStr = fmt.Sprintf("HTTP response status %s", resp.Status)
 	}
 
-	res := &InjectResult{
+	res = &InjectResult{
 		Status: resp.StatusCode,
 		Body:   string(body),
 		File:   file,
