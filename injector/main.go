@@ -228,7 +228,7 @@ func injectJSON(ctx context.Context,
 		}
 	}
 	if schema == "" {
-		err = errors.New("metadata record without schema name")
+		err = errors.New("metadata record without schema attribute")
 		res.Status = SchemaError
 		res.Error = err.Error()
 		return res, err
@@ -329,8 +329,9 @@ func worker(jobs <-chan string, results chan<- *InjectResult, wg *sync.WaitGroup
 		if err != nil {
 			results <- &InjectResult{
 				Status: res.Status,
-				Body:   fmt.Errorf("injectJSON %s: %w", res.Error, err).Error(),
+				Body:   "injectJSON error",
 				File:   file,
+				Error:  fmt.Errorf("injectJSON %s: %w", res.Error, err).Error(),
 			}
 			continue
 		}
