@@ -239,6 +239,10 @@ func injectJSON(ctx context.Context,
 	} else {
 		errStr = err.Error()
 	}
+	// check response status StatusCode
+	if resp.StatusCode != 200 {
+		errStr = fmt.Sprintf("HTTP response status %s", resp.Status)
+	}
 
 	res := &InjectResult{
 		Status: resp.StatusCode,
