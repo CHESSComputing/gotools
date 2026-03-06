@@ -22,6 +22,15 @@ import (
    Config & Flags
 ========================= */
 
+const (
+	ReadFileError = 0
+	UnmarshalError
+	MarshalError
+	SchemaError
+	RequestError
+	HttpError
+)
+
 // Config represents configuration options for injector
 type Config struct {
 	Path         string
@@ -198,12 +207,14 @@ func injectJSON(ctx context.Context,
 	data, err := os.ReadFile(file)
 	if err != nil {
 		res.Error = fmt.Errorf("unable to read file %s, error %w", file, err).Error()
+		res.Status = ReadFileError
 		return res, err
 	}
 	var rec map[string]any
 	err = json.Unmarshal(data, &rec)
 	if err != nil {
 		res.Error = fmt.Errorf("unable to unmarshal data, error %w", err).Error()
+		res.Status = UnmarshalError
 		return res, err
 	}
 
@@ -218,12 +229,14 @@ func injectJSON(ctx context.Context,
 	}
 	if schema == "" {
 		err = errors.New("metadata record without schema name")
+		res.Status = SchemaError
 		res.Error = err.Error()
 		return res, err
 	}
 	mrec := MetadataRecord{Schema: schema, Record: rec}
 	data, err = json.Marshal(mrec)
 	if err != nil {
+		res.Status = MarshalError
 		res.Error = fmt.Errorf("unable to marshal data, error %w", err).Error()
 		return res, err
 	}
@@ -231,6 +244,7 @@ func injectJSON(ctx context.Context,
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(data))
 	if err != nil {
 		res.Error = fmt.Errorf("unable to create HTTP request, error %w", err).Error()
+		res.Status = RequestError
 		return res, err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -238,6 +252,7 @@ func injectJSON(ctx context.Context,
 
 	resp, err := client.Do(req)
 	if err != nil {
+		res.Status = HttpError
 		res.Error = fmt.Errorf("unable to make HTTP request, error %w", err).Error()
 		return res, err
 	}
