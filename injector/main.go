@@ -23,7 +23,7 @@ import (
 ========================= */
 
 const (
-	ReadFileError = 0
+	ReadFileError = iota
 	UnmarshalError
 	MarshalError
 	SchemaError
@@ -326,17 +326,16 @@ func worker(jobs <-chan string, results chan<- *InjectResult, wg *sync.WaitGroup
 		res, err := injectJSON(ctx, client, cfg.URL, file, cfg.Schema, cfg.Token, cfg.WriteResults, cfg.DeleteFile)
 		cancel()
 
-		if err != nil {
+		if res == nil {
 			results <- &InjectResult{
 				Status: res.Status,
 				Body:   "injectJSON error",
 				File:   file,
-				Error:  fmt.Errorf("injectJSON %s: %w", res.Error, err).Error(),
+				Error:  err.Error(),
 			}
-			continue
+		} else {
+			results <- res
 		}
-
-		results <- res
 	}
 }
 
