@@ -1,9 +1,9 @@
 module github.com/CHESSComputing/gotools/metaupdate
 
-go 1.25.0
+go 1.26.1
 
 require (
-	github.com/CHESSComputing/golib v1.1.2
+	github.com/CHESSComputing/golib v1.1.3
 	go.mongodb.org/mongo-driver/v2 v2.5.0
 )
 
