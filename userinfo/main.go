@@ -31,20 +31,20 @@ func main() {
 	)
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "%s\n\n", colorize(bold+cyan, "userinfo — CLASSE User Service CLI"))
-		fmt.Fprintf(os.Stderr, "%s\n", colorize(bold, "USAGE"))
+		fmt.Fprintf(os.Stderr, "%s\n\n", "userinfo — CLASSE User Service CLI")
+		fmt.Fprintf(os.Stderr, "%s\n", "USAGE")
 		fmt.Fprintf(os.Stderr, "  userinfo [options] <value>\n\n")
-		fmt.Fprintf(os.Stderr, "%s\n", colorize(bold, "ARGUMENT (auto-detected)"))
+		fmt.Fprintf(os.Stderr, "%s\n", "ARGUMENT (auto-detected)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "<number>", "Lookup by uidNumber  (e.g. 123)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "<user>@<domain>", "Lookup by email      (e.g. user@cornell.edu)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "<≤3 letters + digits>", "Lookup by uid        (e.g. abc1, xyz12)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "<anything else>", "Lookup by name       (e.g. \"Jane Smith\")")
-		fmt.Fprintf(os.Stderr, "\n%s\n", colorize(bold, "OPTIONS"))
+		fmt.Fprintf(os.Stderr, "\n%s\n", "OPTIONS")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-gid <number>", "Lookup by GID number")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-url <string>", "Base URL (default: http://host-dev:8080)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-timeout <duration>", "Request timeout (default: 10s)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-json", "Print raw JSON output")
-		fmt.Fprintf(os.Stderr, "\n%s\n", colorize(bold, "EXAMPLES"))
+		fmt.Fprintf(os.Stderr, "\n%s\n", "EXAMPLES")
 		fmt.Fprintf(os.Stderr, "  userinfo 123\n")
 		fmt.Fprintf(os.Stderr, "  userinfo abc1\n")
 		fmt.Fprintf(os.Stderr, "  userinfo user@cornell.edu\n")
@@ -116,7 +116,7 @@ func main() {
 	}
 
 	if len(users) == 0 {
-		fmt.Println(colorize(yellow, "No users found matching your query."))
+		fmt.Println("No users found matching your query.")
 		os.Exit(0)
 	}
 
@@ -134,6 +134,6 @@ func main() {
 	}
 
 	if len(users) > 1 {
-		fmt.Printf(colorize(dim, "  %d record(s) returned.\n\n"), len(users))
+		fmt.Printf("  %d record(s) returned.\n\n", len(users))
 	}
 }
