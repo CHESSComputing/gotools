@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// initialize ldap cache
-	ldapCache = &ldap.Cache{Map: make(map[string]ldap.Entry, Verbose: 0)}
+	ldapCache = &ldap.Cache{Map: make(map[string]ldap.Entry), Verbose: 0}
 
 	var paramKey, paramValue string
 
