@@ -31,7 +31,7 @@ func printVersion() {
 
 func main() {
 	var (
-		baseURL = flag.String("url", "", "URL of ClasseInfoService")
+		baseURL = flag.String("url", "http://foxden:8302", "URL of ClasseInfoService")
 		jsonOut = flag.Bool("json", false, "Output raw JSON instead of formatted display")
 	)
 
@@ -48,6 +48,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-gid <number>", "Lookup by GID number")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-url <string>", "Base URL (default: http://host-dev:8080)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-json", "Print raw JSON output")
+		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-version", "Print version and exit")
 		fmt.Fprintf(os.Stderr, "\n%s\n", "EXAMPLES")
 		fmt.Fprintf(os.Stderr, "  userinfo 123\n")
 		fmt.Fprintf(os.Stderr, "  userinfo abc1\n")
