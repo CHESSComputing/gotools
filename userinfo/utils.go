@@ -19,7 +19,7 @@ func printField(label, value string) {
 	if value == "" || value == "0" {
 		return
 	}
-	fmt.Printf("%s\n", value)
+	fmt.Printf(" %14s: %s\n", label, value)
 }
 
 func printListField(label string, items []string) {
@@ -27,24 +27,17 @@ func printListField(label string, items []string) {
 		return
 	}
 	for _, item := range items {
-		// For DN-style entries, show just the CN part for readability, with full path dimmed
-		if strings.Contains(item, "CN=") && strings.Contains(item, ",") {
-			parts := strings.SplitN(item, ",", 2)
-			cn := strings.TrimPrefix(parts[0], "CN=")
-			fmt.Printf(cn)
-		} else {
-			fmt.Printf(item)
-		}
+		fmt.Printf(item)
 	}
 }
 
 func printUser(u UserInfo) {
 	width := 60
 	printDivider(width, "─")
-
 	// Header with name
-	header := fmt.Sprintf(" 👤  %s", u.Name)
+	header := fmt.Sprintf(" 👤  %s\n", u.Name)
 	fmt.Printf(header)
+	printDivider(width, "─")
 	// Identity block
 	fmt.Println("  IDENTITY")
 	printField("UID", u.Uid)
