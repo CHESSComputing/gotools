@@ -26,7 +26,9 @@ func printListField(label string, items []string) {
 	if len(items) == 0 {
 		return
 	}
-	fmt.Printf("%14s:\n", label)
+	if label != "" {
+		fmt.Printf("%14s:\n", label)
+	}
 	for _, item := range items {
 		fmt.Printf("%16s\n", item)
 	}
@@ -46,9 +48,12 @@ func printUser(u UserInfo) {
 	fmt.Printf("DN        : %s\n", u.DN)
 	fmt.Println()
 
-	printListField("Beamlines", u.Beamlines)
-	printListField("BTRs     ", u.Btrs)
-	printListField("Foxdens  ", u.Foxdens)
+	fmt.Printf("Beamlines :\n")
+	printListField("", u.Beamlines)
+	fmt.Printf("BTRs      :\n")
+	printListField("", u.Btrs)
+	fmt.Printf("Foxdens   :\n")
+	printListField("", u.Foxdens)
 	fmt.Println()
 
 	// Groups
