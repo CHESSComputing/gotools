@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
@@ -33,45 +34,44 @@ type UserInput struct {
 
 func userLookup(userInput UserInput) ([]UserInfo, error) {
 	var records []ldap.Entry
-	// make ldap query
-	var entry ldap.Entry
 	var err error
 	uid := userInput.Uid
 	name := userInput.Name
 	email := userInput.Email
 	uidNumber := userInput.UidNumber
 	gid := userInput.GidNumber
+
 	if userInput.Uid != "" {
-		entry, err = ldapCache.SearchBy(
+		records, err = ldap.Records(
 			srvConfig.Config.LDAP.Login,
 			srvConfig.Config.LDAP.Password,
-			uid, "uid")
+			uid, "uid", 0)
 	} else if gid != "" {
-		entry, err = ldapCache.SearchBy(
+		records, err = ldap.Records(
 			srvConfig.Config.LDAP.Login,
 			srvConfig.Config.LDAP.Password,
-			gid, "gidNumber")
+			gid, "gidNumber", 0)
 	} else if name != "" {
-		entry, err = ldapCache.SearchBy(
+		records, err = ldap.Records(
 			srvConfig.Config.LDAP.Login,
 			srvConfig.Config.LDAP.Password,
-			name, "name")
+			name, "name", 0)
 	} else if uidNumber != "" {
-		entry, err = ldapCache.SearchBy(
+		records, err = ldap.Records(
 			srvConfig.Config.LDAP.Login,
 			srvConfig.Config.LDAP.Password,
-			uidNumber, "uidNumber")
+			uidNumber, "uidNumber", 0)
 	} else if email != "" {
-		entry, err = ldapCache.SearchBy(
+		records, err = ldap.Records(
 			srvConfig.Config.LDAP.Login,
 			srvConfig.Config.LDAP.Password,
-			email, "mail")
+			email, "mail", 0)
+		fmt.Printf("### email %s records %d", email, len(records))
 	}
 	var users []UserInfo
 	if err != nil {
 		return users, err
 	}
-	records = append(records, entry)
 	data, err := json.Marshal(records)
 	if err != nil {
 		return users, err

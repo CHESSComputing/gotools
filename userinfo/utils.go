@@ -83,7 +83,7 @@ func buildURL(base, paramKey, paramValue string) (string, error) {
 }
 
 func fetchUsers(rawURL string) ([]UserInfo, error) {
-	timeout := time.Duration(10 * time.Second)
+	timeout := time.Duration(30 * time.Second)
 	client := &http.Client{Timeout: timeout}
 
 	resp, err := client.Get(rawURL)

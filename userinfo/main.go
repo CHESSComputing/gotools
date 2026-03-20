@@ -10,7 +10,6 @@ import (
 	"time"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
-	"github.com/CHESSComputing/golib/ldap"
 )
 
 // Patterns used to classify the positional argument.
@@ -20,8 +19,6 @@ var (
 	reUid       = regexp.MustCompile(`^[a-zA-Z]{1,3}\d+$`) // ≤3 letters + digits → uid
 	// anything else is treated as a display name
 )
-
-var ldapCache *ldap.Cache
 
 func printVersion() {
 	goVersion := runtime.Version()
@@ -70,9 +67,6 @@ func main() {
 	if cobj, err := srvConfig.ParseConfig(""); err == nil {
 		srvConfig.Config = &cobj
 	}
-
-	// initialize ldap cache
-	ldapCache = &ldap.Cache{Map: make(map[string]ldap.Entry), Verbose: 0}
 
 	var paramKey, paramValue string
 
