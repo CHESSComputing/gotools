@@ -29,6 +29,8 @@ func printVersion() {
 func main() {
 	var (
 		baseURL = flag.String("url", "http://foxden:8302", "URL of ClasseInfoService")
+		gid     = flag.String("gid", "", "Lookup by GID number")
+		timeout = flag.Duration("timeout", 10*time.Second, "HTTP request timeout")
 		jsonOut = flag.Bool("json", false, "Output raw JSON instead of formatted display")
 	)
 
@@ -43,6 +45,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "<anything else>", "Lookup by name       (e.g. \"Jane Smith\")")
 		fmt.Fprintf(os.Stderr, "\n%s\n", "OPTIONS")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-gid <number>", "Lookup by GID number")
+		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-timeout <duration>", "Request timeout (default: 10s)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-url <string>", "Base URL (default: http://host-dev:8080)")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-json", "Print raw JSON output")
 		fmt.Fprintf(os.Stderr, "  %-24s  %s\n", "-version", "Print version and exit")
@@ -71,15 +74,24 @@ func main() {
 	var paramKey, paramValue string
 
 	userInput := UserInput{}
-	args := flag.Args()
-	if len(args) == 0 {
-		flag.Usage()
-		os.Exit(1)
+	if *gid != "" {
+		// Explicit -gid flag takes priority
+		if !reUidNumber.MatchString(*gid) {
+			fatalf("-gid value must be a number, got %q", *gid)
+		}
+		paramKey, paramValue = "gidNumber", *gid
+		userInput.GidNumber = *gid
+	} else {
+		args := flag.Args()
+		if len(args) == 0 {
+			flag.Usage()
+			os.Exit(1)
+		}
+		if len(args) > 1 {
+			fatalf("expected a single argument, got %d — wrap multi-word names in quotes", len(args))
+		}
+		paramKey, paramValue = classifyArg(args[0])
 	}
-	if len(args) > 1 {
-		fatalf("expected a single argument, got %d — wrap multi-word names in quotes", len(args))
-	}
-	paramKey, paramValue = classifyArg(args[0])
 	switch paramKey {
 	case "name":
 		userInput.Name = paramValue
@@ -89,7 +101,6 @@ func main() {
 		userInput.Uid = paramValue
 	case "uidNumber":
 		userInput.UidNumber = paramValue
-
 	}
 
 	var users []UserInfo
@@ -99,7 +110,7 @@ func main() {
 		if err != nil {
 			fatalf("%v", err)
 		}
-		users, err = fetchUsers(targetURL)
+		users, err = fetchUsers(targetURL, *timeout)
 		if err != nil {
 			fatalf("%v", err)
 		}
