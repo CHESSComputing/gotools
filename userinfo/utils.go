@@ -15,13 +15,6 @@ func printDivider(width int, char string) {
 	fmt.Println(strings.Repeat(char, width))
 }
 
-func printField(label, value string) {
-	if value == "" || value == "0" {
-		return
-	}
-	fmt.Printf("%14s: %s\n", label, value)
-}
-
 func printListField(label string, items []string) {
 	if len(items) == 0 {
 		return
@@ -46,13 +39,21 @@ func printUser(u UserInfo) {
 	fmt.Printf("DN        : %s\n", u.DN)
 	fmt.Println()
 
-	fmt.Printf("Beamlines :\n")
-	printListField("", u.Beamlines)
-	fmt.Printf("BTRs      :\n")
-	printListField("", u.Btrs)
-	fmt.Printf("Foxdens   :\n")
-	printListField("", u.Foxdens)
-	fmt.Println()
+	if len(u.Beamlines) > 0 {
+		fmt.Printf("Beamlines :\n")
+		printListField("", u.Beamlines)
+		fmt.Println()
+	}
+	if len(u.Btrs) > 0 {
+		fmt.Printf("BTRs      :\n")
+		printListField("", u.Btrs)
+		fmt.Println()
+	}
+	if len(u.Foxdens) > 0 {
+		fmt.Printf("Foxdens   :\n")
+		printListField("", u.Foxdens)
+		fmt.Println()
+	}
 
 	// Groups
 	if len(u.Groups) > 0 {
