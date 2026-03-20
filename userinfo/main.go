@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"runtime"
+	"time"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
 	"github.com/CHESSComputing/golib/ldap"
@@ -20,6 +22,12 @@ var (
 )
 
 var ldapCache *ldap.Cache
+
+func printVersion() {
+	goVersion := runtime.Version()
+	tstamp := time.Now()
+	fmt.Printf("git={{VERSION}} commit={{COMMIT}} go=%s date=%s\n", goVersion, tstamp)
+}
 
 func main() {
 	var (
@@ -49,11 +57,16 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  userinfo -json 123\n")
 	}
 
+	var version bool
+	flag.BoolVar(&version, "version", false, "Show version")
 	flag.Parse()
+	if version {
+		printVersion()
+		return
+	}
 
 	// parse FOXDEN config
-	config := os.Getenv("FOXDEN_CONFIG")
-	if cobj, err := srvConfig.ParseConfig(config); err == nil {
+	if cobj, err := srvConfig.ParseConfig(""); err == nil {
 		srvConfig.Config = &cobj
 	}
 
