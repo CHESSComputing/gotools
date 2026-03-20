@@ -28,7 +28,7 @@ func printListField(label string, items []string) {
 }
 
 func printUser(u UserInfo) {
-	width := 60
+	width := 80
 	printDivider(width, "─")
 	fmt.Printf(fmt.Sprintf(" 👤  %s\n", u.Name))
 	printDivider(width, "─")

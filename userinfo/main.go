@@ -91,7 +91,7 @@ func main() {
 			userInput.Email = paramValue
 		case "uid":
 			userInput.Uid = paramValue
-		case "UidNumber":
+		case "uidNumber":
 			userInput.UidNumber = paramValue
 
 		}
