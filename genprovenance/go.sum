@@ -1,7 +1,7 @@
-github.com/CHESSComputing/DataBookkeeping v0.3.4 h1:01sV3w/RqgIV7PYZsr6V/4hp2Yas5Z48MkSUYSbAhwc=
-github.com/CHESSComputing/DataBookkeeping v0.3.4/go.mod h1:8xKndjlTTY/fNJ+YFvF/hJJeOdgUYgO2LpaIr2J2uDI=
-github.com/CHESSComputing/golib v1.1.2 h1:qFxYO5ypDIFAY5wtx/E7YQs/f1wxBZgJQZEy9oPDa1c=
-github.com/CHESSComputing/golib v1.1.2/go.mod h1:4AZLApRaBIPLUkFTOkrMq6hWGulCtG9D5gZG3+oYxEE=
+github.com/CHESSComputing/DataBookkeeping v0.3.5 h1:fpdmPwsLgZVP6tm9KL8wKsdGSWimEuiC9Kgbp2SfnM8=
+github.com/CHESSComputing/DataBookkeeping v0.3.5/go.mod h1:EBQgyAEpPg9yGz6POTNsOSdlddT9bIwKENgnPCd1c2M=
+github.com/CHESSComputing/golib v1.1.4 h1:TfPritAzFXs77fFah/NpOE6z9BCg7zpWzbKSqc6PleA=
+github.com/CHESSComputing/golib v1.1.4/go.mod h1:4AZLApRaBIPLUkFTOkrMq6hWGulCtG9D5gZG3+oYxEE=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
