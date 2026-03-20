@@ -19,15 +19,16 @@ func printField(label, value string) {
 	if value == "" || value == "0" {
 		return
 	}
-	fmt.Printf(" %14s: %s\n", label, value)
+	fmt.Printf("%14s: %s\n", label, value)
 }
 
 func printListField(label string, items []string) {
 	if len(items) == 0 {
 		return
 	}
+	fmt.Printf("%14s:\n", label)
 	for _, item := range items {
-		fmt.Printf(item)
+		fmt.Printf("%16s\n", item)
 	}
 }
 
