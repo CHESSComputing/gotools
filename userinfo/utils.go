@@ -30,16 +30,14 @@ func printListField(label string, items []string) {
 		fmt.Printf("%14s:\n", label)
 	}
 	for _, item := range items {
-		fmt.Printf("%16s\n", item)
+		fmt.Printf("  %s\n", item)
 	}
 }
 
 func printUser(u UserInfo) {
 	width := 60
 	printDivider(width, "─")
-	// Header with name
-	header := fmt.Sprintf(" 👤  %s\n", u.Name)
-	fmt.Printf(header)
+	fmt.Printf(fmt.Sprintf(" 👤  %s\n", u.Name))
 	printDivider(width, "─")
 	fmt.Printf("UID       : %s\n", u.Uid)
 	fmt.Printf("UID Number: %d\n", u.UidNumber)
