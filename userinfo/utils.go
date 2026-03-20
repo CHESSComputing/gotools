@@ -39,26 +39,13 @@ func printUser(u UserInfo) {
 	header := fmt.Sprintf(" 👤  %s\n", u.Name)
 	fmt.Printf(header)
 	printDivider(width, "─")
-	// Identity block
-	fmt.Println("  IDENTITY")
-	printField("UID", u.Uid)
-	if u.UidNumber != 0 {
-		printField("UID Number", fmt.Sprintf("%d", u.UidNumber))
-	}
-	if u.GidNumber != 0 {
-		printField("GID Number", fmt.Sprintf("%d", u.GidNumber))
-	}
-	printField("Email", u.Email)
+	fmt.Printf("UID       : %s\n", u.Uid)
+	fmt.Printf("UID Number: %d\n", u.UidNumber)
+	fmt.Printf("GID Number: %d\n", u.GidNumber)
+	fmt.Printf("Email     : %s\n", u.Email)
+	fmt.Printf("DN        : %s\n", u.DN)
 	fmt.Println()
 
-	// Directory
-	if u.DN != "" {
-		fmt.Println("  DIRECTORY")
-		fmt.Println(u.DN)
-	}
-
-	// Access block
-	fmt.Println("  ACCESS")
 	printListField("Beamlines", u.Beamlines)
 	printListField("BTRs     ", u.Btrs)
 	printListField("Foxdens  ", u.Foxdens)
@@ -66,7 +53,7 @@ func printUser(u UserInfo) {
 
 	// Groups
 	if len(u.Groups) > 0 {
-		fmt.Println("  GROUPS")
+		fmt.Printf("GROUPS    :\n")
 		printListField("", u.Groups)
 		fmt.Println()
 	}
