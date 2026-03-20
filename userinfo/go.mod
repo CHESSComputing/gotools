@@ -2,7 +2,7 @@ module github.com/CHESSComputing/gotools/userinfo
 
 go 1.26.1
 
-require github.com/CHESSComputing/golib v1.1.8
+require github.com/CHESSComputing/golib v1.1.9
 
 require (
 	github.com/Azure/go-ntlmssp v0.1.0 // indirect
