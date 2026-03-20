@@ -1,6 +1,7 @@
 flags=-ldflags="-s -w"
 # flags=-ldflags="-s -w -extldflags -static"
 TAG := $(shell git tag | sed -e "s,v,," | sort -r | head -n 1)
+COMMIT := $(shell git rev-parse --short HEAD)
 
 all: golib build
 
