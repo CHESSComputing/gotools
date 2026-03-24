@@ -3,27 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
 	"github.com/CHESSComputing/golib/ldap"
 )
 
-// UserInfo represents the structure returned by the user service.
-type UserInfo struct {
-	DN        string    `json:"DN"`
-	Name      string    `json:"Name"`
-	Email     string    `json:"Email"`
-	Uid       string    `json:"Uid"`
-	UidNumber int       `json:"UidNumber"`
-	GidNumber int       `json:"GidNumber"`
-	Groups    []string  `json:"Groups"`
-	Btrs      []string  `json:"Btrs"`
-	Beamlines []string  `json:"Beamlines"`
-	Expire    time.Time `json:"Expire"`
-	Foxdens   []string  `json:"Foxdens"`
-}
-
+// UserInput is helper struct to provide user input for userLookup API
 type UserInput struct {
 	Name      string
 	Email     string
@@ -32,7 +17,7 @@ type UserInput struct {
 	GidNumber string
 }
 
-func userLookup(userInput UserInput) ([]UserInfo, error) {
+func userLookup(userInput UserInput) ([]ldap.UserInfo, error) {
 	var records []ldap.Entry
 	var err error
 	uid := userInput.Uid
@@ -68,7 +53,7 @@ func userLookup(userInput UserInput) ([]UserInfo, error) {
 			email, "mail", 0)
 		fmt.Printf("### email %s records %d", email, len(records))
 	}
-	var users []UserInfo
+	var users []ldap.UserInfo
 	if err != nil {
 		return users, err
 	}

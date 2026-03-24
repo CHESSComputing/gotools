@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/CHESSComputing/golib/ldap"
 )
 
 func printDivider(width int, char string) {
@@ -27,7 +29,7 @@ func printListField(label string, items []string) {
 	}
 }
 
-func printUser(u UserInfo) {
+func printUser(u ldap.UserInfo) {
 	width := 80
 	printDivider(width, "─")
 	fmt.Printf(fmt.Sprintf(" 👤  %s\n", u.Name))
@@ -82,7 +84,7 @@ func buildURL(base, paramKey, paramValue string) (string, error) {
 	return u.String(), nil
 }
 
-func fetchUsers(rawURL string, timeout time.Duration) ([]UserInfo, error) {
+func fetchUsers(rawURL string, timeout time.Duration) ([]ldap.UserInfo, error) {
 	client := &http.Client{Timeout: timeout}
 
 	resp, err := client.Get(rawURL)
@@ -96,7 +98,7 @@ func fetchUsers(rawURL string, timeout time.Duration) ([]UserInfo, error) {
 		return nil, fmt.Errorf("server returned %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 
-	var users []UserInfo
+	var users []ldap.UserInfo
 	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}

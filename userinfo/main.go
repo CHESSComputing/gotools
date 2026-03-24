@@ -10,6 +10,7 @@ import (
 	"time"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
+	"github.com/CHESSComputing/golib/ldap"
 )
 
 // Patterns used to classify the positional argument.
@@ -103,7 +104,7 @@ func main() {
 		userInput.UidNumber = paramValue
 	}
 
-	var users []UserInfo
+	var users []ldap.UserInfo
 	var err error
 	if *baseURL != "" {
 		targetURL, err := buildURL(*baseURL, paramKey, paramValue)
