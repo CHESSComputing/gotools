@@ -146,7 +146,7 @@ func s3Create(args []string) {
 	if verbose > 0 {
 		fmt.Println("HTTP POST", rurl)
 	}
-	resp, err := _httpWriteRequest.Post(rurl, "", nil)
+	resp, err := _httpWriteRequest.Post(rurl, "", bytes.NewBuffer([]byte{}))
 	if err != nil {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
