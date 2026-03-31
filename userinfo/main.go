@@ -29,7 +29,7 @@ func printVersion() {
 
 func main() {
 	var (
-		baseURL = flag.String("url", "http://foxden:8302", "URL of ClasseInfoService")
+		baseURL = flag.String("url", "https://foxden:8302", "URL of ClasseInfoService")
 		gid     = flag.String("gid", "", "Lookup by GID number")
 		timeout = flag.Duration("timeout", 10*time.Second, "HTTP request timeout")
 		jsonOut = flag.Bool("json", false, "Output raw JSON instead of formatted display")
