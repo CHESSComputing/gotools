@@ -41,8 +41,11 @@ func fabricUsage() {
 	fmt.Println("# check health of data-service and catalog-service:")
 	fmt.Println("foxden fabric health")
 	fmt.Println()
-	fmt.Println("# run SPARQL verification for a beamline dataset:")
-	fmt.Println("foxden fabric sparql <beamline> <did>")
+	fmt.Println("# run SPARQL verification for a dataset (beamline is extracted from the DID):")
+	fmt.Println("foxden fabric sparql <did>")
+	fmt.Println()
+	fmt.Println("# limit the number of triples shown in SPARQL output:")
+	fmt.Println("foxden fabric sparql <did> --limit 10")
 	fmt.Println()
 	fmt.Println("# verify catalog entry for a beamline:")
 	fmt.Println("foxden fabric catalog <beamline>")
@@ -137,15 +140,21 @@ func fabricHealth(jsonOutput bool) {
 	}
 }
 
-// helper function to run SPARQL verification for a beamline/dataset
-func fabricSPARQL(args []string, jsonOutput bool) {
-	if len(args) < 3 {
-		fmt.Println("ERROR: sparql requires <beamline> <did>")
-		fmt.Println("Usage: foxden fabric sparql <beamline> <did>")
+// helper function to run SPARQL verification for a dataset.
+// The beamline is extracted from the DID itself.
+func fabricSPARQL(args []string, jsonOutput bool, limit int) {
+	if len(args) < 2 {
+		fmt.Println("ERROR: sparql requires <did>")
+		fmt.Println("Usage: foxden fabric sparql <did>")
 		os.Exit(1)
 	}
-	bl := args[1]
-	did := args[2]
+	did := args[1]
+
+	bl := utils.GetBeamline(did)
+	if bl == "" {
+		fmt.Printf("ERROR: cannot extract beamline from DID %q\n", did)
+		os.Exit(1)
+	}
 
 	encodedDid := url.PathEscape(did)
 	rurl := fmt.Sprintf("%s/beamlines/%s/datasets/%s/sparql",
@@ -190,12 +199,12 @@ func fabricSPARQL(args []string, jsonOutput bool) {
 		return
 	}
 
-	// Show the first few triples for quick inspection.
-	limit := 5
-	if len(bindings) < limit {
-		limit = len(bindings)
+	// Show up to `limit` triples for quick inspection.
+	show := limit
+	if show <= 0 || show > len(bindings) {
+		show = len(bindings)
 	}
-	for i, b := range bindings[:limit] {
+	for i, b := range bindings[:show] {
 		bm, ok := b.(map[string]any)
 		if !ok {
 			continue
@@ -203,8 +212,8 @@ func fabricSPARQL(args []string, jsonOutput bool) {
 		s, p, o := termValue(bm, "s"), termValue(bm, "p"), termValue(bm, "o")
 		fmt.Printf("  [%d] <%s>\n       <%s>\n       %q\n", i+1, s, p, o)
 	}
-	if len(bindings) > limit {
-		fmt.Printf("  … and %d more triple(s)\n", len(bindings)-limit)
+	if len(bindings) > show {
+		fmt.Printf("  … and %d more triple(s)\n", len(bindings)-show)
 	}
 }
 
@@ -372,9 +381,9 @@ func ingestOneDID(did string) {
 }
 
 // helper function to ingest did (or a file of dids) into fabric node.
-// The second argument may be:
-//   - a DID string starting with "/beamline=…", or
-//   - a path to a plain-text file containing one DID per line.
+// The second argument is resolved in this order:
+//  1. If the path exists on disk → treat as a file containing one DID per line.
+//  2. Otherwise → treat as a literal DID string (must start with /beamline=).
 func fabricIngest(args []string) {
 	if len(args) != 2 {
 		fmt.Println("ERROR: wrong number of arguments")
@@ -388,37 +397,33 @@ func fabricIngest(args []string) {
 
 	arg := args[1]
 
-	// Detect whether the argument is a file path or a literal DID.
-	// A DID starts with "/beamline="; anything else we treat as a file.
-	if strings.HasPrefix(arg, "/beamline=") {
-		// Single DID ingest.
-		fmt.Printf("Ingesting DID: %s\n", arg)
-		ingestOneDID(arg)
+	// 1. Check whether the argument is an existing file first.
+	if _, err := os.Stat(arg); err == nil {
+		dids, err := readDIDsFromFile(arg)
+		if err != nil {
+			fmt.Println("ERROR reading DID file:", err)
+			os.Exit(1)
+		}
+		if len(dids) == 0 {
+			fmt.Println("ERROR: no valid DIDs found in file", arg)
+			os.Exit(1)
+		}
+		fmt.Printf("Ingesting %d DID(s) from %s\n", len(dids), arg)
+		for _, did := range dids {
+			fmt.Printf("  → %s\n", did)
+			ingestOneDID(did)
+		}
+		fmt.Printf("Done. %d DID(s) processed.\n", len(dids))
 		return
 	}
 
-	// Treat as a file containing DIDs.
-	if _, err := os.Stat(arg); err != nil {
-		fmt.Printf("ERROR: %q is neither a valid DID (must start with /beamline=) nor an existing file: %v\n", arg, err)
+	// 2. Treat as a literal DID string.
+	if !strings.HasPrefix(arg, "/beamline=") {
+		fmt.Printf("ERROR: %q is neither an existing file nor a valid DID (must start with /beamline=)\n", arg)
 		os.Exit(1)
 	}
-
-	dids, err := readDIDsFromFile(arg)
-	if err != nil {
-		fmt.Println("ERROR reading DID file:", err)
-		os.Exit(1)
-	}
-	if len(dids) == 0 {
-		fmt.Println("ERROR: no valid DIDs found in file", arg)
-		os.Exit(1)
-	}
-
-	fmt.Printf("Ingesting %d DID(s) from %s\n", len(dids), arg)
-	for _, did := range dids {
-		fmt.Printf("  → %s\n", did)
-		ingestOneDID(did)
-	}
-	fmt.Printf("Done. %d DID(s) processed.\n", len(dids))
+	fmt.Printf("Ingesting DID: %s\n", arg)
+	ingestOneDID(arg)
 }
 
 func fabricCommand() *cobra.Command {
@@ -429,6 +434,7 @@ func fabricCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
+			limit, _ := cmd.Flags().GetInt("limit")
 			if len(args) == 0 {
 				fabricUsage()
 				return
@@ -449,7 +455,7 @@ func fabricCommand() *cobra.Command {
 				fabricHealth(jsonOutput)
 			case "sparql":
 				accessToken()
-				fabricSPARQL(args, jsonOutput)
+				fabricSPARQL(args, jsonOutput, limit)
 			case "catalog":
 				accessToken()
 				fabricCatalog(args, jsonOutput)
@@ -460,6 +466,7 @@ func fabricCommand() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().Bool("json", false, "json output")
+	cmd.PersistentFlags().Int("limit", 5, "number of SPARQL triples to display (0 = all)")
 	cmd.SetUsageFunc(func(*cobra.Command) error {
 		fabricUsage()
 		return nil
