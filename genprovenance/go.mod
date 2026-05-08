@@ -1,6 +1,6 @@
 module github.com/CHESSComputing/gotools/genprovenance
 
-go 1.26.2
+go 1.26.3
 
 require github.com/CHESSComputing/DataBookkeeping v0.3.7
 
