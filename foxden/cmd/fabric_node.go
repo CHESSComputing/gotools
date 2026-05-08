@@ -1,15 +1,16 @@
 package cmd
 
-// CHESComputing foxden tool: s3 module
+// CHESComputing foxden tool: fabric node module
 //
-// Copyright (c) 2023 - Valentin Kuznetsov <vkuznet@gmail.com>
-//
+// import (
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 
 	srvConfig "github.com/CHESSComputing/golib/config"
 	"github.com/CHESSComputing/golib/utils"
@@ -25,25 +26,272 @@ type IngestRecord struct {
 
 // helper function to provide fabric usage info
 func fabricUsage() {
-	fmt.Println("foxden fabric <ls|ingest> [options]")
+	fmt.Println("foxden fabric <ls|ingest|health|sparql|catalog> [options]")
 	fmt.Println("\nExamples:")
-	fmt.Println("\n# ingest did into FabricNode:")
+	fmt.Println()
+	fmt.Println("# list datasets for a beamline in the catalog:")
+	fmt.Println("foxden fabric ls <beamline>")
+	fmt.Println()
+	fmt.Println("# ingest a single DID into FabricNode:")
 	fmt.Println("foxden fabric ingest <did>")
+	fmt.Println()
+	fmt.Println("# ingest all DIDs from a file (one DID per line):")
+	fmt.Println("foxden fabric ingest <dids-file>")
+	fmt.Println()
+	fmt.Println("# check health of data-service and catalog-service:")
+	fmt.Println("foxden fabric health")
+	fmt.Println()
+	fmt.Println("# run SPARQL verification for a beamline dataset:")
+	fmt.Println("foxden fabric sparql <beamline> <did>")
+	fmt.Println()
+	fmt.Println("# verify catalog entry for a beamline:")
+	fmt.Println("foxden fabric catalog <beamline>")
+}
+
+// helper function to check health of FabricNode services
+func fabricHealth(jsonOutput bool) {
+	type healthResult struct {
+		Service string `json:"service"`
+		Status  string `json:"status"`
+		Error   string `json:"error,omitempty"`
+	}
+
+	services := []struct {
+		name string
+		url  func() string
+	}{
+		{
+			"catalog-service",
+			func() string {
+				return fmt.Sprintf("%s/health", srvConfig.Config.Services.FabricCatalogURL)
+			},
+		},
+		{
+			"data-service",
+			func() string {
+				return fmt.Sprintf("%s/health", srvConfig.Config.Services.FabricDataServiceURL)
+			},
+		},
+	}
+
+	var results []healthResult
+	allOK := true
+
+	for _, svc := range services {
+		rurl := svc.url()
+		if verbose > 0 {
+			fmt.Println("HTTP GET", rurl)
+		}
+		resp, err := _httpReadRequest.Get(rurl)
+		if err != nil {
+			results = append(results, healthResult{Service: svc.name, Status: "error", Error: err.Error()})
+			allOK = false
+			continue
+		}
+		defer resp.Body.Close()
+
+		var body map[string]any
+		if decErr := json.NewDecoder(resp.Body).Decode(&body); decErr != nil {
+			results = append(results, healthResult{Service: svc.name, Status: "error", Error: decErr.Error()})
+			allOK = false
+			continue
+		}
+
+		status := "error"
+		if resp.StatusCode == 200 {
+			if s, ok := body["status"].(string); ok && s == "ok" {
+				status = "ok"
+			}
+		}
+		r := healthResult{Service: svc.name, Status: status}
+		if status != "ok" {
+			allOK = false
+			if msg, ok := body["error"].(string); ok {
+				r.Error = msg
+			} else {
+				r.Error = fmt.Sprintf("HTTP %d", resp.StatusCode)
+			}
+		}
+		results = append(results, r)
+	}
+
+	if jsonOutput {
+		if data, err := json.MarshalIndent(results, "", "  "); err == nil {
+			fmt.Println(string(data))
+		}
+		return
+	}
+
+	for _, r := range results {
+		if r.Status == "ok" {
+			fmt.Printf("  ✓ %s healthy\n", r.Service)
+		} else {
+			fmt.Printf("  ✗ %s unhealthy: %s\n", r.Service, r.Error)
+		}
+	}
+	if allOK {
+		fmt.Println("\nAll services healthy.")
+	} else {
+		fmt.Println("\nOne or more services are unhealthy.")
+		os.Exit(1)
+	}
+}
+
+// helper function to run SPARQL verification for a beamline/dataset
+func fabricSPARQL(args []string, jsonOutput bool) {
+	if len(args) < 3 {
+		fmt.Println("ERROR: sparql requires <beamline> <did>")
+		fmt.Println("Usage: foxden fabric sparql <beamline> <did>")
+		os.Exit(1)
+	}
+	bl := args[1]
+	did := args[2]
+
+	encodedDid := url.PathEscape(did)
+	rurl := fmt.Sprintf("%s/beamlines/%s/datasets/%s/sparql",
+		srvConfig.Config.Services.FabricDataServiceURL, bl, encodedDid)
+	if verbose > 0 {
+		fmt.Println("HTTP GET", rurl)
+	}
+
+	resp, err := _httpReadRequest.Get(rurl)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
+	}
+	defer resp.Body.Close()
+
+	var data map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		fmt.Println("ERROR decoding response:", err)
+		os.Exit(1)
+	}
+
+	if jsonOutput {
+		if val, err := json.MarshalIndent(data, "", "  "); err == nil {
+			fmt.Println(string(val))
+		}
+		return
+	}
+
+	// Print a human-readable SPARQL summary.
+	fmt.Printf("SPARQL results for beamline=%s did=%s\n", bl, did)
+
+	results, _ := data["results"].(map[string]any)
+	if results == nil {
+		fmt.Println("  No results block in response.")
+		return
+	}
+	bindings, _ := results["bindings"].([]any)
+	fmt.Printf("  %d triple(s) returned\n", len(bindings))
+
+	if len(bindings) == 0 {
+		fmt.Println("  WARNING: named graph is empty — ingest may have failed or DID not found.")
+		return
+	}
+
+	// Show the first few triples for quick inspection.
+	limit := 5
+	if len(bindings) < limit {
+		limit = len(bindings)
+	}
+	for i, b := range bindings[:limit] {
+		bm, ok := b.(map[string]any)
+		if !ok {
+			continue
+		}
+		s, p, o := termValue(bm, "s"), termValue(bm, "p"), termValue(bm, "o")
+		fmt.Printf("  [%d] <%s>\n       <%s>\n       %q\n", i+1, s, p, o)
+	}
+	if len(bindings) > limit {
+		fmt.Printf("  … and %d more triple(s)\n", len(bindings)-limit)
+	}
+}
+
+// termValue safely extracts the "value" string from a SPARQL binding term.
+func termValue(binding map[string]any, key string) string {
+	if term, ok := binding[key].(map[string]any); ok {
+		if v, ok := term["value"].(string); ok {
+			return v
+		}
+	}
+	return ""
+}
+
+// helper function to verify the catalog for a given beamline
+func fabricCatalog(args []string, jsonOutput bool) {
+	if len(args) < 2 {
+		fmt.Println("ERROR: catalog requires <beamline>")
+		fmt.Println("Usage: foxden fabric catalog <beamline>")
+		os.Exit(1)
+	}
+	bl := args[1]
+
+	rurl := fmt.Sprintf("%s/catalog/beamlines/%s/datasets",
+		srvConfig.Config.Services.FabricCatalogURL, bl)
+	if verbose > 0 {
+		fmt.Println("HTTP GET", rurl)
+	}
+
+	resp, err := _httpReadRequest.Get(rurl)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
+	}
+	defer resp.Body.Close()
+
+	var data map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		fmt.Println("ERROR decoding response:", err)
+		os.Exit(1)
+	}
+
+	if jsonOutput {
+		if val, err := json.MarshalIndent(data, "", "  "); err == nil {
+			fmt.Println(string(val))
+		}
+		return
+	}
+
+	// Human-readable catalog summary.
+	dtype, _ := data["@type"].(string)
+	fmt.Printf("Catalog for beamline: %s\n", bl)
+	fmt.Printf("  @type: %s\n", dtype)
+
+	datasets, _ := data["dcat:dataset"].([]any)
+	fmt.Printf("  datasets listed: %d\n", len(datasets))
+
+	if len(datasets) == 0 {
+		fmt.Println("  WARNING: catalog lists 0 datasets for this beamline.")
+		fmt.Println("  Possible cause: FOXDEN beamline field mismatch (array vs scalar, case mismatch).")
+		return
+	}
+
+	for i, ds := range datasets {
+		dsm, ok := ds.(map[string]any)
+		if !ok {
+			continue
+		}
+		id, _ := dsm["@id"].(string)
+		title, _ := dsm["dct:title"].(string)
+		accessURL := ""
+		if dist, ok := dsm["dcat:distribution"].(map[string]any); ok {
+			accessURL, _ = dist["dcat:accessURL"].(string)
+		}
+		fmt.Printf("  [%d] id=%s title=%q accessURL=%s\n", i+1, id, title, accessURL)
+	}
 }
 
 // helper function to list content of a bucket on s3 storage
 func fabricList(args []string, jsonOutput bool) {
-	// args contains [ls bucket]
+	// args contains [ls beamline]
 	if args[0] != "ls" {
 		fmt.Println("ERROR: wrong action", args)
 		os.Exit(1)
 	}
-
 	// get beamlines datasets from fabric node
 	bl := args[1]
-	rurl := fmt.Sprintf("%s/catalog/beamlines/%s/datasets",
-		srvConfig.Config.Services.FabricCatalogURL, bl)
-
+	rurl := fmt.Sprintf("%s/catalog/beamlines/%s/datasets", srvConfig.Config.Services.FabricCatalogURL, bl)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -60,7 +308,7 @@ func fabricList(args []string, jsonOutput bool) {
 		os.Exit(1)
 	}
 	if jsonOutput {
-		if val, err := json.MarshalIndent(data, "", "  "); err == nil {
+		if val, err := json.MarshalIndent(data, "", " "); err == nil {
 			fmt.Println(string(val))
 		}
 		return
@@ -68,20 +316,41 @@ func fabricList(args []string, jsonOutput bool) {
 	printMap(data)
 }
 
-// helper function to ingest did into fabric node
-func fabricIngest(args []string) {
-	// args contains [create bucket]
-	if len(args) != 2 {
-		fmt.Println("ERROR: wrong number of arguments")
-		os.Exit(1)
+// readDIDsFromFile reads one DID per non-blank, non-comment line from a file.
+// Lines not starting with "/beamline=" are warned and skipped.
+func readDIDsFromFile(path string) ([]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
 	}
-	if args[0] != "ingest" {
-		fmt.Println("ERROR: wrong action", args)
-		os.Exit(1)
+	defer f.Close()
+
+	var dids []string
+	scanner := bufio.NewScanner(f)
+	lineno := 0
+	for scanner.Scan() {
+		lineno++
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if !strings.HasPrefix(line, "/beamline=") {
+			fmt.Printf("WARNING: line %d: skipping malformed DID: %q\n", lineno, line)
+			continue
+		}
+		dids = append(dids, line)
 	}
-	did := args[1]
+	return dids, scanner.Err()
+}
+
+// ingestOneDID posts a single DID to the data-service ingest endpoint.
+func ingestOneDID(did string) {
 	bl := utils.GetBeamline(did)
-	encodedDid := url.QueryEscape(did)
+	if bl == "" {
+		fmt.Printf("ERROR: cannot extract beamline from DID %q\n", did)
+		os.Exit(1)
+	}
+	encodedDid := url.PathEscape(did)
 	rurl := fmt.Sprintf("%s/beamlines/%s/datasets/%s/foxden/ingest",
 		srvConfig.Config.Services.FabricDataServiceURL, bl, encodedDid)
 	if verbose > 0 {
@@ -93,13 +362,63 @@ func fabricIngest(args []string) {
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
-	dec := json.NewDecoder(resp.Body)
-	var results IngestRecord
-	if err := dec.Decode(&results); err != nil {
-		fmt.Println("ERROR:", err)
+
+	var result IngestRecord
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		fmt.Println("ERROR decoding response:", err)
 		os.Exit(1)
 	}
-	fmt.Printf("fabric ingest results:\n%+v\n", results)
+	fmt.Printf("  ingested=%d did=%s graphIRI=%s\n", result.Ingested, result.Did, result.GraphIRI)
+}
+
+// helper function to ingest did (or a file of dids) into fabric node.
+// The second argument may be:
+//   - a DID string starting with "/beamline=…", or
+//   - a path to a plain-text file containing one DID per line.
+func fabricIngest(args []string) {
+	if len(args) != 2 {
+		fmt.Println("ERROR: wrong number of arguments")
+		fabricUsage()
+		os.Exit(1)
+	}
+	if args[0] != "ingest" {
+		fmt.Println("ERROR: wrong action", args)
+		os.Exit(1)
+	}
+
+	arg := args[1]
+
+	// Detect whether the argument is a file path or a literal DID.
+	// A DID starts with "/beamline="; anything else we treat as a file.
+	if strings.HasPrefix(arg, "/beamline=") {
+		// Single DID ingest.
+		fmt.Printf("Ingesting DID: %s\n", arg)
+		ingestOneDID(arg)
+		return
+	}
+
+	// Treat as a file containing DIDs.
+	if _, err := os.Stat(arg); err != nil {
+		fmt.Printf("ERROR: %q is neither a valid DID (must start with /beamline=) nor an existing file: %v\n", arg, err)
+		os.Exit(1)
+	}
+
+	dids, err := readDIDsFromFile(arg)
+	if err != nil {
+		fmt.Println("ERROR reading DID file:", err)
+		os.Exit(1)
+	}
+	if len(dids) == 0 {
+		fmt.Println("ERROR: no valid DIDs found in file", arg)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Ingesting %d DID(s) from %s\n", len(dids), arg)
+	for _, did := range dids {
+		fmt.Printf("  → %s\n", did)
+		ingestOneDID(did)
+	}
+	fmt.Printf("Done. %d DID(s) processed.\n", len(dids))
 }
 
 func fabricCommand() *cobra.Command {
@@ -112,14 +431,31 @@ func fabricCommand() *cobra.Command {
 			jsonOutput, _ := cmd.Flags().GetBool("json")
 			if len(args) == 0 {
 				fabricUsage()
-			} else if args[0] == "ls" {
+				return
+			}
+			switch args[0] {
+			case "ls":
+				if len(args) < 2 {
+					fmt.Println("ERROR: ls requires <beamline>")
+					os.Exit(1)
+				}
 				accessToken()
 				fabricList(args, jsonOutput)
-			} else if args[0] == "ingest" {
+			case "ingest":
 				writeToken()
 				fabricIngest(args)
-			} else {
+			case "health":
+				accessToken()
+				fabricHealth(jsonOutput)
+			case "sparql":
+				accessToken()
+				fabricSPARQL(args, jsonOutput)
+			case "catalog":
+				accessToken()
+				fabricCatalog(args, jsonOutput)
+			default:
 				fmt.Printf("WARNING: unsupported option(s) %+v\n", args)
+				fabricUsage()
 			}
 		},
 	}
