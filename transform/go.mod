@@ -2,7 +2,7 @@ module github.com/CHESSComputing/gotools/transform
 
 go 1.26.3
 
-require github.com/CHESSComputing/golib v1.2.9
+require github.com/CHESSComputing/golib v1.3.0
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
