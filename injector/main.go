@@ -56,8 +56,8 @@ func parseFlags() *Config {
 	flag.BoolVar(&cfg.WriteResults, "write-results", false, "write injection results")
 	flag.BoolVar(&cfg.DeleteFile, "delete-file", false, "delete input JSON file after injection")
 	flag.StringVar(&cfg.Token, "token", "", "FOXDEN write token")
-	flag.StringVar(&cfg.Schema, "schema", "", "FOXDEN schema name")
-	flag.StringVar(&cfg.URL, "url", "", "FOXDEN Metadata URL")
+	flag.StringVar(&cfg.Schema, "schema", "", "FOXDEN Metadata schema name or \"SpecScans\"")
+	flag.StringVar(&cfg.URL, "url", "", "FOXDEN Metadata or SpecScans URL")
 	flag.IntVar(&cfg.Workers, "workers", 4, "number of concurrent workers")
 	flag.StringVar(&cfg.LogFile, "log", "", "log file name")
 	flag.DurationVar(&cfg.Timeout, "timeout", 10*time.Second, "HTTP timeout")
@@ -233,8 +233,12 @@ func injectJSON(ctx context.Context,
 		res.Error = err.Error()
 		return res, err
 	}
-	mrec := MetadataRecord{Schema: schema, Record: rec}
-	data, err = json.Marshal(mrec)
+	if schema == "SpecScans" {
+		data, err = json.Marshal(rec)
+	} else {
+		mrec := MetadataRecord{Schema: schema, Record: rec}
+		data, err = json.Marshal(mrec)
+	}
 	if err != nil {
 		res.Status = MarshalError
 		res.Error = fmt.Errorf("unable to marshal data, error %w", err).Error()
