@@ -1,7 +1,7 @@
 github.com/Azure/go-ntlmssp v0.1.0 h1:DjFo6YtWzNqNvQdrwEyr/e4nhU3vRiwenz5QX7sFz+A=
 github.com/Azure/go-ntlmssp v0.1.0/go.mod h1:NYqdhxd/8aAct/s4qSYZEerdPuH1liG2/X9DiVTbhpk=
-github.com/CHESSComputing/golib v1.3.0 h1:xA6e+dstSwcyPbgRg8+vsXlicYqcMgoH16ATKcK/ZdA=
-github.com/CHESSComputing/golib v1.3.0/go.mod h1:VW0KToiGYTSUcTocDulyuLLVrz+dXHt7P+yMg61d15I=
+github.com/CHESSComputing/golib v1.3.1 h1:bjukMy7Zshd+4jZUg//V5F9BHhPwlh3noVv6yO5wf7U=
+github.com/CHESSComputing/golib v1.3.1/go.mod h1:VW0KToiGYTSUcTocDulyuLLVrz+dXHt7P+yMg61d15I=
 github.com/alexbrainman/sspi v0.0.0-20250919150558-7d374ff0d59e h1:4dAU9FXIyQktpoUAgOJK3OTFc/xug0PCXYCqU0FgDKI=
 github.com/alexbrainman/sspi v0.0.0-20250919150558-7d374ff0d59e/go.mod h1:cEWa1LVoE5KvSD9ONXsZrj0z6KqySlCCNKHlLzbqAt4=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
