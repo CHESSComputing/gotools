@@ -74,6 +74,7 @@ func init() {
 	rootCmd.AddCommand(userMetaCommand())
 	rootCmd.AddCommand(fabricCommand())
 	rootCmd.AddCommand(validateCommand())
+	rootCmd.AddCommand(tmplCommand())
 }
 
 func initConfig() {
