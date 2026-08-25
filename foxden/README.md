@@ -67,3 +67,42 @@ foxden meta add <file.json> --schema=<schema>
 # the same as above but provide json output
 foxden meta add <file.json> --schema=<schema> --json
 ```
+
+### Trusted client
+The `foxden` CLI supports trusted client. In order to use this feature the
+FOXDEN server should be properly configured with trusted client info. Here is
+appropriate configuration section:
+
+```
+TrustedUsers:
+  - user: "trusted node user name"
+    ip: "trusted node ip address"
+    mac: "trusted node mac address"
+```
+
+Once, configured you may use `foxden` CLI to perform action on behalf of
+trusted user of specific node. For that you only need to use
+`FOXDEN_TRUSTED_CLIENT=1` env variable on trusted node under your trusted
+user account, e.g.
+
+```
+# request a token with read and write scope
+FOXDEN_TRUSTED_CLIENT=1 foxden token create read+write
+
+# view token assigned to variable t
+foxden token view --token=$t
+
+AccessToken  :  eyJh...
+Issuer       :  CHESS Authz server
+User         :  abc
+Token Scope  :  read+write
+Kind         :  trusted_client
+Groups       :  []
+Scopes       :  []
+ExpiresAt    :  2026-08-25 11:45:21 -0400 EDT
+
+# or even perform actions with meta data records
+foxden meta ls
+```
+
+
