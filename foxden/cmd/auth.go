@@ -274,7 +274,7 @@ func trustedUser() (string, error) {
 
 	// send encrypted data back to Authz server
 	httpMgr := services.NewHttpRequest(scope, 1)
-	ctype := "applicatin/octet-stream"
+	ctype := "application/octet-stream"
 	buf := bytes.NewBuffer(edata)
 	rurl := fmt.Sprintf("%s/oauth/trusted", srvConfig.Config.Services.AuthzURL)
 	resp, err := httpMgr.Post(rurl, ctype, buf)
