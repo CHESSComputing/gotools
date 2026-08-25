@@ -352,6 +352,15 @@ func authCommand() *cobra.Command {
 				} else {
 					tokenKind = attr
 				}
+				if os.Getenv("FOXDEN_TRUSTED_CLIENT") != "" {
+					// get trusted token and assign it to http write request
+					if token, err := trustedUser(); err == nil {
+						fmt.Println(token)
+						return
+					} else {
+						fmt.Printf("\nRequested token for trusted client, error=%v", err)
+					}
+				}
 				if tokenKind == "read" {
 					fname := fmt.Sprintf("%s/.foxden.read.token", os.Getenv("HOME"))
 					if ofile != "" {
