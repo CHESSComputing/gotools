@@ -1,10 +1,12 @@
 module github.com/CHESSComputing/gotools/migratescans
 
-go 1.26.4
+go 1.27.1
+
+replace github.com/CHESSComputing/golib => ../../golib
 
 require (
-	github.com/CHESSComputing/golib v1.3.4
-	go.mongodb.org/mongo-driver/v2 v2.7.0
+	github.com/CHESSComputing/golib v1.3.5
+	go.mongodb.org/mongo-driver/v2 v2.6.2
 )
 
 require (
@@ -43,5 +45,3 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.47.0 // indirect
 )
-
-replace github.com/CHESSComputing/golib => ../../golib
