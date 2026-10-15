@@ -200,7 +200,7 @@ func searchCommand() *cobra.Command {
 			}
 			var skeys []string
 			if sortKeys != "" {
-				for _, k := range strings.Split(sortKeys, ",") {
+				for k := range strings.SplitSeq(sortKeys, ",") {
 					skeys = append(skeys, k)
 				}
 			}

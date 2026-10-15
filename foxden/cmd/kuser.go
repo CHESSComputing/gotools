@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -95,7 +94,7 @@ func userTicket() (string, []byte) {
 	cmd.Wait()
 
 	// read tmp file content and return the ticket
-	ticket, err := ioutil.ReadFile(tmpFile.Name())
+	ticket, err := os.ReadFile(tmpFile.Name())
 	if err != nil || len(ticket) == 0 {
 		exit("unable to read kerberos credentials", err)
 	}
@@ -118,7 +117,7 @@ func getKerberosTicket(krbFile string) (string, []byte) {
 			msg := fmt.Sprintf("user credentials are expired, please obtain new/valid kerberos file %s", krbFile)
 			exit(msg, nil)
 		}
-		ticket, err := ioutil.ReadFile(krbFile)
+		ticket, err := os.ReadFile(krbFile)
 		if err != nil {
 			exit("unable to read kerberos credentials", err)
 		}

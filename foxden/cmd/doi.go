@@ -107,7 +107,7 @@ func doiPublish(did, provider, description, parents string, draft, metadata, jso
 	}
 	// add parents if they are provided
 	if parents != "" {
-		for _, p := range strings.Split(parents, ",") {
+		for p := range strings.SplitSeq(parents, ",") {
 			form.Add("doi_parents_dids", strings.Trim(p, " "))
 		}
 	}

@@ -193,10 +193,10 @@ func GetOsInfo() (dbs.OsInfoRecord, error) {
 		// try /etc/os-release
 		data, err := exec.Command("cat", "/etc/os-release").Output()
 		if err == nil {
-			lines := strings.Split(string(data), "\n")
-			for _, line := range lines {
-				if strings.HasPrefix(line, "PRETTY_NAME=") {
-					v := strings.TrimPrefix(line, "PRETTY_NAME=")
+			lines := strings.SplitSeq(string(data), "\n")
+			for line := range lines {
+				if after, ok := strings.CutPrefix(line, "PRETTY_NAME="); ok {
+					v := after
 					info.Version = strings.Trim(v, `"`)
 					break
 				}
@@ -212,10 +212,10 @@ func GetOsInfo() (dbs.OsInfoRecord, error) {
 		// Windows: use wmic if available
 		data, err := exec.Command("wmic", "os", "get", "Caption,CSDVersion", "/value").Output()
 		if err == nil {
-			lines := bytes.Split(data, []byte("\n"))
-			for _, line := range lines {
-				if bytes.HasPrefix(line, []byte("Caption=")) {
-					info.Version = strings.TrimSpace(string(bytes.TrimPrefix(line, []byte("Caption="))))
+			lines := bytes.SplitSeq(data, []byte("\n"))
+			for line := range lines {
+				if after, ok := bytes.CutPrefix(line, []byte("Caption=")); ok {
+					info.Version = strings.TrimSpace(string(after))
 					break
 				}
 			}

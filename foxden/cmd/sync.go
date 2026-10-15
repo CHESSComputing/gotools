@@ -47,23 +47,21 @@ func syncRecords(src, dst, spec string, poolSize, batchSize int, elapsedTime boo
 
 	// Create a worker pool
 	var wg sync.WaitGroup
-	recordChan := make(chan map[string]interface{}, poolSize)
+	recordChan := make(chan map[string]any, poolSize)
 
 	// Start workers
-	for i := 0; i < poolSize; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range poolSize {
+		wg.Go(func() {
 			for record := range recordChan {
 				injectRecord(dst, record)
 			}
-		}()
+		})
 	}
 	// Read records in batches and send them to the worker pool
 	decoder := json.NewDecoder(resp.Body)
-	batch := make([]map[string]interface{}, 0, batchSize)
+	batch := make([]map[string]any, 0, batchSize)
 	for {
-		var record map[string]interface{}
+		var record map[string]any
 		if err := decoder.Decode(&record); err == io.EOF {
 			// Handle any remaining records in the last batch
 			for _, r := range batch {
@@ -91,7 +89,7 @@ func syncRecords(src, dst, spec string, poolSize, batchSize int, elapsedTime boo
 }
 
 // helper function to inject record into destination URI
-func injectRecord(dst string, record map[string]interface{}) {
+func injectRecord(dst string, record map[string]any) {
 	data, err := json.Marshal(record)
 	if err != nil {
 		log.Printf("Error marshalling record: %v", err)

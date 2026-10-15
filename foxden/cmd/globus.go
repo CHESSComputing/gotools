@@ -122,7 +122,7 @@ func globusCommand() *cobra.Command {
 					log.Fatalf("ERROR: unable to get globus token with scopes=%v, error=%v", scopes, err)
 				}
 				if len(args) == 2 {
-					eid := strings.Split(args[1], ":")[0]
+					eid, _, _ := strings.Cut(args[1], ":")
 					globusListRecord(token, eid, jsonOutput)
 				} else {
 					globusListRecord(token, "", jsonOutput)
