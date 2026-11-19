@@ -75,9 +75,19 @@ func getMeta(murl, user, query string, skeys []string, sorder, idx, limit int) (
 	if query == "" {
 		query = "{}"
 	}
+	projection := make(map[string]int)
+	if query == "dids" {
+		// we need to use projection to extract only necessary bits
+		// for that we do not need sorted keys as mongo.GetProjected API does not support it
+		query = "{}"
+		projection["did"] = 1
+		sorder = 0
+		skeys = []string{}
+	}
 	rec := services.ServiceRequest{
-		Client:       "foxden",
-		ServiceQuery: services.ServiceQuery{Query: query, Idx: idx, Limit: limit, SortKeys: skeys, SortOrder: sorder},
+		Client: "foxden",
+		ServiceQuery: services.ServiceQuery{
+			Query: query, Idx: idx, Limit: limit, SortKeys: skeys, SortOrder: sorder, Projection: projection},
 	}
 
 	data, err := json.Marshal(rec)
@@ -151,10 +161,14 @@ func metaUsage() {
 	attrs, sep, div := didMetaData()
 	fmt.Println("foxden meta <ls|rm|view> [options]")
 	fmt.Println("foxden meta <add|amend> <file.json> {options}")
-	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json --elapsed-time")
+	fmt.Println("options: --schema=<schema> --did-attrs=<attrs> --did-sep=<separator> --did-div=<divider> --json --elapsed-time --dids")
 	fmt.Println("\nExamples:")
 	fmt.Println("\n# list meta data records:")
 	fmt.Println("foxden meta ls")
+	fmt.Println("\n# list dids only (within default idx/limit boundaries):")
+	fmt.Println("foxden meta ls --dids")
+	fmt.Println("\n# list all available dids:")
+	fmt.Println("foxden meta ls --dids --limit")
 	fmt.Println("\n# list meta data records for specific range:")
 	fmt.Println("foxden meta ls --idx=10 --limit=20")
 	fmt.Println("\n# list all meta data records using specific sorting key(s) and order:")
@@ -312,6 +326,10 @@ func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, j
 	}
 
 	for _, r := range records {
+		if spec == "dids" {
+			fmt.Println(r["did"])
+			continue
+		}
 		fmt.Println("---")
 		fmt.Printf("did        : %v\n", r["did"])
 		fmt.Printf("schema     : %v\n", r["schema"])
@@ -327,8 +345,10 @@ func metaListRecord(user, spec string, skeys []string, sorder, idx, limit int, j
 		fmt.Printf("date       : %v\n", tstamp)
 		//         fmt.Printf("%+v", r)
 	}
-	fmt.Println("---")
-	fmt.Printf("Showing %d-%d out of %d records, for more records use --idx/--limit options\n", idx, idx+limit, nrecords)
+	if spec == "" {
+		fmt.Println("---")
+		fmt.Printf("Showing %d-%d out of %d records, for more records use --idx/--limit options\n", idx, idx+limit, nrecords)
+	}
 }
 
 // helper function to print meta data records in Json format
@@ -382,6 +402,7 @@ func metaCommand() *cobra.Command {
 			div, _ := cmd.Flags().GetString("did-div")
 			sortKeys, _ := cmd.Flags().GetString("sort-keys")
 			sortOrder, _ := cmd.Flags().GetInt("sort-order")
+			dids, _ := cmd.Flags().GetBool("dids")
 			jsonOutput, _ := cmd.Flags().GetBool("json")
 			elapsedTime, _ := cmd.Flags().GetBool("elapsed-time")
 			idx, _ := cmd.Flags().GetInt("idx")
@@ -403,11 +424,11 @@ func metaCommand() *cobra.Command {
 				metaUsage()
 			} else if args[0] == "ls" {
 				user, _ := getUserToken()
-				if len(args) == 2 {
-					metaListRecord(user, args[1], skeys, sortOrder, idx, limit, jsonOutput, elapsedTime)
-				} else {
-					metaListRecord(user, "", skeys, sortOrder, idx, limit, jsonOutput, elapsedTime)
+				spec := ""
+				if dids {
+					spec = "dids"
 				}
+				metaListRecord(user, spec, skeys, sortOrder, idx, limit, jsonOutput, elapsedTime)
 			} else if args[0] == "view" {
 				user, _ := getUserToken()
 				if len(args) == 2 {
@@ -467,6 +488,7 @@ func metaCommand() *cobra.Command {
 	cmd.PersistentFlags().String("did-attrs", attrs, "did attributes")
 	cmd.PersistentFlags().String("did-sep", sep, "did separator")
 	cmd.PersistentFlags().String("did-div", div, "did key-value divider")
+	cmd.PersistentFlags().Bool("dids", false, "dids output")
 	cmd.PersistentFlags().Bool("json", false, "json output")
 	cmd.PersistentFlags().Bool("elapsed-time", false, "print out elapsed time")
 	cmd.PersistentFlags().String("sort-keys", "date", "sort key(s), if multiple keys separate them by comma (default: date)")
