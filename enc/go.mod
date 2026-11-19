@@ -1,6 +1,6 @@
 module github.com/CHESSComputing/gotools/enc
 
-go 1.27.1
+go 1.27.4
 
 require github.com/vkuznet/cryptoutils v0.0.2
 
