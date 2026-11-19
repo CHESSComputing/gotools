@@ -229,15 +229,15 @@ func termValue(binding map[string]any, key string) string {
 
 // helper function to verify the catalog for a given beamline
 func fabricCatalog(args []string, jsonOutput bool) {
-	if len(args) < 2 {
-		fmt.Println("ERROR: catalog requires <beamline>")
-		fmt.Println("Usage: foxden fabric catalog <beamline>")
-		os.Exit(1)
+	var rurl, bl string
+	if len(args) == 1 { // first argument is catalog
+		rurl = fmt.Sprintf("%s/catalog/beamlines",
+			srvConfig.Config.Services.FabricCatalogURL)
+	} else {
+		bl = args[1]
+		rurl = fmt.Sprintf("%s/catalog/beamlines/%s/datasets",
+			srvConfig.Config.Services.FabricCatalogURL, bl)
 	}
-	bl := args[1]
-
-	rurl := fmt.Sprintf("%s/catalog/beamlines/%s/datasets",
-		srvConfig.Config.Services.FabricCatalogURL, bl)
 	if verbose > 0 {
 		fmt.Println("HTTP GET", rurl)
 	}
@@ -251,9 +251,10 @@ func fabricCatalog(args []string, jsonOutput bool) {
 
 	var data map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		fmt.Println("ERROR decoding response:", err)
+		fmt.Println("ERROR decoding response:", err, "response body:", resp.Body)
 		os.Exit(1)
 	}
+	fmt.Printf("data = %+v", data)
 
 	if jsonOutput {
 		if val, err := json.MarshalIndent(data, "", "  "); err == nil {
@@ -264,7 +265,11 @@ func fabricCatalog(args []string, jsonOutput bool) {
 
 	// Human-readable catalog summary.
 	dtype, _ := data["@type"].(string)
-	fmt.Printf("Catalog for beamline: %s\n", bl)
+	if bl != "" {
+		fmt.Printf("Catalog for beamline: %s\n", bl)
+	} else {
+		fmt.Printf("Catalog for beamlines:\n")
+	}
 	fmt.Printf("  @type: %s\n", dtype)
 
 	datasets, _ := data["dcat:dataset"].([]any)
