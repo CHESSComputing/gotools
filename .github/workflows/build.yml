@@ -8,119 +8,47 @@ name: Build
 on:
   push:
     tags:
-      - '*.*.*'
+      - "*.*.*"
 
 # Permission can be added at job level or workflow level
 permissions:
-  contents: write   # This is required to create/push the new git tag
+  contents: write # Required to create releases and upload release assets
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.27"
+          cache: false
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.27'
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Build
+        run: |
+          make build_all
 
-    - name: Build
-      run: |
-        make build_all
-
-    - name: Create Release
-      id: create_release
-      uses: ncipollo/release-action@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        bodyFile: "LAST_CHANGES.md"
-        draft: false
-        prerelease: false
-
-    - name: Upload linux binary
-      id: upload-tools-amd64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_linux_amd64.tar.gz
-        asset_name: tools_linux_amd64.tar.gz
-        asset_content_type: application/octet-stream
-
-
-    - name: Upload Power8 binary
-      id: upload-tools-power8
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_linux_power8.tar.gz
-        asset_name: tools_linux_power8.tar.gz
-        asset_content_type: application/octet-stream
-
-    - name: Upload ARM64 binary
-      id: upload-tools-arm64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_linux_arm64.tar.gz
-        asset_name: tools_linux_arm64.tar.gz
-        asset_content_type: application/octet-stream
-
-    - name: Upload OSX/macOS binary
-      id: upload-toolsosx-amd64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_darwin_amd64.tar.gz
-        asset_name: tools_darwin_amd64.tar.gz
-        asset_content_type: application/octet-stream
-
-    - name: Upload OSX/macOS ARM64 binary
-      id: upload-toolsosx-arm64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_darwin_arm64.tar.gz
-        asset_name: tools_darwin_arm64.tar.gz
-        asset_content_type: application/octet-stream
-
-    - name: Upload windows binary
-      id: upload-tools-windows-amd64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_windows_amd64.zip
-        asset_name: tools_windows_amd64.zip
-        asset_content_type: application/octet-stream
-
-    - name: Upload windows binary
-      id: upload-tools-windows-arm64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./tools_windows_arm64.zip
-        asset_name: tools_windows_arm64.zip
-        asset_content_type: application/octet-stream
+      - name: Create Release and Upload Binaries
+        uses: softprops/action-gh-release@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body_path: "LAST_CHANGES.md"
+          draft: false
+          prerelease: false
+          files: |
+            ./tools_linux_amd64.tar.gz
+            ./tools_linux_power8.tar.gz
+            ./tools_linux_arm64.tar.gz
+            ./tools_darwin_amd64.tar.gz
+            ./tools_darwin_arm64.tar.gz
+            ./tools_windows_amd64.zip
+            ./tools_windows_arm64.zip
