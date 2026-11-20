@@ -11,12 +11,6 @@ VER := $(if $(TAG),$(TAG),{{VERSION}})
 HOSTOS   := $(shell go env GOOS)
 HOSTARCH := $(shell go env GOARCH)
 
-GOLIB    ?= ../../golib
-# module path from go.mod, without a trailing /vN major-version suffix
-MODULE   := $(shell go list -m 2>/dev/null | sed -E 's|/v[0-9]+$$||')
-SRV      ?= $(notdir $(MODULE))
-REPO     ?= https://$(MODULE)
-
 # every cross-platform binary produced by build_all (names are kept as before)
 PLATFORM_TARGETS := \
 	build_darwin_amd64 build_darwin_arm64 \
@@ -24,10 +18,10 @@ PLATFORM_TARGETS := \
 	build_power8 build_s390x build_riscv64 \
 	build_freebsd_amd64 \
 	build_windows_amd64 build_windows_arm64
-OUTPUTS := srv srv_darwin_amd64 srv_darwin_arm64 \
-	srv_amd64 srv_amd64_static srv_arm64 srv_arm srv_386 \
-	srv_power8 srv_s390x srv_riscv64 srv_freebsd_amd64 \
-	srv_amd64.exe srv_arm64.exe
+OUTPUTS := foxden foxden_darwin_amd64 foxden_darwin_arm64 \
+	foxden_amd64 foxden_amd64_static foxden_arm64 foxden_arm foxden_386 \
+	foxden_power8 foxden_s390x foxden_riscv64 foxden_freebsd_amd64 \
+	foxden_amd64.exe foxden_arm64.exe
 
 .PHONY: all golib gorelease build build_all $(PLATFORM_TARGETS) \
 	    install clean changes test test_code
@@ -58,43 +52,43 @@ endef
 
 # native build for the current machine
 build:
-	$(call xbuild,$(HOSTOS),$(HOSTARCH),srv)
+	$(call xbuild,$(HOSTOS),$(HOSTARCH),foxden)
 
 build_all: golib $(PLATFORM_TARGETS) changes
 
 # macOS
 build_darwin_amd64:
-	$(call xbuild,darwin,amd64,srv_darwin_amd64)
+	$(call xbuild,darwin,amd64,foxden_darwin_amd64)
 build_darwin_arm64:
-	$(call xbuild,darwin,arm64,srv_darwin_arm64)
+	$(call xbuild,darwin,arm64,foxden_darwin_arm64)
 
 # Linux
 build_amd64:
-	$(call xbuild,linux,amd64,srv_amd64)
+	$(call xbuild,linux,amd64,foxden_amd64)
 build_amd64_static:
-	$(call xbuild,linux,amd64,srv_amd64_static,CGO_ENABLED=0,-tags static)
+	$(call xbuild,linux,amd64,foxden_amd64_static,CGO_ENABLED=0,-tags static)
 build_arm64:
-	$(call xbuild,linux,arm64,srv_arm64)
+	$(call xbuild,linux,arm64,foxden_arm64)
 build_arm:
-	$(call xbuild,linux,arm,srv_arm,GOARM=7)
+	$(call xbuild,linux,arm,foxden_arm,GOARM=7)
 build_386:
-	$(call xbuild,linux,386,srv_386)
+	$(call xbuild,linux,386,foxden_386)
 build_power8:
-	$(call xbuild,linux,ppc64le,srv_power8)
+	$(call xbuild,linux,ppc64le,foxden_power8)
 build_s390x:
-	$(call xbuild,linux,s390x,srv_s390x)
+	$(call xbuild,linux,s390x,foxden_s390x)
 build_riscv64:
-	$(call xbuild,linux,riscv64,srv_riscv64)
+	$(call xbuild,linux,riscv64,foxden_riscv64)
 
 # FreeBSD
 build_freebsd_amd64:
-	$(call xbuild,freebsd,amd64,srv_freebsd_amd64)
+	$(call xbuild,freebsd,amd64,foxden_freebsd_amd64)
 
 # Windows
 build_windows_amd64:
-	$(call xbuild,windows,amd64,srv_amd64.exe)
+	$(call xbuild,windows,amd64,foxden_amd64.exe)
 build_windows_arm64:
-	$(call xbuild,windows,arm64,srv_arm64.exe)
+	$(call xbuild,windows,arm64,foxden_arm64.exe)
 
 install:
 	go install
